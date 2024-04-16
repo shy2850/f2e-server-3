@@ -1,0 +1,27 @@
+{
+  "name": "f2e-server-3",
+  "version": "3.0.0-rc",
+  "description": "f2e-server 3.0",
+  "main": "lib/index.js",
+  "scripts": {
+    "tsc": "tsc",
+    "test:node": "tsc && node ./lib/test",
+    "test": "bun run ./test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@gitee.com:f2e-server/f2e-server-3.git"
+  },
+  "keywords": [
+    "f2e-server"
+  ],
+  "author": "shy2850",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.12.7",
+    "marked": "^12.0.1"
+  },
+  "dependencies": {
+    "mime": "^3.0.0"
+  }
+}
