@@ -3,7 +3,6 @@ import { F2EConfigResult } from "../interface"
 import { createHash } from "node:crypto"
 import * as _ from './misc'
 import { gzipSync } from "node:zlib"
-import { MemoryTree } from "../memory-tree"
 import logger from "./logger"
 
 export const etag = (entity: Buffer | string) => {

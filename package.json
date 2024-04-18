@@ -21,10 +21,10 @@
   "devDependencies": {
     "@types/node": "^20.12.7",
     "marked": "^12.0.1",
-    "typescript": "^5.4.5"
+    "typescript": "^5.4.5",
+    "uWebSockets.js": "github:uNetworking/uWebSockets.js#v20.43.0"
   },
   "dependencies": {
-    "mime": "^3.0.0",
-    "uWebSockets.js": "github:uNetworking/uWebSockets.js#v20.43.0"
+    "mime": "^3.0.0"
   }
 }
