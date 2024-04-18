@@ -39,7 +39,7 @@ export interface ServerConfig {
     /**
      * 响应结束前执行： 可用于设置响应头等操作
     */
-    beforeResponseEnd?: { (resp: HttpResponse, req: HttpRequest): void };
+    beforeResponseEnd?: { (resp: HttpResponse, req?: HttpRequest): void };
     /**
      * 参考Nginx配置 `try_files` 而产生的功能 (`querystring`已经解析到`req.data`中)
      * 1. 类型为`string`时, 所有未能找到资源的情况都转发到这个 `pathname`

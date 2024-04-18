@@ -4,6 +4,8 @@ import * as _ from './utils/misc'
 import { F2EConfigResult } from "./interface"
 import { MemoryTree } from "./memory-tree"
 import { createResponseHelper } from "./utils/resp"
+import engine from "./server-engine"
+import logger from "./utils/logger"
 
 export const server_all = (conf: F2EConfigResult, events: Required<MiddlewareEvents>, memory: MemoryTree.MemoryTree) => {
     const { onRoute, beforeRoute } = events
@@ -37,21 +39,9 @@ export const server_all = (conf: F2EConfigResult, events: Required<MiddlewareEve
         } else if (typeof pathnameTemp === 'string') {
             pathname = pathnameTemp
         }
-    
         const method = req.getMethod().toUpperCase()
-        if (method === 'POST') {
-            let buffers: Uint8Array[] = [];
-            resp.onData(async function (ab, isLast) {
-                buffers.push(Buffer.from(ab))
-                if (isLast) {
-                    const body = Buffer.concat(buffers)
-                    await execute(pathname, req, resp, body)
-                }
-            }).onAborted(function () {
-                resp.aborted = true;
-            })
-        } else {
-            await execute(pathname, req, resp)
-        }
+        const body = method === 'POST' ? await engine.parseBody(req, resp) : undefined
+        body && logger.debug(body.toString())
+        await execute(pathname, req, resp, body)
     }
 }

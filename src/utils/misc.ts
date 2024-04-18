@@ -1,10 +1,9 @@
+import { ENGINE_TYPE } from "../server-engine"
 import logger from "./logger"
-
 import meta from '../../package.json'
 
 export const REG_FILENAME = /[^\\/,\s\t\n]+/g
-
-export const VERSION = `${meta.name} ${meta.version}`
+export const VERSION = `${meta.name} ${meta.version} [${ENGINE_TYPE}]`
 export const pathname_arr = (str = ''): string[] => (str.match(REG_FILENAME) || [])
 export const pathname_fixer = (str = '') => pathname_arr(str).join('/')
 export const pathname_dirname = (str = '') => (str.match(REG_FILENAME) || []).slice(0, -1).join('/')
@@ -31,7 +30,7 @@ export const decode = (str: string) => {
 
 export const get = function loopGet (obj: any, path: string | string[]): any {
     const [key, ...rest] = path.toString().match(REG_FILENAME) || []
-    if (!key) {
+    if (!key || !obj) {
         return obj
     }
     if (rest.length === 0) {

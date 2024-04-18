@@ -1,4 +1,4 @@
-import { App, SSLApp } from "uWebSockets.js"
+import engine from "./server-engine"
 import { F2EConfig } from "./interface"
 import { getConfigEvents, getConfigResult } from "./utils/config"
 import logger from "./utils/logger"
@@ -8,6 +8,8 @@ import * as _ from './utils/misc'
 import { server_all } from "./server"
 
 export * from "./interface"
+
+const { App, SSLApp } = engine
 
 export const createBuilder = async (options: F2EConfig) => {
     const { root, output, namehash } = getConfigResult(options)

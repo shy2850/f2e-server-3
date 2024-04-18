@@ -8,6 +8,8 @@ let i = 1;
  */
 const config = {
     mode: 'dev',
+    gzip: true,
+    gzip_filter: () => true,
     buildFilter: (pathname) => {
         return /^(src|index|test|README|package|$)/.test(pathname)
     },
@@ -20,7 +22,6 @@ const config = {
     },
     onSet: async (pathname, data, store) => {
         if (/\.md$/.test(pathname)) {
-            console.log(pathname, data?.toString())
             return {
                 data: marked(data?.toString() || ""),
                 originPath: pathname,

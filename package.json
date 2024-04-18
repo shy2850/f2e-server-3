@@ -7,7 +7,8 @@
   "module": "src/index.ts",
   "scripts": {
     "tsc": "tsc",
-    "test": "tsc && node ./lib/test --debug"
+    "test": "tsc && node ./lib/test --debug",
+    "test:bun": "bun run ./test/index.ts --debug"
   },
   "repository": {
     "type": "git",
@@ -17,8 +18,9 @@
     "f2e-server"
   ],
   "author": "shy2850",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "devDependencies": {
+    "@types/bun": "^1.1.0",
     "@types/node": "^20.12.7",
     "marked": "^12.0.1",
     "typescript": "^5.4.5",

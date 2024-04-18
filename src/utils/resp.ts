@@ -2,8 +2,11 @@ import { HttpRequest, HttpResponse } from "uWebSockets.js"
 import { F2EConfigResult } from "../interface"
 import { createHash } from "node:crypto"
 import * as _ from './misc'
-import { gzipSync } from "node:zlib"
+import * as zlib from "node:zlib"
 import logger from "./logger"
+import { ENGINE_TYPE } from "../server-engine"
+
+const gzipSync = ENGINE_TYPE === 'bun' ? Bun.gzipSync : zlib.gzipSync
 
 export const etag = (entity: Buffer | string) => {
     if (entity.length === 0) {
@@ -39,7 +42,6 @@ export const createResponseHelper = (conf: F2EConfigResult) => {
         resp.cork(() => {
             resp.writeStatus('500 Internal Server Error')
             resp.writeHeader('Content-Type', 'text/html; charset=utf-8')
-            resp.writeHeader('Content-Length', error_body.length + '')
             resp.end(error_body)
         })
     }
@@ -54,8 +56,6 @@ export const createResponseHelper = (conf: F2EConfigResult) => {
         if (tag && data && tag === newTag) {
             resp.cork(() => {
                 resp.writeStatus("304 Not Modified")
-                resp.writeHeader("Content-Type", type)
-                resp.writeHeader("Content-Encoding", gz ? 'gzip' : 'utf-8')
                 beforeResponseEnd(resp, req)
                 resp.endWithoutBody()
             })
@@ -82,9 +82,9 @@ export const createResponseHelper = (conf: F2EConfigResult) => {
             resp.writeStatus('200 OK')
             resp.writeHeader("Content-Type", type)
             resp.writeHeader("Content-Encoding", gz ? 'gzip' : 'utf-8')
-            resp.writeHeader("ETag", newTag)
+            newTag && resp.writeHeader("ETag", newTag)
             beforeResponseEnd(resp, req)
-            resp.end(gz ? gzipSync(data) : data)
+            resp.end(gz ? gzipSync(data.toString()) : data)
         })
     }
 
@@ -114,7 +114,7 @@ export const createResponseHelper = (conf: F2EConfigResult) => {
         resp.cork(() => {
             resp.writeStatus('200 OK')
             resp.writeHeader('Content-Type', 'text/html; charset=utf-8')
-            resp.writeHeader('Content-Length', dir_body.length + '')
+            beforeResponseEnd(resp)
             resp.end(dir_body)
         })
     }
