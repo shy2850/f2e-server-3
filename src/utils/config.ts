@@ -1,0 +1,69 @@
+import { F2EConfig, F2EConfigResult } from "../interface";
+import * as _ from "./misc"
+import * as path from 'node:path'
+import * as fs from 'node:fs'
+import { MiddlewareCreater } from "../middlewares/interface";
+import { combineMiddleware } from "../middlewares";
+
+let F2E_CONFIG_PATH = ''
+const F2E_CONFIG = '.f2econfig.js'
+export const setConfigPath = (path: string) => F2E_CONFIG_PATH = path
+const getConfig = (conf: F2EConfig = {}) => {
+    let pathname = F2E_CONFIG_PATH || path.join(process.cwd(), F2E_CONFIG)
+    if (fs.existsSync(pathname)) {
+        conf = {
+            ...require(pathname),
+            ...conf,
+        }
+    }
+    return conf
+}
+
+/** 保留基础配置 */
+export const getConfigResult = function (conf: F2EConfig = {}) {
+    conf = getConfig(conf)
+    const config: F2EConfigResult = {
+        mode: conf.mode || "dev",
+        port: conf.port || 2850,
+        host: conf.host || '0.0.0.0',
+        root: conf.root || process.cwd(),
+        ssl: conf.ssl || false,
+        gzip: conf.gzip || false,
+        gzip_filter: conf.gzip_filter || function (pathname, size) { return _.isText(pathname, config.mimeTypes) && size > 4096 },
+        beforeResponseEnd: function (resp, req) {
+            if (conf.beforeResponseEnd) {
+                conf.beforeResponseEnd(resp, req)
+            }
+            resp.writeHeader("X-Powered-By", _.VERSION)
+        },
+        try_files: "index.html",
+        onServerCreate: conf.onServerCreate || function (server) { return server },
+        namehash: {
+            entries: ['index\\.html$'],
+            searchValue: ['\\s(?:src)="([^"]*?)"', '\\s(?:href)="([^"]*?)"'],
+            replacer: (output, hash) => `/${output}?${hash}`,
+            ...(conf.namehash || {})
+        },
+        mimeTypes: conf.mimeTypes || {},
+        output: conf.output || path.join(process.cwd(), './output'),
+
+        range_size: conf.range_size || 1024 * 1024 * 10,
+        page_404: conf.page_404 || `<h2 style="text-align: center"> 404: <small>{{pathname}}</small> is gone!</h2>`,
+        page_50x: conf.page_50x || `<h2 style="text-align: center"> 500: ServerError </h2> <pre><code>{{error}}</code></pre>`,
+        page_dir: conf.page_dir || `<ul><li><a href="/{{pathname}}">..</a></li>{{each files}}<li><a href="/{{path}}">{{name}}</a></li>{{/each}}</ul>`,
+    }
+    return config;
+}
+
+/** 整理中间件配置 */
+export const getConfigEvents = (conf: F2EConfig = {}) => {
+    conf = getConfig(conf)
+    const { buildFilter, watchFilter, outputFilter, onGet, onSet, onRoute, beforeRoute, buildWatcher, middlewares = [] } = conf
+    const middlewareBase: MiddlewareCreater = () => {
+        return {
+            mode: ["dev", "build", "prod"],
+            buildFilter, watchFilter, outputFilter, onGet, onSet, onRoute, beforeRoute, buildWatcher,
+        }
+    }
+    return combineMiddleware(getConfigResult(conf), [middlewareBase, ...middlewares])
+}

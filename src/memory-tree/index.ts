@@ -10,6 +10,7 @@ export * from "./defaults"
 export const createStore = function (onGet: MemoryTree.Options['onGet']): MemoryTree.Store {
     let o = {}
     const store: MemoryTree.Store = {
+        hashmap: new Map(),
         _get(path) {
             const arr = _.pathname_arr(path)
             return arr.length ? _.get(o, arr) : o

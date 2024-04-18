@@ -4,6 +4,7 @@ import logger from '../src/utils/logger'
 import { marked } from 'marked'
 
 export const run_memory_tree = () => {
+    logger.log('run_memory_tree')
     const config: Partial<MemoryTree.Options> = {
         watch: true,
         dest: join(process.cwd(), './output'),

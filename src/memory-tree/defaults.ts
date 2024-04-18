@@ -2,15 +2,24 @@ import logger from "../utils/logger";
 import { MemoryTree } from "./interface";
 
 /** 默认过滤掉 node_modules 目录 和 output 目录以及 .开头的隐藏文件 */
-export const DefaultFilter = (path: string) => {
+const DefaultWatchFilter = (path: string) => {
     return !/(node_modules|(^|[\\\/])\.\w+|output)/.test(path);
 };
+const DefaultBuildFilter = (path: string, size = 0) => {
+    if (size > 100 * 1024 * 1024) {
+        return false
+    }
+    return DefaultWatchFilter(path);
+};
+const DefaultOutputFilter = (path: string, data: MemoryTree.DataBuffer) => {
+    return DefaultBuildFilter(path, Buffer.isBuffer(data) ? data.length : 0);
+};
 /** 默认监听文件变化打印日志 */
-export const DefaultWatcher = (path: string) => {
+const DefaultWatcher = (path: string) => {
     return logger.debug(path);
 };
 /** 默认设置资源的输入输出路径相同 */
-export const DefaultOnSet: MemoryTree.Options['onSet'] = async (pathname, data) => {
+const DefaultOnSet: MemoryTree.Options['onSet'] = async (pathname, data) => {
     return {
         data,
         originPath: pathname,
@@ -18,7 +27,7 @@ export const DefaultOnSet: MemoryTree.Options['onSet'] = async (pathname, data) 
     };
 };
 /** 默认设置资源直接输出 */
-export const DefaultOnGet: MemoryTree.Options['onGet'] = async (_pathname, data) => {
+const DefaultOnGet: MemoryTree.Options['onGet'] = async (_pathname, data) => {
     return data;
 };
 
@@ -26,10 +35,10 @@ export const DefaultOnGet: MemoryTree.Options['onGet'] = async (_pathname, data)
 export const defaultOptions: MemoryTree.Options = {
     root: process.cwd(),
     watch: false,
-    buildFilter: DefaultFilter,
-    watchFilter: DefaultFilter,
+    buildFilter: DefaultBuildFilter,
+    watchFilter: DefaultWatchFilter,
     buildWatcher: DefaultWatcher,
     onSet: DefaultOnSet,
     onGet: DefaultOnGet,
-    outputFilter: DefaultFilter,
+    outputFilter: DefaultOutputFilter,
 }

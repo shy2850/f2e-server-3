@@ -13,27 +13,27 @@ export class Logger {
     }
     log = (...data: any[]) => {
         if (this._level <= LogLevel.INFO) {
-            this._console.log(new Date().toLocaleTimeString(), ...data)
+            this._console.log(new Date().toLocaleTimeString(), 'INFO:', ...data)
         }
     }
     debug = (...data: any[]) => {
         if (this._level <= LogLevel.DEBUG) {
-            this._console.debug(new Date().toLocaleTimeString(), ...data)
+            this._console.debug(new Date().toLocaleTimeString(), 'DEBUG:', ...data)
         }
     }
     info = (...data: any[]) => {
         if (this._level <= LogLevel.INFO) {
-            this._console.info(new Date().toLocaleTimeString(), ...data)
+            this._console.info(new Date().toLocaleTimeString(), 'INFO:', ...data)
         }
     }
     warn = (...data: any[]) => {
         if (this._level <= LogLevel.WARN) {
-            this._console.warn(new Date().toLocaleTimeString(), ...data)
+            this._console.warn(new Date().toLocaleTimeString(), 'WARN:', ...data)
         }
     }
     error = (...data: any[]) => {
         if (this._level <= LogLevel.ERROR) {
-            this._console.error(new Date().toLocaleTimeString(), ...data)
+            this._console.error(new Date().toLocaleTimeString(), 'ERROR:', ...data)
         }
     }
 }
@@ -42,7 +42,7 @@ let level = LogLevel.INFO
 
 if (/^[0123]$/.test(process.env.LOG_LEVEL || "")) {
     level = parseInt(process.env.LOG_LEVEL || "1")
-} else if (/^DEV/i.test(process.env.NODE_ENV || "")) {
+} else if (process.argv.find(arg => arg === "--debug")) {
     level = LogLevel.DEBUG
 }
 

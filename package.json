@@ -1,12 +1,13 @@
 {
-  "name": "f2e-server-3",
+  "name": "f2e-server",
   "version": "3.0.0-rc",
   "description": "f2e-server 3.0",
-  "main": "lib/index.js",
+  "main": "lib/src/index.js",
+  "typings": "lib/src/index.d.ts",
+  "module": "src/index.ts",
   "scripts": {
     "tsc": "tsc",
-    "test:node": "tsc && node ./lib/test",
-    "test": "bun run ./test"
+    "test": "tsc && node ./lib/test --debug"
   },
   "repository": {
     "type": "git",
@@ -19,9 +20,11 @@
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^20.12.7",
-    "marked": "^12.0.1"
+    "marked": "^12.0.1",
+    "typescript": "^5.4.5"
   },
   "dependencies": {
-    "mime": "^3.0.0"
+    "mime": "^3.0.0",
+    "uWebSockets.js": "github:uNetworking/uWebSockets.js#v20.43.0"
   }
 }

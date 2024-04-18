@@ -3,9 +3,10 @@ import path from "node:path"
 import fs from "node:fs/promises"
 import * as _ from "../utils/misc";
 import logger from "../utils/logger";
+import { createHash } from "node:crypto";
 
 const inputProvider: MemoryTree.BuildProvider = (options, store) => {
-    const { buildFilter, onSet, root } = options
+    const { buildFilter, onSet, root, with_hash, mimeTypes = {} } = options
     return async function build (pathname: string) {
         
         // 路径被过滤，直接返回
@@ -26,9 +27,18 @@ const inputProvider: MemoryTree.BuildProvider = (options, store) => {
             }
         }
         if (stat.isFile()) {
+            if (buildFilter && !buildFilter(pathname, stat.size)) {
+                return
+            }
             try {
-                const data = await fs.readFile(absolutePath, _.isText(pathname) ? 'utf-8' : undefined)
+                const data = await fs.readFile(absolutePath, _.isText(pathname, mimeTypes) ? 'utf-8' : undefined)
                 const result = await onSet(pathname, data, store)
+                if (with_hash && (Buffer.isBuffer(result.data) || typeof result.data === 'string')) {
+                    store.hashmap.set(result.originPath, {
+                        ...result,
+                        hash: createHash('md5').update(result.data).digest('hex')
+                    })
+                }
                 store._set(result.outputPath, result.data)
             } catch (e) {
                 logger.error(e)
