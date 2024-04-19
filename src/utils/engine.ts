@@ -1,5 +1,6 @@
 import * as UWS from 'uWebSockets.js'
 import logger from './logger'
+import meta from '../../package.json'
 
 /** 是否bunjs环境？ */
 const isBun = 'bun' in process.versions
@@ -25,3 +26,4 @@ if (!isBun) {
  * 服务运行环境是 uWebSockets.js, bunjs, 还是原生node
  */
 export const ENGINE_TYPE = isBun ? 'bun' : (uWS ? 'uws' : 'node')
+export const VERSION = `${meta.name} ${meta.version} [${ENGINE_TYPE}]`

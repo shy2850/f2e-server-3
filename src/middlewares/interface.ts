@@ -3,20 +3,34 @@ import { MemoryTree } from "../memory-tree";
 import { ConfigMode, F2EConfigResult } from "../interface";
 
 export interface MiddlewareEvents extends Partial<MemoryTree.Events> {
-    /** 请求解析前执行 */
+    /**
+     * 路由解析前执行
+     * @param pathname 格式化之后的路径，形如: api/user/list
+     * @param req      请求对象
+     * @param resp     响应对象
+     * @param conf     配置对象
+     */
     beforeRoute?: {
         (pathname: string, req: HttpRequest, resp: HttpResponse, conf?: F2EConfigResult): string | false | void | Promise<string | false | void>
     };
-    /** 请求解析后执行 */
+    /**
+     * 路由解析后执行
+     * @param pathname 格式化之后的路径，形如: api/user/list
+     * @param req      请求对象
+     * @param resp     响应对象
+     * @param store    中间件存储对象
+     * @param body     POST请求完成的body
+     */
     onRoute?: {
-        (pathname: string, req: HttpRequest, resp: HttpResponse, body?: Buffer, store?: MemoryTree.Store): string | false | void | Promise<string | false | void>
+        (pathname: string, req: HttpRequest, resp: HttpResponse, store: MemoryTree.Store, body?: Buffer): string | false | void | Promise<string | false | void>
     };
 }
 export interface MiddlewareResult extends MiddlewareEvents {
+    /** 该中间件可以在哪些mode下运行 */
     mode: ConfigMode[];
 }
 export interface MiddlewareCreater {
-    (conf: F2EConfigResult): MiddlewareResult;
+    (conf: F2EConfigResult): MiddlewareResult | undefined;
 }
 
 export interface MiddlewareReference {

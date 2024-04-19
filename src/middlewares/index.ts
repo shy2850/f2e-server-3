@@ -4,6 +4,7 @@ import logger from "../utils/logger";
 import { MiddlewareEvents, MiddlewareCreater, MiddlewareReference, MiddlewareResult } from "./interface";
 import { exit } from 'node:process';
 import * as _ from '../utils/misc';
+import middlewate_tryfiles from './try_files';
 
 export const combineMiddleware = (conf: F2EConfigResult, middlewares: (MiddlewareCreater | MiddlewareReference)[]): Required<MiddlewareEvents> => {
     const { mode } = conf
@@ -15,6 +16,9 @@ export const combineMiddleware = (conf: F2EConfigResult, middlewares: (Middlewar
     const buildFilters: Required<MiddlewareEvents>["buildFilter"][] = []
     const watchFilters: Required<MiddlewareEvents>["watchFilter"][] = []
     const outputFilters: Required<MiddlewareEvents>["outputFilter"][] = []
+
+    /** tryfiles 顺序需要在最后 */
+    middlewares.push(middlewate_tryfiles)
 
     for (let i = 0; i < middlewares.length; i++) {
         const m = middlewares[i];
@@ -32,6 +36,7 @@ export const combineMiddleware = (conf: F2EConfigResult, middlewares: (Middlewar
             middle = m(conf)
         }
         if (middle && middle.mode.includes(mode)) {
+            middle && logger.debug(`middleware loaded:`, middle)
             middle.beforeRoute && beforeRoutes.push(middle.beforeRoute)
             middle.onRoute && onRoutes.push(middle.onRoute)
             middle.buildWatcher && buildWatchers.push(middle.buildWatcher)
@@ -42,7 +47,6 @@ export const combineMiddleware = (conf: F2EConfigResult, middlewares: (Middlewar
             middle.outputFilter && outputFilters.push(middle.outputFilter)
         }
     }
-
     
     return {
         beforeRoute: async (pathname, req, resp, conf) => {
@@ -64,7 +68,6 @@ export const combineMiddleware = (conf: F2EConfigResult, middlewares: (Middlewar
             }
         },
         buildWatcher: (pathname, eventType, build, store) => {
-            logger.debug(`${eventType}: ${pathname}`)
             buildWatchers.map(item => item(pathname, eventType, build, store))
         },
         onSet: async (pathname, data, store) => {

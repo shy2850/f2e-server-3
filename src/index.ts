@@ -39,10 +39,10 @@ const createServer = async (options: F2EConfig) => {
 
     const events = getConfigEvents(options)
     const { buildFilter, watchFilter, outputFilter, onGet, onSet, buildWatcher } = events
-    const memoryTree = createMemoryTree({
+    const memoryTree = createMemoryTree(mode === 'dev' ? {
         root, watch, namehash, dest,
         buildFilter, watchFilter, outputFilter, onGet, onSet, buildWatcher
-    })
+    } : { root }); // prod模式下，不加载任何中间件
     await memoryTree.input("")
 
     const app = ssl ? SSLApp(ssl) : App()

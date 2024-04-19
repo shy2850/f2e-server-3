@@ -43,7 +43,6 @@ const inputProvider: MemoryTree.BuildProvider = (options, store) => {
                         result.outputPath = outputPath
                         outputPath = _.pathname_fixer(outputPath.split(/[!#*?=]+/)[0])
                     }
-                    logger.debug(`${pathname} -> ${result.outputPath}`)
                 }
                 store.origin_map.set(result.originPath, result)
                 store.output_map.set(outputPath, result)

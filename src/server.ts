@@ -11,7 +11,7 @@ export const server_all = (conf: F2EConfigResult, events: Required<MiddlewareEve
     const { onRoute, beforeRoute } = events
     const { handleDirectory, handleNotFound, handleSuccess, handleError } = createResponseHelper(conf)
     const execute = async (pathname: string, req: HttpRequest, resp: HttpResponse, body?: Buffer) => {
-        const routeResult = await onRoute(pathname, req, resp, body, memory.store)
+        const routeResult = await onRoute(pathname, req, resp, memory.store, body)
         if (routeResult === false) {
             return
         } else if (typeof routeResult === 'string') {

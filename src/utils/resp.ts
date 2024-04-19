@@ -4,7 +4,7 @@ import { createHash } from "node:crypto"
 import * as _ from './misc'
 import * as zlib from "node:zlib"
 import logger from "./logger"
-import { ENGINE_TYPE } from "../server-engine"
+import engine, { ENGINE_TYPE } from "../server-engine"
 
 const gzipSync = ENGINE_TYPE === 'bun' ? Bun.gzipSync : zlib.gzipSync
 
@@ -46,12 +46,12 @@ export const createResponseHelper = (conf: F2EConfigResult) => {
         })
     }
     const handleSuccess = (req: HttpRequest, resp: HttpResponse, pathname: string, data: string | Buffer ) => {
-        const tag = req.getHeader('if-none-match')
+        const tag = engine.getHeader('if-none-match', req)
         const newTag = data && etag(data)
         const txt = _.isText(pathname, mimeTypes)
         const gz = txt && gzip && gzip_filter(pathname, data?.length)
         const type = _.getMimeType(pathname, mimeTypes) + (txt ? '; charset=utf-8' : '')
-        const range = req.getHeader('range')
+        const range = engine.getHeader('range', req)
 
         if (tag && data && tag === newTag) {
             resp.cork(() => {

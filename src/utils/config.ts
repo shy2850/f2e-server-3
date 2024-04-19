@@ -4,6 +4,7 @@ import * as path from 'node:path'
 import * as fs from 'node:fs'
 import { MiddlewareCreater } from "../middlewares/interface";
 import { combineMiddleware } from "../middlewares";
+import { VERSION } from "./engine";
 
 let F2E_CONFIG_PATH = ''
 const F2E_CONFIG = '.f2econfig.js'
@@ -22,22 +23,23 @@ const getConfig = (conf: F2EConfig = {}) => {
 /** 保留基础配置 */
 export const getConfigResult = function (conf: F2EConfig = {}) {
     conf = getConfig(conf)
+    const mode = conf.mode || "prod"
     const config: F2EConfigResult = {
-        mode: conf.mode || "prod",
+        mode,
         port: conf.port || 2850,
         host: conf.host || '0.0.0.0',
         root: conf.root || process.cwd(),
         ssl: conf.ssl || false,
         gzip: conf.gzip || false,
         gzip_filter: conf.gzip_filter || function (pathname, size) { return _.isText(pathname, config.mimeTypes) && size > 4096; },
-        watch: typeof conf.watch === 'boolean' ? conf.watch : conf.mode === 'dev',
+        watch: typeof conf.watch === 'boolean' ? conf.watch : mode === 'dev',
         beforeResponseEnd: function (resp, req) {
             if (conf.beforeResponseEnd) {
                 conf.beforeResponseEnd(resp, req);
             }
-            resp.writeHeader("X-Powered-By", _.VERSION);
+            resp.writeHeader("X-Powered-By", VERSION);
         },
-        try_files: "index.html",
+        try_files: conf.try_files || false,
         onServerCreate: conf.onServerCreate || function (server) { return server; },
         namehash: {
             entries: ['index\\.html$'],

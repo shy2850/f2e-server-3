@@ -10,6 +10,7 @@ const config = {
     port: 2850,
     mode: 'dev',
     gzip: true,
+    try_files: 'test/index.html',
     gzip_filter: () => true,
     buildFilter: (pathname) => {
         return /^(src|index|test|README|package|$)/.test(pathname)

@@ -16,7 +16,7 @@ export class BunRequest implements HttpRequest {
         return [...this.searchParams][index]?.join('=')
     }
     getUrl(): string {
-        return new URL(this.req.url, 'http://localhost').pathname;
+        return new URL(this.req.url).pathname;
     }
     getMethod(): string {
         return this.getCaseSensitiveMethod().toUpperCase();

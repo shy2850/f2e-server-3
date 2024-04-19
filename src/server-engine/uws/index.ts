@@ -3,7 +3,14 @@ import { uWS } from '../../utils/engine'
 
 export const App = uWS?.App
 export const SSLApp = uWS?.SSLApp
+
+const headers_map = new WeakMap<HttpRequest, Record<string, string>>()
 export const parseBody = async (req: HttpRequest, resp: HttpResponse) => {
+    let headers: Record<string, string> = {}
+    req.forEach(function (name, value) {
+        headers[name] = value
+    })
+    headers_map.set(req, headers)
     return new Promise<Buffer>(function (resolve, reject) {
         const buffers: Buffer[] = []
         resp.onData(function (chunk, isLast) {
@@ -16,4 +23,10 @@ export const parseBody = async (req: HttpRequest, resp: HttpResponse) => {
             reject(new Error('Request aborted'))
         })
     })
+}
+
+// uWS.HttpRequest must not be accessed after await or route handler return.
+export const getHeader = (name: string, req: HttpRequest) => {
+    const headers = headers_map.get(req) || {}
+    return headers[name]
 }

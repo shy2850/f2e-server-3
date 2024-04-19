@@ -1,13 +1,14 @@
-import { ENGINE_TYPE } from "../server-engine"
 import logger from "./logger"
-import meta from '../../package.json'
+import mime from "mime"
 
 export const REG_FILENAME = /[^\\/,\s\t\n]+/g
-export const VERSION = `${meta.name} ${meta.version} [${ENGINE_TYPE}]`
 export const pathname_arr = (str = ''): string[] => (str.match(REG_FILENAME) || [])
 export const pathname_fixer = (str = '') => pathname_arr(str).join('/')
 export const pathname_dirname = (str = '') => (str.match(REG_FILENAME) || []).slice(0, -1).join('/')
-import mime from "mime"
+export const minimatch = (str = '', pattern = '') => {
+    const reg = new RegExp(pattern.replace(/\./g, '\\\\.').replace(/\*/g, '.*'))
+    return reg.test(str)
+}
 
 export const getMimeType = (pathname: string, mimeTypes: { [key: string]: string }) => {
     const suffix = (pathname || '').split('.').pop()  || ''
