@@ -12,7 +12,7 @@ export class NativeTemplatedApp implements TemplatedApp {
         const listeners = this.listeners;
         this.server = options ? https.createServer() : http.createServer(async (request, response) => {
             const req = new NativeRequest(request)
-            const resp = new NativeResponse()
+            const resp = new NativeResponse(response)
             const location = new URL(request.url || '/', 'http://localhost')
             for (let i = 0; i < listeners.length; i++) {
                 const { glob, handler } = listeners[i];
@@ -20,8 +20,6 @@ export class NativeTemplatedApp implements TemplatedApp {
                     await handler(resp, req)
                 }
             }
-            response.writeHead(resp.status, resp.statusText, resp.headers)
-            response.end(resp.body)
         })
     }
     listen(host: RecognizedString, port: number, cb: (listenSocket: false | us_listen_socket) => void | Promise<void>): TemplatedApp;

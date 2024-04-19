@@ -1,11 +1,11 @@
+import { ServerResponse } from 'http'
 import { HttpResponse, RecognizedString, us_socket_context_t } from 'uWebSockets.js'
 
 export class NativeResponse implements HttpResponse {
-    [key: string]: any
-    status = 200
-    statusText = 'OK'
-    headers: Record<string, string> = {}
-    body: RecognizedString = ''
+    response: ServerResponse
+    constructor (response: ServerResponse) {
+        this.response = response
+    }
     pause(): void {
         throw new Error('Method not implemented.');
     }
@@ -14,37 +14,29 @@ export class NativeResponse implements HttpResponse {
     }
     writeStatus(status: RecognizedString): HttpResponse {
         const [statusCode, ...statusText] = status.toString().split(/\s+/);
-        this.status = Number(statusCode)
-        this.statusText = statusText?.join('')
+        this.response.writeHead(Number(statusCode), statusText.join(' '))
         return this;
     }
     writeHeader(key: RecognizedString, value: RecognizedString): HttpResponse {
-        this.headers[key.toString()] = value.toString()
+        this.response.setHeader(key.toString(), value.toString())
         return this
     }
     write(chunk: RecognizedString): boolean {
-        if (Buffer.isBuffer(chunk)) {
-            this.body = Buffer.concat([Buffer.from(this.body?.toString()), chunk])
-        } else {
-            this.body += chunk.toString()
-        }
-        return true
+        return this.response.write(chunk)
     }
     end(body?: RecognizedString | undefined, closeConnection?: boolean | undefined): HttpResponse {
-        if (body) {
-            this.body = body;
-        }
+        this.response.end(body)
         return this
     }
     endWithoutBody(reportedContentLength?: number | undefined, closeConnection?: boolean | undefined): HttpResponse {
-        this.body = '';
-        return this
+        return this.end(undefined, closeConnection)
     }
     tryEnd(fullBodyOrChunk: RecognizedString, totalSize: number): [boolean, boolean] {
         throw new Error('Method not implemented.');
     }
     close(): HttpResponse {
-        throw new Error('Method not implemented.');
+        this.response.destroy();
+        return this
     }
     getWriteOffset(): number {
         throw new Error('Method not implemented.');
@@ -53,7 +45,8 @@ export class NativeResponse implements HttpResponse {
         throw new Error('Method not implemented.');
     }
     onAborted(handler: () => void): HttpResponse {
-        throw new Error('Method not implemented.');
+        this.response.addListener('close', handler)
+        return this
     }
     onData(handler: (chunk: ArrayBuffer, isLast: boolean) => void): HttpResponse {
         throw new Error('Method not implemented.')

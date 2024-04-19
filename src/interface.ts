@@ -1,6 +1,8 @@
 import { AppOptions, HttpRequest, HttpResponse, TemplatedApp } from 'uWebSockets.js'
 import { MiddlewareCreater, MiddlewareEvents, MiddlewareReference } from './middlewares/interface';
 import { MemoryTree } from './memory-tree';
+import { TryFilesItem } from './middlewares/try_files/interface';
+import { LiveReloadConfig } from './middlewares/livereload/interface';
 
 export type ConfigMode = "dev" | "build" | "prod";
 
@@ -35,20 +37,10 @@ export interface ServerConfig {
      * @return {boolean}
      */
     gzip_filter?: (pathname: string, size: number) => boolean;
-    
-
     /**
      * 响应结束前执行： 可用于设置响应头等操作
     */
     beforeResponseEnd?: { (resp: HttpResponse, req?: HttpRequest): void };
-    /**
-     * 参考Nginx配置 `try_files` 而产生的功能 (`querystring`已经解析到`req.data`中)
-     * 1. 类型为`string`时, 所有未能找到资源的情况都转发到这个 `pathname`
-     * 2. 类型为`{test, exec}[]`, 依次循环匹配`test`, 进行转发
-     * @default false
-     * @suggest "index.html"
-     */
-    try_files?: false | string | string[] | TryFilesItem[];
     /**
      * 基础服务启动后执行
     */
@@ -64,6 +56,26 @@ export interface ServerConfig {
     page_50x?: string;
     /** 未设置try_files展示目录页面 */
     page_dir?: string | false;
+
+
+    /**
+     * 中间件 try_files 配置
+     * 参考Nginx配置 `try_files` 而产生的功能 (`querystring`已经解析到`req.data`中)
+     * 1. 类型为`string`时, 所有未能找到资源的情况都转发到这个 `pathname`
+     * 2. 类型为`{test, exec}[]`, 依次循环匹配`test`, 进行转发
+     * @default false
+     * @suggest "index.html"
+     */
+    try_files?: false | string | string[] | TryFilesItem[];
+    /**
+     * 中间件 livereload 配置
+     * @default false 
+     * mode = 'dev' 时： livereload = {
+            prefix: 'server-sent-bit',
+            heartBeatTimeout: 100000
+        }
+    */
+    livereload?: false | LiveReloadConfig;
 }
 export interface F2EConfig extends ServerConfig, Partial<MemoryTree.Options>, Partial<MiddlewareEvents> {
     /** 
@@ -78,19 +90,6 @@ export interface F2EConfig extends ServerConfig, Partial<MemoryTree.Options>, Pa
 
 }
 
-/**
- * 参考Nginx配置 `try_files` 而产生的功能 (`querystring`已经解析到`req.data`中)
- * 1. 类型为`string`时, 所有未能找到资源的情况都转发到这个 `pathname`
- * 2. 类型为`{test, exec}[]`, 依次循环匹配`test`, 进行转发
- * @suggest "index.html"
- */
-export type TryFilesItem = {
-    test: RegExp,
-    replacer?: string | { (m: string, ...args: any[]): string },
-} & (
-    { index: string | { (pathname: string, req: HttpRequest, resp: HttpResponse, store: MemoryTree.Store): string } }
-    | { location: string | { (pathname: string, req: HttpRequest, resp: HttpResponse, store: MemoryTree.Store): string } }
-)
 
 /** 通过计算得到配置 */
 export type F2EConfigResult = Omit<Required<F2EConfig>, keyof MiddlewareEvents | 'middlewares'>

@@ -39,7 +39,6 @@ export const getConfigResult = function (conf: F2EConfig = {}) {
             }
             resp.writeHeader("X-Powered-By", VERSION);
         },
-        try_files: conf.try_files || false,
         onServerCreate: conf.onServerCreate || function (server) { return server; },
         namehash: {
             entries: ['index\\.html$'],
@@ -53,6 +52,10 @@ export const getConfigResult = function (conf: F2EConfig = {}) {
         page_404: conf.page_404 || `<h2 style="text-align: center"> 404: <small>{{pathname}}</small> is gone!</h2>`,
         page_50x: conf.page_50x || `<h2 style="text-align: center"> 500: ServerError </h2> <pre><code>{{error}}</code></pre>`,
         page_dir: conf.page_dir || `<ul><li><a href="/{{pathname}}">..</a></li>{{each files}}<li><a href="/{{path}}">{{name}}</a></li>{{/each}}</ul>`,
+
+        // 以下为内置中间件相关配置
+        try_files: conf.try_files || false,
+        livereload: conf.livereload || (mode === 'dev' && { prefix: 'server-sent-bit', heartBeatTimeout: 100000 }) || false,
     }
     return config;
 }

@@ -1,7 +1,6 @@
-import { TryFilesItem } from "../../interface";
 import { MiddlewareCreater } from "../interface";
 import * as _ from '../../utils/misc'
-import logger from "../../utils/logger";
+import { TryFilesItem } from "./interface";
 
 const middleware_tryfiles: MiddlewareCreater = (conf) => {
     const { try_files } = conf
