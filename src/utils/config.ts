@@ -23,21 +23,22 @@ const getConfig = (conf: F2EConfig = {}) => {
 export const getConfigResult = function (conf: F2EConfig = {}) {
     conf = getConfig(conf)
     const config: F2EConfigResult = {
-        mode: conf.mode || "dev",
+        mode: conf.mode || "prod",
         port: conf.port || 2850,
         host: conf.host || '0.0.0.0',
         root: conf.root || process.cwd(),
         ssl: conf.ssl || false,
         gzip: conf.gzip || false,
-        gzip_filter: conf.gzip_filter || function (pathname, size) { return _.isText(pathname, config.mimeTypes) && size > 4096 },
+        gzip_filter: conf.gzip_filter || function (pathname, size) { return _.isText(pathname, config.mimeTypes) && size > 4096; },
+        watch: typeof conf.watch === 'boolean' ? conf.watch : conf.mode === 'dev',
         beforeResponseEnd: function (resp, req) {
             if (conf.beforeResponseEnd) {
-                conf.beforeResponseEnd(resp, req)
+                conf.beforeResponseEnd(resp, req);
             }
-            resp.writeHeader("X-Powered-By", _.VERSION)
+            resp.writeHeader("X-Powered-By", _.VERSION);
         },
         try_files: "index.html",
-        onServerCreate: conf.onServerCreate || function (server) { return server },
+        onServerCreate: conf.onServerCreate || function (server) { return server; },
         namehash: {
             entries: ['index\\.html$'],
             searchValue: ['\\s(?:src)="([^"]*?)"', '\\s(?:href)="([^"]*?)"'],
@@ -45,8 +46,7 @@ export const getConfigResult = function (conf: F2EConfig = {}) {
             ...(conf.namehash || {})
         },
         mimeTypes: conf.mimeTypes || {},
-        output: conf.output || path.join(process.cwd(), './output'),
-
+        dest: conf.dest || path.join(process.cwd(), './output'),
         range_size: conf.range_size || 1024 * 1024 * 10,
         page_404: conf.page_404 || `<h2 style="text-align: center"> 404: <small>{{pathname}}</small> is gone!</h2>`,
         page_50x: conf.page_50x || `<h2 style="text-align: center"> 500: ServerError </h2> <pre><code>{{error}}</code></pre>`,

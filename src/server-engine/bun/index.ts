@@ -2,11 +2,12 @@ import type { Server } from 'bun';
 import { AppOptions, HttpRequest, HttpResponse, ListenOptions, RecognizedString, TemplatedApp, WebSocketBehavior, us_listen_socket } from 'uWebSockets.js'
 import { BunRequest } from './request';
 import { BunResponse } from './response';
+import { minimatch } from 'minimatch';
 
 class BunTemplatedApp implements TemplatedApp {
     private tls?: AppOptions;
     private server?: Server;
-    private listeners: { glob: RegExp, handler: (res: HttpResponse, req: HttpRequest) => void | Promise<void> }[] = [];
+    private listeners: { glob: string, handler: (res: HttpResponse, req: HttpRequest) => void | Promise<void> }[] = [];
     constructor(options?: AppOptions) {
         this.tls = options
     }
@@ -37,7 +38,7 @@ class BunTemplatedApp implements TemplatedApp {
                 const location = new URL(request.url, 'http://localhost')
                 for (let i = 0; i < listeners.length; i++) {
                     const { glob, handler } = listeners[i];
-                    if (glob.test(location.pathname)) {
+                    if (minimatch(location.pathname, glob)) {
                         await handler(resp, req)
                     }
                 }
@@ -82,7 +83,7 @@ class BunTemplatedApp implements TemplatedApp {
     }
     any(pattern: RecognizedString, handler: (res: HttpResponse, req: HttpRequest) => void | Promise<void>): TemplatedApp {
         this.listeners.push({
-            glob: new RegExp(pattern.toString().replace(/\./g, '\\.').replace(/\*/g, '.*').replace(/\?/g, '.')),
+            glob: pattern.toString(),
             handler,
         })
         return this

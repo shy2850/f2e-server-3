@@ -12,10 +12,10 @@ export * from "./interface"
 const { App, SSLApp } = engine
 
 export const createBuilder = async (options: F2EConfig) => {
-    const { root, output, namehash } = getConfigResult(options)
+    const { root, watch, namehash, dest } = getConfigResult(options)
     const { buildFilter, watchFilter, outputFilter, onGet, onSet, buildWatcher } = getConfigEvents(options)
     const memoryTree = createMemoryTree({
-        root, dest: output, watch: false, with_hash: !!namehash,
+        root, dest: dest, watch, namehash,
         buildFilter, watchFilter, outputFilter, onGet, onSet, buildWatcher
     })
     try {
@@ -31,7 +31,7 @@ export const createBuilder = async (options: F2EConfig) => {
 
 const createServer = async (options: F2EConfig) => {
     const conf = getConfigResult(options)
-    const { root, mode, namehash, port, host, ssl, onServerCreate } = conf
+    const { root, watch, dest, mode, namehash, port, host, ssl, onServerCreate } = conf
     if (mode === 'build') {
         createBuilder(options)
         return
@@ -40,7 +40,7 @@ const createServer = async (options: F2EConfig) => {
     const events = getConfigEvents(options)
     const { buildFilter, watchFilter, outputFilter, onGet, onSet, buildWatcher } = events
     const memoryTree = createMemoryTree({
-        root, watch: mode === 'dev', with_hash: !!namehash,
+        root, watch, namehash, dest,
         buildFilter, watchFilter, outputFilter, onGet, onSet, buildWatcher
     })
     await memoryTree.input("")

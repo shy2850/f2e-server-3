@@ -6,7 +6,7 @@ import logger from "../utils/logger";
 import { createHash } from "node:crypto";
 
 const inputProvider: MemoryTree.BuildProvider = (options, store) => {
-    const { buildFilter, onSet, root, with_hash, mimeTypes = {} } = options
+    const { buildFilter, onSet, root, namehash, mimeTypes = {} } = options
     return async function build (pathname: string) {
         
         // 路径被过滤，直接返回
@@ -33,13 +33,21 @@ const inputProvider: MemoryTree.BuildProvider = (options, store) => {
             try {
                 const data = await fs.readFile(absolutePath, _.isText(pathname, mimeTypes) ? 'utf-8' : undefined)
                 const result = await onSet(pathname, data, store)
-                if (with_hash && (Buffer.isBuffer(result.data) || typeof result.data === 'string')) {
-                    store.hashmap.set(result.originPath, {
-                        ...result,
-                        hash: createHash('md5').update(result.data).digest('hex')
-                    })
+                let outputPath = _.pathname_fixer(result.outputPath || pathname)
+                result.outputPath = outputPath
+                if (namehash && (Buffer.isBuffer(result.data) || typeof result.data === 'string')) {
+                    const hash = createHash('md5').update(result.data).digest('hex')
+                    result.hash = hash
+                    if (namehash.replacer) {
+                        outputPath = namehash.replacer(outputPath, hash) || outputPath
+                        result.outputPath = outputPath
+                        outputPath = _.pathname_fixer(outputPath.split(/[!#*?=]+/)[0])
+                    }
+                    logger.debug(`${pathname} -> ${result.outputPath}`)
                 }
-                store._set(result.outputPath, result.data)
+                store.origin_map.set(result.originPath, result)
+                store.output_map.set(outputPath, result)
+                store._set(outputPath, result.data)
             } catch (e) {
                 logger.error(e)
             }

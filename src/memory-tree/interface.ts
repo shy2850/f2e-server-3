@@ -7,7 +7,10 @@ export namespace MemoryTree {
         (options: Options, store: Store): Build
     }
     export interface Store {
-        hashmap: Map<string, SetResult>
+        /** 原始资源映射 */
+        origin_map: Map<string, SetResult>
+        /** 结果资源映射 */
+        output_map: Map<string, SetResult>
         _set: {
             (path: string, data: DataBuffer): void
         }
@@ -55,10 +58,10 @@ export namespace MemoryTree {
         data: DataBuffer;
         /** 数据MD5摘要 */
         hash?: string;
-        /** 资源输出路径，资源原始根路径的相对路径： a/b/c */
-        outputPath: string;
         /** 资源原始路径，资源输出根路径的相对路径： a/b/c */
         originPath: string;
+        /** 资源输出路径，资源原始根路径的相对路径： a/b/c, 根据namehash 配置可能携带hash信息如： static/index.js?123456 */
+        outputPath: string;
     }
     /** 构建配置 */
     export interface Options extends Events {
@@ -68,8 +71,8 @@ export namespace MemoryTree {
         dest?: string
         /** 监听文件修改并输出 */
         watch?: boolean
-        /** 是否计算资源hash */
-        with_hash?: boolean
+        /** 是否计算资源hash并修改文件名 */
+        namehash?: HashReplacerOptions
         /** 映射文件后缀名到指定MIME */
         mimeTypes?: { [key: string]: string }
     }
@@ -78,4 +81,34 @@ export namespace MemoryTree {
         input: MemoryTree.Build,
         output: MemoryTree.Build
     }
+}
+
+/**
+ * 资源引用修改名称
+ * @default 
+     {
+        entries: ['*index\\.html$'],
+        searchValue: ['\\s(?:src)="([^"]*?)"', '\\s(?:href)="([^"]*?)"'],
+        replacer: (output, hash) => `/${output}?${hash}`
+    }
+ */
+export interface HashReplacerOptions {
+    /**
+     * 要处理的入口文件 正则字符串
+     * @default ["index\\.html$"]
+    */
+    entries?: string[]
+    /**
+     * 替换src的正则
+     * @default ['\\s(?:=href|src)="([^"]*?)"']
+     */
+    searchValue?: string[]
+    /**
+     * 默认返回 `${output}?${hash}`
+     * @param output 替换后的文件名
+     * @param hash 文件摘要md5
+     * @returns 字符串
+     *
+     */
+    replacer?: (output: string, hash?: string) => string
 }

@@ -3,9 +3,10 @@ import { NativeRequest } from './request';
 import { NativeResponse } from './response';
 import * as http from 'node:http'
 import * as https from 'node:https'
+import { minimatch } from 'minimatch';
 
 class NativeTemplatedApp implements TemplatedApp {
-    private listeners: { glob: RegExp, handler: (res: HttpResponse, req: HttpRequest) => void | Promise<void> }[] = [];
+    private listeners: { glob: string, handler: (res: HttpResponse, req: HttpRequest) => void | Promise<void> }[] = [];
     server: https.Server<typeof http.IncomingMessage, typeof http.ServerResponse> | http.Server<typeof http.IncomingMessage, typeof http.ServerResponse>;
     constructor(options?: AppOptions) {
         const listeners = this.listeners;
@@ -15,7 +16,7 @@ class NativeTemplatedApp implements TemplatedApp {
             const location = new URL(request.url || '/', 'http://localhost')
             for (let i = 0; i < listeners.length; i++) {
                 const { glob, handler } = listeners[i];
-                if (glob.test(location.pathname)) {
+                if (minimatch(location.pathname, glob)) {
                     await handler(resp, req)
                 }
             }
@@ -69,7 +70,7 @@ class NativeTemplatedApp implements TemplatedApp {
     }
     any(pattern: RecognizedString, handler: (res: HttpResponse, req: HttpRequest) => void | Promise<void>): TemplatedApp {
         this.listeners.push({
-            glob: new RegExp(pattern.toString().replace(/\./g, '\\.').replace(/\*/g, '.*').replace(/\?/g, '.')),
+            glob: pattern.toString(),
             handler,
         })
         return this

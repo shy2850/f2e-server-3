@@ -9,9 +9,7 @@ import { exit } from "node:process";
 // run_get_config();
 // run_memory_tree();
 
-createServer({
-    port: 3000
-}).then((app) => {
+createServer({}).then((app) => {
     app?.get("/exit", (res, req) => {
         res.cork(() => {
             logger.info("Exit Server!");

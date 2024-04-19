@@ -1,5 +1,6 @@
 import { AppOptions, HttpRequest, HttpResponse, TemplatedApp } from 'uWebSockets.js'
 import { MiddlewareCreater, MiddlewareEvents, MiddlewareReference } from './middlewares/interface';
+import { MemoryTree } from './memory-tree';
 
 export type ConfigMode = "dev" | "build" | "prod";
 
@@ -44,7 +45,7 @@ export interface ServerConfig {
      * 参考Nginx配置 `try_files` 而产生的功能 (`querystring`已经解析到`req.data`中)
      * 1. 类型为`string`时, 所有未能找到资源的情况都转发到这个 `pathname`
      * 2. 类型为`{test, exec}[]`, 依次循环匹配`test`, 进行转发
-     * @default "index.html"
+     * @suggest "index.html"
      */
     try_files?: string | TryFilesItem[];
     /**
@@ -63,32 +64,25 @@ export interface ServerConfig {
     /** 未设置try_files展示目录页面 */
     page_dir?: string | false;
 }
-export interface F2EConfig extends ServerConfig, Partial<MiddlewareEvents> {
+export interface F2EConfig extends ServerConfig, Partial<MemoryTree.Options>, Partial<MiddlewareEvents> {
     /** 
-     * dev模式下 开启服务器，开启资源动态编译，开启监听文件修改刷新页面 【默认：dev模式】
+     * dev模式下 开启服务器，开启资源动态编译，开启监听文件修改刷新页面 
      * build模式下 关闭服务器，开启资源动态编译并压缩
-     * prod模式下 开启服务器，开启服务器资源缓存，关闭编译 
+     * prod模式下 开启服务器，开启服务器资源缓存，关闭编译 【默认：prod模式】
     */
     mode?: ConfigMode;
-
-    /**
-     * 资源引用修改名称
-     * @default 
-      {
-            entries: ['index\\.html$'],
-            searchValue: ['\\s(?:src)="([^"]*?)"', '\\s(?:href)="([^"]*?)"'],
-            replacer: (output, hash) => `/${output}?${hash}`
-        }
-     */
-    namehash?: HashReplacerOptions | false;
-    /** build 模式下资源输出路径 */
-    output?: string;
     
     /** 中间件配置支持函数式或引用式 */
     middlewares?: (MiddlewareCreater | MiddlewareReference)[];
 
 }
 
+/**
+ * 参考Nginx配置 `try_files` 而产生的功能 (`querystring`已经解析到`req.data`中)
+ * 1. 类型为`string`时, 所有未能找到资源的情况都转发到这个 `pathname`
+ * 2. 类型为`{test, exec}[]`, 依次循环匹配`test`, 进行转发
+ * @suggest "index.html"
+ */
 export type TryFilesItem = {
     test: RegExp,
     replacer?: string | { (m: string, ...args: any[]): string },
@@ -96,28 +90,6 @@ export type TryFilesItem = {
     { index: string | { (pathname: string, req: HttpRequest, resp: HttpResponse): string } }
     | { location: string | { (pathname: string, req: HttpRequest, resp: HttpResponse): string } }
 )
-
-/** namehash 插件配置 */
-export interface HashReplacerOptions {
-    /**
-     * 要处理的入口文件
-     * @default ["index\\.html$"]
-    */
-    entries?: string[]
-    /**
-     * 替换src的正则
-     * @default ['\\s(?:=href|src)="([^"]*?)"']
-     */
-    searchValue?: string[]
-    /**
-     * 默认返回 `${output}?${hash}`
-     * @param output 替换后的文件名
-     * @param hash 文件摘要md5
-     * @returns 字符串
-     *
-     */
-    replacer?: (output: string, hash?: string) => string
-}
 
 /** 通过计算得到配置 */
 export type F2EConfigResult = Omit<Required<F2EConfig>, keyof MiddlewareEvents | 'middlewares'>

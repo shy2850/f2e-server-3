@@ -7,6 +7,7 @@ let i = 1;
  * @type {import('.').F2EConfig}
  */
 const config = {
+    port: 2850,
     mode: 'dev',
     gzip: true,
     gzip_filter: () => true,
