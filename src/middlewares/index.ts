@@ -4,7 +4,8 @@ import logger from "../utils/logger";
 import { MiddlewareEvents, MiddlewareCreater, MiddlewareReference, MiddlewareResult } from "./interface";
 import { exit } from 'node:process';
 import * as _ from '../utils/misc';
-import middlewate_tryfiles from './try_files';
+import middleware_livereload from './livereload';
+import middleware_tryfiles from './try_files';
 
 export const combineMiddleware = (conf: F2EConfigResult, middlewares: (MiddlewareCreater | MiddlewareReference)[]): Required<MiddlewareEvents> => {
     const { mode } = conf
@@ -17,8 +18,10 @@ export const combineMiddleware = (conf: F2EConfigResult, middlewares: (Middlewar
     const watchFilters: Required<MiddlewareEvents>["watchFilter"][] = []
     const outputFilters: Required<MiddlewareEvents>["outputFilter"][] = []
 
+    /** 开始内置中间件加载 */
+    middlewares.push(middleware_livereload)
     /** tryfiles 顺序需要在最后 */
-    middlewares.push(middlewate_tryfiles)
+    // middlewares.push(middleware_tryfiles)
 
     for (let i = 0; i < middlewares.length; i++) {
         const m = middlewares[i];
@@ -27,6 +30,9 @@ export const combineMiddleware = (conf: F2EConfigResult, middlewares: (Middlewar
             const middlewareName = `f2e-middle-${m.middleware}`
             try {
                 middle = require(middlewareName)(conf, m.options)
+                if (middle) {
+                    middle.name = m.middleware
+                }
             } catch (e) {
                 logger.error(e)
                 exit(1)
@@ -36,7 +42,6 @@ export const combineMiddleware = (conf: F2EConfigResult, middlewares: (Middlewar
             middle = m(conf)
         }
         if (middle && middle.mode.includes(mode)) {
-            middle && logger.debug(`middleware loaded:`, middle)
             middle.beforeRoute && beforeRoutes.push(middle.beforeRoute)
             middle.onRoute && onRoutes.push(middle.onRoute)
             middle.buildWatcher && buildWatchers.push(middle.buildWatcher)
@@ -49,23 +54,33 @@ export const combineMiddleware = (conf: F2EConfigResult, middlewares: (Middlewar
     }
     
     return {
-        beforeRoute: async (pathname, req, resp, conf) => {
+        beforeRoute: async (pathname, req, resp) => {
+            let _pathname = pathname
             for (let i = 0; i < beforeRoutes.length; i++) {
                 // beforeRoute 返回 false 停止继续
-                let res = await Promise.resolve(beforeRoutes[i](pathname, req, resp, conf))
-                if (typeof res !== 'undefined') {
+                let res = await beforeRoutes[i](pathname, req, resp)
+                if (res === false) {
                     return res
                 }
+                if (typeof res === 'string') {
+                    _pathname = res
+                }
             }
+            return _pathname
         },
-        onRoute: async (pathname, req, resp, body, memory) => {
+        onRoute: async (pathname, req, resp, store, body) => {
+            let _pathname = pathname
             for (let i = 0; i < onRoutes.length; i++) {
                 // onRoute 返回 false 停止继续
-                let res = await Promise.resolve(onRoutes[i](pathname, req, resp, body, memory))
-                if (typeof res !== 'undefined') {
-                    return res
+                let res = await onRoutes[i](_pathname, req, resp, store, body)
+                if (res === false) {
+                    return false
+                }
+                if (typeof res === 'string') {
+                    _pathname = res
                 }
             }
+            return _pathname
         },
         buildWatcher: (pathname, eventType, build, store) => {
             buildWatchers.map(item => item(pathname, eventType, build, store))
@@ -73,7 +88,7 @@ export const combineMiddleware = (conf: F2EConfigResult, middlewares: (Middlewar
         onSet: async (pathname, data, store) => {
             let temp: MemoryTree.SetResult = { data, originPath: pathname, outputPath: pathname }
             for (let i = 0; i < onSets.length; i++) {
-                let { data, outputPath } = await Promise.resolve(onSets[i](temp.outputPath, temp.data, store))
+                let { data, outputPath } = await onSets[i](temp.outputPath, temp.data, store)
                 Object.assign(temp, {
                     data, outputPath
                 })
@@ -83,7 +98,7 @@ export const combineMiddleware = (conf: F2EConfigResult, middlewares: (Middlewar
         onGet: async (pathname, data, store) => {
             let temp = data
             for (let i = 0; i < onGets.length; i++) {
-                let res = await Promise.resolve(onGets[i](pathname, temp || data, store))
+                let res = await onGets[i](pathname, temp || data, store)
                 temp = res || temp
             }
             return temp

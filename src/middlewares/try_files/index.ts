@@ -28,6 +28,7 @@ const middleware_tryfiles: MiddlewareCreater = (conf) => {
         })
     }
     return {
+        name: 'try_files',
         mode: ['dev', 'prod'],
         onRoute: async (pathname, req, resp, store) => {
             for (let i = 0; i < tries.length; i++) {
@@ -40,10 +41,10 @@ const middleware_tryfiles: MiddlewareCreater = (conf) => {
                     } else if (item.replacer instanceof Function) {
                         p = pathname.replace(item.test, item.replacer)
                     }
-                    let data = store._get(p)
+                    let data = store?._get(p)
                     if (_.isPlainObject(data) && 'index' in item) {
                         p += '/' + item.index
-                        data = store._get(p)
+                        data = store?._get(p)
                     }
                     if (typeof data !== 'undefined') {
                         return p

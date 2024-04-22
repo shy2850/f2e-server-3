@@ -55,7 +55,7 @@ export const getConfigResult = function (conf: F2EConfig = {}) {
 
         // 以下为内置中间件相关配置
         try_files: conf.try_files || false,
-        livereload: conf.livereload || (mode === 'dev' && { prefix: 'server-sent-bit', heartBeatTimeout: 100000 }) || false,
+        livereload: conf.livereload || (mode === 'dev' && {}) || false,
     }
     return config;
 }
@@ -66,6 +66,7 @@ export const getConfigEvents = (conf: F2EConfig = {}) => {
     const { buildFilter, watchFilter, outputFilter, onGet, onSet, onRoute, beforeRoute, buildWatcher, middlewares = [] } = conf
     const middlewareBase: MiddlewareCreater = () => {
         return {
+            name: "system",
             mode: ["dev", "build", "prod"],
             buildFilter, watchFilter, outputFilter, onGet, onSet, onRoute, beforeRoute, buildWatcher,
         }

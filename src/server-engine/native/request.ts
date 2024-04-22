@@ -20,7 +20,7 @@ export class NativeRequest implements HttpRequest {
         return this.req.url || '/';
     }
     getMethod(): string {
-        return this.getCaseSensitiveMethod().toUpperCase();
+        return this.getCaseSensitiveMethod().toLowerCase();
     }
     getCaseSensitiveMethod(): string {
         return this.req.method || 'GET';

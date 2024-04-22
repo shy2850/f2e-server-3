@@ -11,6 +11,6 @@ export type TryFilesItem = {
     test: RegExp,
     replacer?: string | { (m: string, ...args: any[]): string },
 } & (
-    { index: string | { (pathname: string, req: HttpRequest, resp: HttpResponse, store: MemoryTree.Store): string } }
-    | { location: string | { (pathname: string, req: HttpRequest, resp: HttpResponse, store: MemoryTree.Store): string } }
+    { index: string | { (pathname: string, req: HttpRequest, resp: HttpResponse, store?: MemoryTree.Store): string } }
+    | { location: string | { (pathname: string, req: HttpRequest, resp: HttpResponse, store?: MemoryTree.Store): string } }
 )

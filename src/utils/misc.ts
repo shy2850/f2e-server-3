@@ -29,6 +29,19 @@ export const decode = (str: string) => {
     }
 }
 
+export const queryparams = (search: string) => {
+    const searchParams = new URLSearchParams(search)
+    const params: Record<string, string | string[]> = {}
+    searchParams.forEach((v, k) => {
+        if (params[k]) {
+            params[k] = ([] as string[]).concat(params[k]).concat(v)
+        } else {
+            params[k] = v
+        }
+    })
+    return params
+}
+
 export const get = function loopGet (obj: any, path: string | string[]): any {
     const [key, ...rest] = path.toString().match(REG_FILENAME) || []
     if (!key || !obj) {

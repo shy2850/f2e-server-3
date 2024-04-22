@@ -1,9 +1,11 @@
-import { ServerResponse } from 'http'
+import { IncomingMessage, ServerResponse } from 'http'
 import { HttpResponse, RecognizedString, us_socket_context_t } from 'uWebSockets.js'
 
 export class NativeResponse implements HttpResponse {
+    request: IncomingMessage
     response: ServerResponse
-    constructor (response: ServerResponse) {
+    constructor (request: IncomingMessage, response: ServerResponse) {
+        this.request = request
         this.response = response
     }
     pause(): void {
@@ -45,7 +47,7 @@ export class NativeResponse implements HttpResponse {
         throw new Error('Method not implemented.');
     }
     onAborted(handler: () => void): HttpResponse {
-        this.response.addListener('close', handler)
+        this.request.socket.addListener('close', handler)
         return this
     }
     onData(handler: (chunk: ArrayBuffer, isLast: boolean) => void): HttpResponse {
@@ -64,7 +66,10 @@ export class NativeResponse implements HttpResponse {
         throw new Error('Method not implemented.');
     }
     cork(cb: () => void): HttpResponse {
-        cb && cb();
+        const resp = this.response
+        if (resp.writable && !resp.writableEnded) {
+            cb && cb();
+        }
         return this
     }
     upgrade<UserData>(userData: UserData, secWebSocketKey: RecognizedString, secWebSocketProtocol: RecognizedString, secWebSocketExtensions: RecognizedString, context: us_socket_context_t): void {

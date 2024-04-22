@@ -30,6 +30,7 @@ export const createBuilder = async (options: F2EConfig) => {
 }
 
 const createServer = async (options: F2EConfig) => {
+    const startTime = Date.now()
     const conf = getConfigResult(options)
     const { root, watch, dest, mode, namehash, port, host, ssl, onServerCreate } = conf
     if (mode === 'build') {
@@ -44,6 +45,7 @@ const createServer = async (options: F2EConfig) => {
         buildFilter, watchFilter, outputFilter, onGet, onSet, buildWatcher
     } : { root }); // prod模式下，不加载任何中间件
     await memoryTree.input("")
+    logger.debug('启动时间:' + (Date.now() - startTime) + 'ms')
 
     const app = ssl ? SSLApp(ssl) : App()
     app.listen(host, port, function () {
