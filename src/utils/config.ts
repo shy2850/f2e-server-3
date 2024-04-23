@@ -5,6 +5,8 @@ import * as fs from 'node:fs'
 import { MiddlewareCreater } from "../middlewares/interface";
 import { combineMiddleware } from "../middlewares";
 import { VERSION } from "./engine";
+import logger, { LogLevel } from "./logger";
+import { NativeResponse } from "../server-engine/native/response";
 
 let F2E_CONFIG_PATH = ''
 const F2E_CONFIG = '.f2econfig.js'
@@ -33,12 +35,6 @@ export const getConfigResult = function (conf: F2EConfig = {}) {
         gzip: conf.gzip || false,
         gzip_filter: conf.gzip_filter || function (pathname, size) { return _.isText(pathname, config.mimeTypes) && size > 4096; },
         watch: typeof conf.watch === 'boolean' ? conf.watch : mode === 'dev',
-        beforeResponseEnd: function (resp, req) {
-            if (conf.beforeResponseEnd) {
-                conf.beforeResponseEnd(resp, req);
-            }
-            resp.writeHeader("X-Powered-By", VERSION);
-        },
         onServerCreate: conf.onServerCreate || function (server) { return server; },
         namehash: {
             entries: ['index\\.html$'],
@@ -56,6 +52,7 @@ export const getConfigResult = function (conf: F2EConfig = {}) {
         // 以下为内置中间件相关配置
         try_files: conf.try_files || false,
         livereload: conf.livereload || (mode === 'dev' && {}) || false,
+        proxies: conf.proxies || [],
     }
     return config;
 }

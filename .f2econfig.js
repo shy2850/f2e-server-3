@@ -38,6 +38,19 @@ const config = {
         }
         return { data, originPath: pathname, outputPath: pathname }
     },
+    proxies: ['/uniadmin', '/api', '/uni-auth'].map(location => {
+        return {
+            location,
+            origin: 'http://172.16.128.207:18588',
+            requestHeaders: headers => {
+                return {
+                    ...headers,
+                    cookie: 'AUTH_SESSION_ID=uniAuth:session:32212d8c76e49b30f24b1bc670620c11'
+                }
+            },
+            responseRender: a => a,
+        }
+    }),
 }
 
 module.exports = config

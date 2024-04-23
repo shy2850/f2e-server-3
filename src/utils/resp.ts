@@ -1,10 +1,13 @@
 import { HttpRequest, HttpResponse } from "uWebSockets.js"
-import { F2EConfigResult } from "../interface"
+import { APIContext, F2EConfigResult } from "../interface"
 import { createHash } from "node:crypto"
 import * as _ from './misc'
 import * as zlib from "node:zlib"
 import logger from "./logger"
 import engine, { ENGINE_TYPE } from "../server-engine"
+import { VERSION } from "./engine"
+import { RouteItem } from "../routes/interface"
+import { OutgoingHttpHeaders } from "node:http"
 
 const gzipSync = ENGINE_TYPE === 'bun' ? Bun.gzipSync : zlib.gzipSync
 
@@ -21,10 +24,22 @@ export const etag = (entity: Buffer | string) => {
     return '"' + len.toString(16) + '-' + hash + '"'
 }
 
+export const commonWriteHeaders = (resp: HttpResponse, headers?: OutgoingHttpHeaders) => {
+    for (const key in headers) {
+        if (Object.prototype.hasOwnProperty.call(headers, key)) {
+            const value = headers[key]
+            if (typeof value != 'undefined') {
+                resp.writeHeader(key, value.toString())
+            }
+        }
+    }
+    resp.writeHeader('X-Powered-By', VERSION)
+}
+
 
 export const createResponseHelper = (conf: F2EConfigResult) => {
     const {
-        gzip, gzip_filter, mimeTypes, range_size, beforeResponseEnd,
+        gzip, gzip_filter, mimeTypes, range_size,
         page_404, page_50x, page_dir,
     } = conf
 
@@ -32,7 +47,7 @@ export const createResponseHelper = (conf: F2EConfigResult) => {
         const body = _.renderHTML(page_404, { title: 'Page Not Found!', pathname })
         resp.cork(() => {
             resp.writeStatus('404 Not Found')
-            resp.writeHeader('Content-Type', 'text/html; charset=utf-8')
+            commonWriteHeaders(resp, {'Content-Type': 'text/html; charset=utf-8'})
             resp.end(body)
         })
     }
@@ -41,7 +56,7 @@ export const createResponseHelper = (conf: F2EConfigResult) => {
         logger.error(error)
         resp.cork(() => {
             resp.writeStatus('500 Internal Server Error')
-            resp.writeHeader('Content-Type', 'text/html; charset=utf-8')
+            commonWriteHeaders(resp, {'Content-Type': 'text/html; charset=utf-8'})
             resp.end(error_body)
         })
     }
@@ -56,7 +71,7 @@ export const createResponseHelper = (conf: F2EConfigResult) => {
         if (tag && data && tag === newTag) {
             resp.cork(() => {
                 resp.writeStatus("304 Not Modified")
-                beforeResponseEnd(resp, req)
+                commonWriteHeaders(resp, {})
                 resp.endWithoutBody()
             })
             return
@@ -68,11 +83,12 @@ export const createResponseHelper = (conf: F2EConfigResult) => {
             end = Math.min(end, start + d.length)
             resp.cork(() => {
                 resp.writeStatus('206 Partial Content')
-                resp.writeHeader('Content-Type', type)
-                resp.writeHeader('Content-Range', `bytes ${start}-${end - 1}/${data.length}`)
-                resp.writeHeader('Content-Length', d.length + '')
-                resp.writeHeader('Accept-Ranges', 'bytes')
-                beforeResponseEnd(resp, req)
+                commonWriteHeaders(resp, {
+                    'Content-Type': type,
+                    'Content-Range': `bytes ${start}-${end - 1}/${data.length}`,
+                    'Content-Length': d.length,
+                    'Accept-Ranges': 'bytes',
+                })
                 resp.end(d)
             })
             return
@@ -80,10 +96,11 @@ export const createResponseHelper = (conf: F2EConfigResult) => {
 
         resp.cork(() => {
             resp.writeStatus('200 OK')
-            resp.writeHeader("Content-Type", type)
-            resp.writeHeader("Content-Encoding", gz ? 'gzip' : 'utf-8')
-            newTag && resp.writeHeader("ETag", newTag)
-            beforeResponseEnd(resp, req)
+            commonWriteHeaders(resp, {
+                'Content-Type': type,
+                'Content-Encoding': gz ? 'gzip' : 'utf-8',
+                'Etag': newTag,
+            })
             resp.end(gz ? gzipSync(data.toString()) : data)
         })
     }
@@ -113,13 +130,61 @@ export const createResponseHelper = (conf: F2EConfigResult) => {
         const dir_body = _.renderHTML(page_dir, { title: '/' + pathname, pathname: _.pathname_dirname(pathname), files })
         resp.cork(() => {
             resp.writeStatus('200 OK')
-            resp.writeHeader('Content-Type', 'text/html; charset=utf-8')
-            beforeResponseEnd(resp)
+            commonWriteHeaders(resp, {
+                'Content-Type': 'text/html; charset=utf-8'
+            })
             resp.end(dir_body)
         })
     }
 
+    const handleSSE = (req: HttpRequest, resp: HttpResponse, item: RouteItem, body: any, ctx: APIContext) => {
+        const {
+            interval = 1000,
+            interval_beat = 30000,
+            default_content = '',
+        } = item
+        resp.cork(() => {
+            resp.writeStatus('200 OK')
+            commonWriteHeaders(resp, {
+                'Cache-Control': 'no-cache',
+                'Connection': 'keep-alive',
+                'Content-Type': 'text/event-stream',
+            })
+        })
+        let interval1: Timer
+        const heartBeat = function heartBeat () {
+            resp.cork(() => {
+                resp.write(`data:${default_content}\n\n`)
+            })
+            if (interval_beat) {
+                interval1 = setTimeout(heartBeat, interval_beat)
+            }
+        }
+        let interval2: Timer
+        const loop = async function loop () {
+            try {
+                const res = await item.handler(body, ctx)
+                if (res) {
+                    resp.cork(() => {
+                        resp.write(`data:${JSON.stringify(res)}\n\n`)
+                    })
+                }
+            } catch (e) {
+                logger.error('SSE LOOP:', e)
+            }
+            if (interval) {
+                interval2 = setTimeout(loop, interval)
+            }
+        }
+        resp.onAborted(() => {
+            clearTimeout(interval1)
+            clearTimeout(interval2)
+        })
+        loop()
+        heartBeat()
+        return false
+    }
     return {
-        handleSuccess, handleError, handleNotFound, handleDirectory,
+        handleSuccess, handleError, handleNotFound, handleDirectory, handleSSE
     }
 }

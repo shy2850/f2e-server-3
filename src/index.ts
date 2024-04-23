@@ -6,6 +6,7 @@ import createMemoryTree from "./memory-tree"
 import { exit } from "node:process"
 import * as _ from './utils/misc'
 import { server_all } from "./server"
+export { Logger, LogLevel } from './utils/logger';
 
 export * from "./interface"
 

@@ -17,7 +17,7 @@ export class NativeRequest implements HttpRequest {
         return [...this.searchParams][index]?.join('=')
     }
     getUrl(): string {
-        return this.req.url || '/';
+        return this.location.pathname || '/';
     }
     getMethod(): string {
         return this.getCaseSensitiveMethod().toLowerCase();
@@ -31,13 +31,14 @@ export class NativeRequest implements HttpRequest {
         if (key) {
             return this.searchParams.get(key.toString()) || undefined
         } else {
-            return this.location.search
+            return this.location.search || undefined
         }
     }
     forEach(cb: (key: string, value: string) => void): void {
-        Object.entries(this.req.headers).forEach(([key, value]) => {
-            cb(key, value?.toString() || '')
-        })
+        const headers = this.req.rawHeaders
+        for (let i = 0; i < headers.length; i += 2) {
+            cb?.(headers[i], headers[i + 1])
+        }
     }
     setYield(_yield: boolean): HttpRequest {
         throw new Error('Method not implemented.');

@@ -6,6 +6,7 @@ import { exit } from 'node:process';
 import * as _ from '../utils/misc';
 import middleware_livereload from './livereload';
 import middleware_tryfiles from './try_files';
+import middleware_proxy from './proxy';
 
 export const combineMiddleware = (conf: F2EConfigResult, middlewares: (MiddlewareCreater | MiddlewareReference)[]): Required<MiddlewareEvents> => {
     const { mode } = conf
@@ -19,6 +20,7 @@ export const combineMiddleware = (conf: F2EConfigResult, middlewares: (Middlewar
     const outputFilters: Required<MiddlewareEvents>["outputFilter"][] = []
 
     /** 开始内置中间件加载 */
+    middlewares.push(middleware_proxy)
     middlewares.push(middleware_livereload)
     /** tryfiles 顺序需要在最后 */
     middlewares.push(middleware_tryfiles)

@@ -3,9 +3,9 @@ import { MiddlewareCreater, MiddlewareEvents, MiddlewareReference } from './midd
 import { MemoryTree } from './memory-tree';
 import { TryFilesItem } from './middlewares/try_files/interface';
 import { LiveReloadConfig } from './middlewares/livereload/interface';
+import { ProxyItem } from './middlewares/proxy/interface';
 
 export type ConfigMode = "dev" | "build" | "prod";
-
 export interface APIContext {
     req: HttpRequest,
     resp: HttpResponse,
@@ -45,10 +45,6 @@ export interface ServerConfig {
      */
     gzip_filter?: (pathname: string, size: number) => boolean;
     /**
-     * 响应结束前执行： 可用于设置响应头等操作
-    */
-    beforeResponseEnd?: { (resp: HttpResponse, req?: HttpRequest): void };
-    /**
      * 基础服务启动后执行
     */
     onServerCreate?: (app: TemplatedApp, conf: F2EConfigResult) => void;
@@ -83,6 +79,10 @@ export interface ServerConfig {
         }
     */
     livereload?: false | LiveReloadConfig;
+    /**
+     * 代理配置
+     */
+    proxies?: ProxyItem[];
 }
 export interface F2EConfig extends ServerConfig, Partial<MemoryTree.Options>, Partial<MiddlewareEvents> {
     /** 

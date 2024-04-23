@@ -3,6 +3,7 @@ import * as _ from '../../utils/misc'
 import { TryFilesItem } from "./interface";
 import { APIContext } from "../../interface";
 import logger from "../../utils/logger";
+import { commonWriteHeaders } from "../../utils/resp";
 
 const middleware_tryfiles: MiddlewareCreater = (conf) => {
     const { try_files } = conf
@@ -64,7 +65,9 @@ const middleware_tryfiles: MiddlewareCreater = (conf) => {
                         let location = typeof item.location === 'string' ? item.location : item.location(pathname, ctx)
                         resp.cork(() => {
                             resp.writeStatus('302 Found')
-                            resp.writeHeader('Location', location)
+                            commonWriteHeaders(resp, {
+                                'Location': location,
+                            })
                             resp.end()
                         })
                         return false

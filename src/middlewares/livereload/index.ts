@@ -11,7 +11,7 @@ const SERVER_SENT_SCRIPT = `<script>
             function start_listen () {
                 sse = new EventSource('/{{prefix}}');
                 sse.addEventListener('message', function (e) {
-                    if (e.data === '1') {return;}
+                    if (!e.data.trim()) {return;}
                     if (updateTime != e.data) {
                         if (updateTime) {
                             location.reload();

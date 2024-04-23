@@ -4,7 +4,6 @@ import { MemoryTree } from '../memory-tree'
 import { queryparams } from '../utils/misc'
 import { APIContext, F2EConfigResult } from '../interface'
 import { createResponseHelper } from '../utils/resp'
-import logger from '../utils/logger'
 export * from './interface'
 
 export class Route implements IRoute {
@@ -15,51 +14,6 @@ export class Route implements IRoute {
     constructor (options: F2EConfigResult) {
         this.options = options
         this.respUtils = createResponseHelper(options)
-    }
-    private handleSSE (req: HttpRequest, resp: HttpResponse, item: RouteItem, body: any, ctx: APIContext) {
-        const {
-            interval = 1000,
-            interval_beat = 30000,
-            default_content = '',
-        } = item
-        resp.cork(() => {
-            resp.writeStatus('200 OK')
-            resp.writeHeader('Content-Type', 'text/event-stream')
-            resp.writeHeader('Cache-Control', 'no-cache')
-            resp.writeHeader('Connection', 'keep-alive')
-        })
-        let interval1: Timer
-        const heartBeat = function heartBeat () {
-            resp.cork(() => {
-                resp.write(`data:${default_content}\n\n`)
-            })
-            if (interval_beat) {
-                interval1 = setTimeout(heartBeat, interval_beat)
-            }
-        }
-        let interval2: Timer
-        const loop = async function loop () {
-            try {
-                const res = await item.handler(body, ctx)
-                if (res) {
-                    resp.cork(() => {
-                        resp.write(`data:${JSON.stringify(res)}\n\n`)
-                    })
-                }
-            } catch (e) {
-                logger.error('SSE LOOP:', e)
-            }
-            if (interval) {
-                interval2 = setTimeout(loop, interval)
-            }
-        }
-        resp.onAborted(() => {
-            clearTimeout(interval1)
-            clearTimeout(interval2)
-        })
-        loop()
-        heartBeat()
-        return false
     }
     private find (path: string, method = '*') {
         return this.routes.find(r => {
@@ -90,7 +44,7 @@ export class Route implements IRoute {
         return undefined
     };
     execute = async (pathname: string, req: HttpRequest, resp: HttpResponse, store?: MemoryTree.Store, body?: Buffer) => {
-        const { handleError, handleSuccess, handleNotFound } = this.respUtils
+        const { handleError, handleSuccess, handleNotFound, handleSSE } = this.respUtils
         const method = req.getMethod()
         const item = this.match(pathname, method)
         const ctx: APIContext = { req, resp, pathname, store }
@@ -117,7 +71,7 @@ export class Route implements IRoute {
                         handleSuccess(req, resp, '.js', `${callback}(${JSON.stringify(await item.handler(data, ctx))})`)
                         break
                     case 'sse':
-                        this.handleSSE(req, resp, item, data, ctx)
+                        handleSSE(req, resp, item, data, ctx)
                         break;
                     default:
                         const result = await item.handler(data, ctx)
@@ -129,7 +83,8 @@ export class Route implements IRoute {
                         break;
                 }
             } catch (e) {
-                handleError(resp, e + '')
+                console.error(pathname)
+                // handleError(resp, e + '')
             }
             return false
         }
