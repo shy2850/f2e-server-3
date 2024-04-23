@@ -16,7 +16,8 @@ export class NativeResponse implements HttpResponse {
     }
     writeStatus(status: RecognizedString): HttpResponse {
         const [statusCode, ...statusText] = status.toString().split(/\s+/);
-        this.response.writeHead(Number(statusCode), statusText.join(' '))
+        this.response.statusCode = Number(statusCode)
+        this.response.statusMessage = statusText.join(' ')
         return this;
     }
     writeHeader(key: RecognizedString, value: RecognizedString): HttpResponse {
