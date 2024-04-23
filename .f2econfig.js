@@ -10,7 +10,13 @@ const config = {
     port: 2850,
     mode: 'dev',
     gzip: true,
-    try_files: 'test/index.html',
+    mimeTypes: {
+        'ts': 'text/plain'
+    },
+    try_files: [
+        { test: /redirect/, location: '/package.json' },
+        { test: /^test/, index: 'test/index.html', }
+    ],
     gzip_filter: () => true,
     buildFilter: (pathname) => {
         return /^(src|index|test|README|package|$)/.test(pathname)

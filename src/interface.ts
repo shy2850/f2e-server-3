@@ -6,6 +6,13 @@ import { LiveReloadConfig } from './middlewares/livereload/interface';
 
 export type ConfigMode = "dev" | "build" | "prod";
 
+export interface APIContext {
+    req: HttpRequest,
+    resp: HttpResponse,
+    pathname: string,
+    store: MemoryTree.Store | undefined,
+}
+
 /** 启动服务器相关配置 */
 export interface ServerConfig {
     /** 项目根路径: 默认为process.cwd() */
@@ -60,13 +67,13 @@ export interface ServerConfig {
 
     /**
      * 中间件 try_files 配置
-     * 参考Nginx配置 `try_files` 而产生的功能 (`querystring`已经解析到`req.data`中)
+     * 参考Nginx配置 `try_files` 而产生的功能
      * 1. 类型为`string`时, 所有未能找到资源的情况都转发到这个 `pathname`
      * 2. 类型为`{test, exec}[]`, 依次循环匹配`test`, 进行转发
      * @default false
      * @suggest "index.html"
      */
-    try_files?: false | string | string[] | TryFilesItem[];
+    try_files?: false | string | TryFilesItem | (string | TryFilesItem)[];
     /**
      * 中间件 livereload 配置
      * @default false 

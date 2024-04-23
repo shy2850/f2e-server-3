@@ -1,5 +1,4 @@
-import { HttpRequest, HttpResponse } from "uWebSockets.js";
-import { MemoryTree } from "../../memory-tree";
+import { APIContext } from "../../interface";
 
 /**
  * 参考Nginx配置 `try_files` 而产生的功能 (`querystring`已经解析到`req.data`中)
@@ -11,6 +10,6 @@ export type TryFilesItem = {
     test: RegExp,
     replacer?: string | { (m: string, ...args: any[]): string },
 } & (
-    { index: string | { (pathname: string, req: HttpRequest, resp: HttpResponse, store?: MemoryTree.Store): string } }
-    | { location: string | { (pathname: string, req: HttpRequest, resp: HttpResponse, store?: MemoryTree.Store): string } }
+    { index: string | { (pathname: string, ctx: APIContext): string } }
+    | { location: string | { (pathname: string, ctx: APIContext): string } }
 )

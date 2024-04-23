@@ -1,15 +1,8 @@
-import { HttpRequest, HttpResponse } from "uWebSockets.js";
 import { MiddlewareEvents } from "../middlewares/interface";
-import { MemoryTree } from "../memory-tree";
+import { APIContext } from "../interface";
 
 type Execute = Required<MiddlewareEvents>['onRoute']
 
-export interface APIContext {
-    req: HttpRequest,
-    resp: HttpResponse,
-    pathname: string,
-    store: MemoryTree.Store | undefined,
-}
 export interface ServerAPI<T extends object = object, F = any, R extends object = object> {
     (body: null | T, ctx: APIContext & R ): F | Promise<F>
 }

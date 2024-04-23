@@ -21,7 +21,7 @@ export const combineMiddleware = (conf: F2EConfigResult, middlewares: (Middlewar
     /** 开始内置中间件加载 */
     middlewares.push(middleware_livereload)
     /** tryfiles 顺序需要在最后 */
-    // middlewares.push(middleware_tryfiles)
+    middlewares.push(middleware_tryfiles)
 
     for (let i = 0; i < middlewares.length; i++) {
         const m = middlewares[i];

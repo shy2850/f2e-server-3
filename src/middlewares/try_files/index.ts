@@ -1,6 +1,8 @@
 import { MiddlewareCreater } from "../interface";
 import * as _ from '../../utils/misc'
 import { TryFilesItem } from "./interface";
+import { APIContext } from "../../interface";
+import logger from "../../utils/logger";
 
 const middleware_tryfiles: MiddlewareCreater = (conf) => {
     const { try_files } = conf
@@ -10,12 +12,7 @@ const middleware_tryfiles: MiddlewareCreater = (conf) => {
     }
 
     let tries: TryFilesItem[] = []
-    if (typeof try_files === 'string') {
-        tries.push({
-            test: /.*/,
-            index: try_files
-        })
-    } else if (Array.isArray(try_files)) {
+    if (Array.isArray(try_files)) {
         tries = try_files.map(item => {
             if (typeof item === 'string') {
                 return {
@@ -26,14 +23,29 @@ const middleware_tryfiles: MiddlewareCreater = (conf) => {
                 return item
             }
         })
+    } else if (typeof try_files === 'string') {
+        tries.push({
+            test: /.*/,
+            index: try_files
+        })
+    } else {
+        tries.push(try_files)
     }
+
     return {
         name: 'try_files',
         mode: ['dev', 'prod'],
         onRoute: async (pathname, req, resp, store) => {
+            let data = store?._get(pathname)
+            /** 没有数据才进行try_files */
+            if (typeof data === 'string' || data instanceof Buffer) {
+                return pathname
+            }
+            const ctx: APIContext = { pathname, req, resp, store }
             for (let i = 0; i < tries.length; i++) {
                 const item = tries[i]
                 if (item.test.test(pathname)) {
+                    logger.debug(pathname, item )
                     let p = pathname
                     // 为了通过ts检查，这里分开写
                     if (typeof item.replacer === 'string') {
@@ -49,7 +61,7 @@ const middleware_tryfiles: MiddlewareCreater = (conf) => {
                     if (typeof data !== 'undefined') {
                         return p
                     } else if ('location' in item) {
-                        let location = typeof item.location === 'string' ? item.location : item.location(pathname, req, resp, store)
+                        let location = typeof item.location === 'string' ? item.location : item.location(pathname, ctx)
                         resp.cork(() => {
                             resp.writeStatus('302 Found')
                             resp.writeHeader('Location', location)
@@ -57,7 +69,7 @@ const middleware_tryfiles: MiddlewareCreater = (conf) => {
                         })
                         return false
                     } else {
-                        return typeof item.index === 'string' ? item.index : item.index(pathname, req, resp, store)
+                        return typeof item.index === 'string' ? item.index : item.index(pathname, ctx)
                     }
                 }
             }
