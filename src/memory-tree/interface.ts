@@ -11,15 +11,19 @@ export namespace MemoryTree {
         origin_map: Map<string, SetResult>
         /** 结果资源映射 */
         output_map: Map<string, SetResult>
-        _set: {
-            (path: string, data: DataBuffer): void
+        /** 保存资源，同时处理路径变更 */
+        save: {
+            (result: SetResult): void
         }
+        /** 直接从内存获取资源 */
         _get: {
             (path: string): DataBuffer
         }
+        /** 加载资源，从内存获取后执行 onGet 返回结果 */
         load: {
             (path: string): Promise<DataBuffer>
         }
+        /** 清空所有数据 */
         _reset: {
             (): void
         }

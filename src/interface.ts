@@ -4,6 +4,7 @@ import { MemoryTree } from './memory-tree';
 import { TryFilesItem } from './middlewares/try_files/interface';
 import { LiveReloadConfig } from './middlewares/livereload/interface';
 import { ProxyItem } from './middlewares/proxy/interface';
+import { EsbuildConfig } from './middlewares/esbuild/interface';
 
 export type ConfigMode = "dev" | "build" | "prod";
 export interface APIContext {
@@ -83,6 +84,15 @@ export interface ServerConfig {
      * 代理配置
      */
     proxies?: ProxyItem[];
+    /**
+     * 中间件 esbuild配置
+     * @default
+     * {
+     *      esbuildrc: "./esbuildrc.js",
+     *      build_external: true
+     * }
+     */
+    esbuild?: false | EsbuildConfig;
 }
 export interface F2EConfig extends ServerConfig, Partial<MemoryTree.Options>, Partial<MiddlewareEvents> {
     /** 

@@ -2,6 +2,9 @@
     "compilerOptions": {
         "target": "ESNext",
         "module": "commonjs",
+        "jsx": "react",
+        "jsxFactory": "React.createElement",
+        "jsxFragmentFactory": "React.Fragment",
         "strict": true,
         "esModuleInterop": true,
         "resolveJsonModule": true,
@@ -11,6 +14,6 @@
         "declaration": true,
         "declarationMap": true
     },
-    "include": ["src/**/*", "test/**/*"],
+    "include": ["src/**/*", "test/**/*", "typings.d.ts"],
     "exclude": ["node_modules", "lib"]
 }

@@ -53,6 +53,11 @@ export const getConfigResult = function (conf: F2EConfig = {}) {
         try_files: conf.try_files || false,
         livereload: conf.livereload || (mode === 'dev' && {}) || false,
         proxies: conf.proxies || [],
+        esbuild: conf.esbuild || (mode != 'prod' && {
+            esbuildrc: '.esbuildrc.js',
+            build_external: true,
+            with_metafile: mode === 'dev',
+        }) || false,
     }
     return config;
 }

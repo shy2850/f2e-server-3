@@ -4,6 +4,11 @@ import { ConfigMode, F2EConfigResult } from "../interface";
 
 export interface MiddlewareEvents extends Partial<MemoryTree.Events> {
     /**
+     * memory-tree首次加载完成时触发
+     * @param store memory-tree实例
+     */
+    onMemoryLoad?(store: MemoryTree.Store): void | Promise<void>
+    /**
      * 路由解析前执行
      * @param pathname 格式化之后的路径，形如: api/user/list
      * @param req      请求对象
@@ -17,7 +22,7 @@ export interface MiddlewareEvents extends Partial<MemoryTree.Events> {
      * @param pathname 格式化之后的路径，形如: api/user/list
      * @param req      请求对象
      * @param resp     响应对象
-     * @param store    中间件存储对象
+     * @param store    memory-tree实例
      * @param body     POST请求完成的body
      */
     onRoute?: {

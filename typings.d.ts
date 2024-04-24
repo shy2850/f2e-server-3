@@ -1,4 +1,5 @@
 declare module "mime";
+declare module "*.html";
 declare module "*.json";
 declare module "uWebSockets.js" {
     /*
@@ -401,3 +402,5 @@ declare module "uWebSockets.js" {
     /** Sliding dedicated decompress window, requires 32KB of memory per socket (plus about 23KB) */
     export var DEDICATED_DECOMPRESSOR: CompressOptions;
 }
+
+/// re

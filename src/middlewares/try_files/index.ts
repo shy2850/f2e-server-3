@@ -54,10 +54,11 @@ const middleware_tryfiles: MiddlewareCreater = (conf) => {
                     } else if (item.replacer instanceof Function) {
                         p = pathname.replace(item.test, item.replacer)
                     }
-                    let data = store?._get(p)
+                    let data = store?._get(store.origin_map.get(p)?.outputPath || p)
                     if (_.isPlainObject(data) && 'index' in item) {
-                        p += '/' + item.index
-                        data = store?._get(p)
+                        p = typeof item.index === 'string' ? item.index : item.index(p, ctx)
+                        logger.debug('[index]', p, store?.origin_map.get(p)?.outputPath)
+                        data = store?._get(store.origin_map.get(p)?.outputPath || p)
                     }
                     if (typeof data !== 'undefined') {
                         return p

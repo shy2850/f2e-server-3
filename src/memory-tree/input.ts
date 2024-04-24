@@ -3,7 +3,6 @@ import path from "node:path"
 import fs from "node:fs/promises"
 import * as _ from "../utils/misc";
 import logger from "../utils/logger";
-import { createHash } from "node:crypto";
 
 const inputProvider: MemoryTree.BuildProvider = (options, store) => {
     const { buildFilter, onSet, root, namehash, mimeTypes = {} } = options
@@ -18,7 +17,9 @@ const inputProvider: MemoryTree.BuildProvider = (options, store) => {
         const stat = await fs.stat(absolutePath)
 
         if (stat.isDirectory()) {
-            store._set(pathname, {})
+            store.save({
+                originPath: pathname, outputPath: '/' + pathname, data: {},
+            })
             try {
                 const files = await fs.readdir(absolutePath)
                 await Promise.all(files.map(file => build(pathname ? (pathname + '/' + file) : file)))
@@ -33,20 +34,7 @@ const inputProvider: MemoryTree.BuildProvider = (options, store) => {
             try {
                 const data = await fs.readFile(absolutePath, _.isText(pathname, mimeTypes) ? 'utf-8' : undefined)
                 const result = await onSet(pathname, data, store)
-                let outputPath = _.pathname_fixer(result.outputPath || pathname)
-                result.outputPath = outputPath
-                if (namehash && (Buffer.isBuffer(result.data) || typeof result.data === 'string')) {
-                    const hash = createHash('md5').update(result.data).digest('hex')
-                    result.hash = hash
-                    if (namehash.replacer) {
-                        outputPath = namehash.replacer(outputPath, hash) || outputPath
-                        result.outputPath = outputPath
-                        outputPath = _.pathname_fixer(outputPath.split(/[!#*?=]+/)[0])
-                    }
-                }
-                store.origin_map.set(result.originPath, result)
-                store.output_map.set(outputPath, result)
-                store._set(outputPath, result.data)
+                store.save(result)
             } catch (e) {
                 logger.error(e)
             }

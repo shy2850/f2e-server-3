@@ -38,6 +38,15 @@ const config = {
         }
         return { data, originPath: pathname, outputPath: pathname }
     },
+    namehash: {
+        replacer (output, hash) {
+            /** sourcemap文件不改名 */
+            if (/\.(map|js\.json)$/.test(output)) {
+                return '/' + output + '?' + hash
+            }
+            return '/' + output.replace(/\.(\w+)$/, `-${hash}.$1`)
+        }
+    },
     proxies: ['/uniadmin', '/api', '/uni-auth'].map(location => {
         return {
             location,

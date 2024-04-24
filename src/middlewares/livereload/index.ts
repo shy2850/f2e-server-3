@@ -47,7 +47,6 @@ const middleware_livereload: MiddlewareCreater = (conf) => {
     } = livereload
     const route = new Route(conf)
 
-    const responseSet = new Set<HttpResponse>([])
     let updateTime = Date.now()
     let lastTimeMap = new WeakMap<HttpResponse, number>()
     /** SSE 接口 */

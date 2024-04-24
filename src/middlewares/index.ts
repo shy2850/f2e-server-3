@@ -7,9 +7,11 @@ import * as _ from '../utils/misc';
 import middleware_livereload from './livereload';
 import middleware_tryfiles from './try_files';
 import middleware_proxy from './proxy';
+import middleware_esbuild from './esbuild';
 
 export const combineMiddleware = (conf: F2EConfigResult, middlewares: (MiddlewareCreater | MiddlewareReference)[]): Required<MiddlewareEvents> => {
     const { mode } = conf
+    const onMemoryLoads: Required<MiddlewareEvents>["onMemoryLoad"][] = []
     const beforeRoutes: Required<MiddlewareEvents>["beforeRoute"][] = []
     const onRoutes: Required<MiddlewareEvents>["onRoute"][] = []
     const buildWatchers: Required<MiddlewareEvents>["buildWatcher"][] = []
@@ -20,6 +22,7 @@ export const combineMiddleware = (conf: F2EConfigResult, middlewares: (Middlewar
     const outputFilters: Required<MiddlewareEvents>["outputFilter"][] = []
 
     /** 开始内置中间件加载 */
+    middlewares.push(middleware_esbuild)
     middlewares.push(middleware_proxy)
     middlewares.push(middleware_livereload)
     /** tryfiles 顺序需要在最后 */
@@ -44,6 +47,7 @@ export const combineMiddleware = (conf: F2EConfigResult, middlewares: (Middlewar
             middle = m(conf)
         }
         if (middle && middle.mode.includes(mode)) {
+            middle.onMemoryLoad && onMemoryLoads.push(middle.onMemoryLoad)
             middle.beforeRoute && beforeRoutes.push(middle.beforeRoute)
             middle.onRoute && onRoutes.push(middle.onRoute)
             middle.buildWatcher && buildWatchers.push(middle.buildWatcher)
@@ -56,6 +60,11 @@ export const combineMiddleware = (conf: F2EConfigResult, middlewares: (Middlewar
     }
     
     return {
+        onMemoryLoad: async (store) => {
+            for (let i = 0; i < onMemoryLoads.length; i++) {
+                await onMemoryLoads[i]?.(store);
+            }
+        },
         beforeRoute: async (pathname, req, resp) => {
             let _pathname = pathname
             for (let i = 0; i < beforeRoutes.length; i++) {
