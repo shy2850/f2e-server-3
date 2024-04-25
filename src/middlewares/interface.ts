@@ -7,6 +7,11 @@ export interface MiddlewareEvents extends Partial<MemoryTree.Events> {
      * memory-tree首次加载完成时触发
      * @param store memory-tree实例
      */
+    onMemoryInit?(store: MemoryTree.Store): void | Promise<void>
+    /**
+     * memory-tree首次加载完成时触发
+     * @param store memory-tree实例
+     */
     onMemoryLoad?(store: MemoryTree.Store): void | Promise<void>
     /**
      * 路由解析前执行

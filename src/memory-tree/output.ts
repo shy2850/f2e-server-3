@@ -27,7 +27,7 @@ export const outputProvider: MemoryTree.BuildProvider = (options, store) => {
                     }
                 } else {
                     if (!fs.existsSync(absolutePathname)) {
-                        fs.mkdirSync(absolutePathname)
+                        fs.mkdirSync(absolutePathname, { recursive: true })
                     }
                     await Promise.all(Object.keys(data).map(key => {
                         return build(pathname ? (pathname + '/' + key) : key)

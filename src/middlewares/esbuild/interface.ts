@@ -13,4 +13,14 @@ export interface EsbuildConfig {
      * 是否生成metafile
      */
     with_metafile: boolean;
+    /**
+     * 匹配html文件, 注入脚本
+     * @default /index\.html$/
+     */
+    reg_inject?: RegExp;
+    /**
+     * 缓存目录
+     * @default '.f2e_cache'
+     */
+    cache_root?: string;
 }

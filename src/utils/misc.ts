@@ -76,24 +76,25 @@ export const isPlainObject = function (value: any) {
 }
 
 /** 简单字符串模板，类似 handlebars */
-export const template = (tpl: string, data: any): string => {
+export const template = function template (tpl: string, data: any, index?: number): string {
     return tpl
-        .replace(/\{\{(\w+)\s+(\w+)[^{}]*\}\}(.*?)\{\{\/\1\}\}/g, function (_: any, fn: any, item_key: any, line: any) {
+        .replace(/\{\{(\w+)\s+(\w+)[^{}]*\}\}([\s\S\t\r\n]*?)\{\{\/\1\}\}/g, function (_: any, fn: any, item_key: any, line: any) {
             const items = data[item_key]
             switch (fn) {
                 case 'each':
-                    return items ? items.map((item: any) => template(line, item)).join('') : ''
+                    return items ? items.map((item: any, index: number) => template(line, item, index)).join('') : ''
                 case 'if':
                     return items ? template(line, items) : ''
                 default:
                     return template(line, items)
             } 
         })
-        .replace(/\{\{(\w+)\}\}/g, (__, key) => {
-            if (key === '@') {
-                return data
+        .replace(/\{\{([@\$\.\w]+)\}\}/g, (__, key) => {
+            switch (key) {
+                case '@': return data;
+                case '@index': return index;
+                default: return typeof data[key] !== 'undefined' ? data[key] : ''
             }
-            return data[key] || ''
         })
 }
 

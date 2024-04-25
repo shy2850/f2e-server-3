@@ -4,8 +4,8 @@ import fs from "node:fs/promises"
 import * as _ from "../utils/misc";
 import logger from "../utils/logger";
 
-const inputProvider: MemoryTree.BuildProvider = (options, store) => {
-    const { buildFilter, onSet, root, namehash, mimeTypes = {} } = options
+export const inputProvider: MemoryTree.BuildProvider = (options, store) => {
+    const { buildFilter, onSet, root, mimeTypes = {} } = options
     return async function build (pathname: string) {
         
         // 路径被过滤，直接返回
@@ -42,8 +42,7 @@ const inputProvider: MemoryTree.BuildProvider = (options, store) => {
     }
 }
 
-export const inputProviderWithWatcher: MemoryTree.BuildProvider = (options, store) => {
-    const build = inputProvider(options, store)
+export const beginWatch = (options: MemoryTree.Options, store: MemoryTree.Store, build: MemoryTree.Build) => () => {
     const { buildWatcher, watch, watchFilter, root } = options
     if (watch && watchFilter) {
         (async () => {
@@ -76,5 +75,4 @@ export const inputProviderWithWatcher: MemoryTree.BuildProvider = (options, stor
     } else {
         logger.error('watch 需要同时配置 watchFilter')
     }
-    return build
 }

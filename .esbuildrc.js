@@ -10,12 +10,15 @@ let config = [
         outdir: 'static',
         bundle: true,
         format: 'iife',
+        target: 'chrome70',
         external: [
             'react',
             'react-dom/client',
             'antd',
             'antd/locale/zh_CN',
             '@ant-design/icons',
+            'dayjs',
+            'dayjs/locale/zh-cn',
         ],
         loader: {
             '.tsx': 'tsx',

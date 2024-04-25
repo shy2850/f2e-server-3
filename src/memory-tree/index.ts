@@ -1,10 +1,11 @@
 import { MemoryTree } from "./interface"
 import * as _ from '../utils/misc'
 import { defaultOptions } from './defaults'
-import { inputProviderWithWatcher } from "./input"
+import { inputProvider, beginWatch } from "./input"
 import { outputProvider } from "./output"
 import path from 'node:path'
 import { createHash } from "node:crypto"
+import logger from "../utils/logger"
 
 export * from "./interface"
 export * from "./defaults"
@@ -34,10 +35,10 @@ export const createStore = function (options: Pick<MemoryTree.Options, 'onGet'|'
                     result = result.toString()
                     for (let i = 0; i < searchValues.length; i++) {
                         const searchValue = searchValues[i]
-                        const replacer = (mat: string, a: string) => {
-                            const p = _.pathname_fixer(path.join(path.dirname(pathname), a))
-                            const out = origin_map.get(p)
-                            return out ? mat.replace(a, out.outputPath) : mat
+                        const replacer = (mat: string, src: string) => {
+                            const key = _.pathname_fixer('/' === src.charAt(0) ? src : path.join(path.dirname(pathname), src))
+                            const out = origin_map.get(key)
+                            return out ? mat.replace(src, out.outputPath) : mat
                         }
                         result = result.replace(searchValue, replacer)
                     }
@@ -50,7 +51,7 @@ export const createStore = function (options: Pick<MemoryTree.Options, 'onGet'|'
             let outputPath = _.pathname_fixer(result.outputPath || result.originPath)
             result.outputPath = '/' + outputPath
             if (namehash && (Buffer.isBuffer(result.data) || typeof result.data === 'string')) {
-                const hash = createHash('md5').update(result.data).digest('hex')
+                const hash = createHash('md5').update(result.data).digest('hex').slice(0, 8)
                 result.hash = hash
                 if (namehash.replacer && !inEntries(namehash?.entries, result.originPath)) {
                     result.outputPath = namehash.replacer(outputPath, hash) || result.outputPath
@@ -80,10 +81,12 @@ export const createMemoryTree = (options: Partial<MemoryTree.Options>): MemoryTr
     }
     const { onGet, namehash } = _options
     const store = createStore({ onGet, namehash })
+    const build = inputProvider(_options, store)
     return {
         store,
-        input: inputProviderWithWatcher(_options, store),
-        output: outputProvider(_options, store)
+        input: build,
+        output: outputProvider(_options, store),
+        watch: beginWatch(_options, store, build),
     }
 }
 

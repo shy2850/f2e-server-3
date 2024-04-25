@@ -3,6 +3,9 @@ export namespace MemoryTree {
     export interface Build {
         (pathname: string): Promise<void>
     }
+    export interface Watch {
+        (): void
+    }
     export interface BuildProvider {
         (options: Options, store: Store): Build
     }
@@ -81,9 +84,11 @@ export namespace MemoryTree {
         mimeTypes?: { [key: string]: string }
     }
     export interface MemoryTree {
-        store: MemoryTree.Store,
-        input: MemoryTree.Build,
-        output: MemoryTree.Build
+        store: MemoryTree.Store;
+        input: MemoryTree.Build;
+        output: MemoryTree.Build;
+        /** watch 和 input 分开，确保各个事件执行顺序正常 */
+        watch: MemoryTree.Watch;
     }
 }
 

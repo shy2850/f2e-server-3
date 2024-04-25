@@ -2,3 +2,4 @@ node_modules/
 lib/
 output/
 lib_test/
+.f2e_cache

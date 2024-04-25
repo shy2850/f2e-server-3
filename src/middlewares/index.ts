@@ -12,6 +12,7 @@ import middleware_esbuild from './esbuild';
 export const combineMiddleware = (conf: F2EConfigResult, middlewares: (MiddlewareCreater | MiddlewareReference)[]): Required<MiddlewareEvents> => {
     const { mode } = conf
     const onMemoryLoads: Required<MiddlewareEvents>["onMemoryLoad"][] = []
+    const onMemoryInits: Required<MiddlewareEvents>["onMemoryInit"][] = []
     const beforeRoutes: Required<MiddlewareEvents>["beforeRoute"][] = []
     const onRoutes: Required<MiddlewareEvents>["onRoute"][] = []
     const buildWatchers: Required<MiddlewareEvents>["buildWatcher"][] = []
@@ -47,6 +48,7 @@ export const combineMiddleware = (conf: F2EConfigResult, middlewares: (Middlewar
             middle = m(conf)
         }
         if (middle && middle.mode.includes(mode)) {
+            middle.onMemoryInit && onMemoryInits.push(middle.onMemoryInit)
             middle.onMemoryLoad && onMemoryLoads.push(middle.onMemoryLoad)
             middle.beforeRoute && beforeRoutes.push(middle.beforeRoute)
             middle.onRoute && onRoutes.push(middle.onRoute)
@@ -58,8 +60,12 @@ export const combineMiddleware = (conf: F2EConfigResult, middlewares: (Middlewar
             middle.outputFilter && outputFilters.push(middle.outputFilter)
         }
     }
-    
     return {
+        onMemoryInit: async (store) => {
+            for (let i = 0; i < onMemoryInits.length; i++) {
+                await onMemoryInits[i]?.(store);
+            }
+        },
         onMemoryLoad: async (store) => {
             for (let i = 0; i < onMemoryLoads.length; i++) {
                 await onMemoryLoads[i]?.(store);

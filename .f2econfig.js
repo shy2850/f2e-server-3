@@ -44,7 +44,7 @@ const config = {
             if (/\.(map|js\.json)$/.test(output)) {
                 return '/' + output + '?' + hash
             }
-            return '/' + output.replace(/\.(\w+)$/, `-${hash}.$1`)
+            return '/' + output.replace(/\.(\w+)$/, `.${hash}.$1`)
         }
     },
     proxies: ['/uniadmin', '/api', '/uni-auth'].map(location => {
