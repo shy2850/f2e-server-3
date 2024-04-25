@@ -15,8 +15,8 @@ const DefaultOutputFilter = (path: string, data: MemoryTree.DataBuffer) => {
     return DefaultBuildFilter(path, Buffer.isBuffer(data) ? data.length : 0);
 };
 /** 默认监听文件变化打印日志 */
-const DefaultWatcher = (path: string) => {
-    return logger.debug(path);
+const DefaultWatcher = (path: string, event: string) => {
+    return logger.debug(path, event);
 };
 /** 默认设置资源的输入输出路径相同 */
 const DefaultOnSet: MemoryTree.Options['onSet'] = async (pathname, data) => {

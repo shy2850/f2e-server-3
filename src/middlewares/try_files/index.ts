@@ -46,7 +46,6 @@ const middleware_tryfiles: MiddlewareCreater = (conf) => {
             for (let i = 0; i < tries.length; i++) {
                 const item = tries[i]
                 if (item.test.test(pathname)) {
-                    logger.debug(pathname, item )
                     let p = pathname
                     // 为了通过ts检查，这里分开写
                     if (typeof item.replacer === 'string') {

@@ -41,7 +41,9 @@ export const server_all = (conf: F2EConfigResult, events: Required<MiddlewareEve
         }
         const method = req.getMethod().toUpperCase()
         const body = method === 'POST' ? await engine.parseBody(req, resp) : undefined
-        body && logger.debug(location.pathname, body.toString())
+        if (body) {
+            logger.debug(location.pathname, body.toString())
+        }
         await execute(pathname, req, resp, body)
     }
 }

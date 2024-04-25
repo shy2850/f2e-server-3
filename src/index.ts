@@ -15,7 +15,6 @@ const { App, SSLApp } = engine
 export const createBuilder = async (options: F2EConfig) => {
     const { root, watch, namehash, dest } = getConfigResult(options)
     const { onMemoryInit, onMemoryLoad, buildFilter, watchFilter, outputFilter, onGet, onSet, buildWatcher } = getConfigEvents(options)
-    logger.log("资源编译开始")
     const memoryTree = await createMemoryTree({
         root, dest: dest, watch, namehash,
         buildFilter, watchFilter, outputFilter, onGet, onSet, buildWatcher
@@ -24,9 +23,7 @@ export const createBuilder = async (options: F2EConfig) => {
         await onMemoryInit(memoryTree.store)
         await memoryTree.input("")
         await onMemoryLoad(memoryTree.store)
-        logger.log("资源编译完成")
         await memoryTree.output("")
-        logger.log("资源输出完成")
     } catch (e) {
         logger.error(e)
         exit(1)
@@ -51,13 +48,13 @@ const createServer = async (options: F2EConfig) => {
     await onMemoryInit(memoryTree.store)
     await memoryTree.input("")
     await onMemoryLoad(memoryTree.store)
-    logger.debug('启动时间:' + (Date.now() - startTime) + 'ms')
+    logger.debug('server init: ' + (Date.now() - startTime) + 'ms')
     memoryTree.watch()
 
     const app = ssl ? SSLApp(ssl) : App()
     app.listen(host, port, function () {
-        logger.log(`Server listening on ${host}:${port}`)
-        ssl && logger.log(`SSL: ON`)
+        logger.debug(`Server listening on ${host}:${port}`)
+        ssl && logger.debug(`SSL: ON`)
         onServerCreate(app, conf)
     })
     .any('/*', server_all(conf, events, memoryTree))

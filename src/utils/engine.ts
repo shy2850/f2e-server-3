@@ -10,16 +10,15 @@ export let uWS: typeof UWS = null as any
 if (!isBun) {
     try {
         uWS = require('uWebSockets.js')
-        logger.log(
+        logger.debug(
             'uWebsucket.js version: ',
             process.platform + '_' + process.arch + '_' + process.versions.modules,
-            '\n'
         );
     } catch (e) {
         logger.debug('uWebSockets.js not found, use default node:http(s) module instead')
     }
 } else {
-    logger.debug('bunjs environment, use default Bun.serve()')
+    logger.debug('bunjs environment, use default node:http(s)')
 }
 
 /**
