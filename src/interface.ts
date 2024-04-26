@@ -98,7 +98,7 @@ export interface ServerConfig {
      * less配置
      * @default false
      */
-    less?: boolean | LessConfig;
+    less?: false | LessConfig;
 }
 export interface F2EConfig extends ServerConfig, Partial<MemoryTree.Options>, Partial<MiddlewareEvents> {
     /** 

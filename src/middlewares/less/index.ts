@@ -1,6 +1,7 @@
 import { MemoryTree } from "../../memory-tree";
 import { MiddlewareCreater } from "../interface";
 import * as _ from '../../utils/misc'
+import { exit } from "node:process";
 import * as path from 'node:path'
 import * as fs from 'node:fs'
 import logger from "../../utils/logger";
@@ -9,71 +10,85 @@ const middleware_less: MiddlewareCreater = (conf) => {
     if (!conf.less) {
         return
     }
-    const lessOptions = typeof conf.less === 'boolean' ? {} : conf.less
-    const lessFilter = lessOptions.only ? (pathname: string) => {
-        return !!lessOptions.only?.find(t => _.minimatch(pathname, t))
-    } : (
-        lessOptions.ignore ? (pathname: string) => {
-            return !lessOptions.ignore?.find(t => _.minimatch(pathname, t))
-        } : (pathname: string) => {
-            return _.minimatch(pathname, '*.less$')
-        }
-    )
+    const { entryPoints = [], buildOptions = {} } = conf.less
     const less: typeof import('less') = require('less')
+    const entry_map = new Map<string, string>(entryPoints.map(p => {
+        if (typeof p === 'string') {
+            return [_.pathname_fixer(p), _.pathname_fixer(p.replace(/\.less$/, '.css'))]
+        }
+        return [_.pathname_fixer(p.in), _.pathname_fixer(p.out)]
+    }))
 
     const deps_map = new Map<string, string>()
+
+    const build = async function (origin: string, store: MemoryTree.Store) {
+        const output = entry_map.get(origin)
+        if (!output) {
+            logger.error(`Less entry ${origin} not exists!`)
+            return
+        }
+        const realPath = path.join(conf.root, origin)
+        if (!fs.existsSync(realPath)) {
+            logger.error(`Less file ${realPath} not exists!`)
+            exit(1)
+        }
+        const data = fs.readFileSync(realPath, 'utf-8')
+        const input = data.replace(/(@import.*)"(\S*\/)"/g, (impt, pre, dir) => {
+            let pkg = path.join(path.dirname(realPath), dir)
+            return fs.readdirSync(pkg).filter(d => /\.less$/.test(d)).map(d => `${pre}"${dir}${d}";`).join('\n')
+        })
+        const lessData = await less.render(input, {
+            rootpath: conf.root,
+            filename: origin,
+            javascriptEnabled: true,
+            sourceMap: {
+                sourceMapURL: output.split('/').pop(),
+                outputSourceFiles: true
+            },
+            ...buildOptions
+        })
+
+        if (lessData.css) {
+            store.save({
+                originPath: origin,
+                outputPath: output,
+                data: lessData.css + '',
+            })
+        }
+
+        if (lessData.map) {
+            const map = lessData.map.toString()
+            const mapPath = output.replace(/\.css$/, '.css.map')
+            store.save({
+                originPath: mapPath,
+                outputPath: mapPath,
+                data: map + '',
+            })
+        }
+
+        deps_map.set(origin, origin)
+        store.ignores.add(origin)
+        lessData.imports.forEach(file => {
+            store.ignores.add(file)
+            deps_map.set(_.pathname_fixer(file), origin)
+        })
+    }
+
     return {
         name: 'less',
         mode: ['dev', 'build'],
-        onSet: async (pathname, data, store) => {
-            let result = {
-                originPath: pathname,
-                outputPath: pathname,
-                data,
-            }
-            logger.log('less', pathname, '->', data?.toString())
-
-            if (lessFilter(pathname)) {
-                logger.log('less', pathname, '->', data?.toString())
-
-                result = {
-                    originPath: pathname,
-                    outputPath: pathname.replace(/\.less$/, '.css'),
-                    data,
-                }
-                const outputMapPath = pathname.replace(/\.less$/, '.css.map')
-                const lessData = await less.render((data?.toString() || '').replace(/(@import.*)"(\S*\/)"/g, (impt, pre, dir) => {
-                    let pkg = path.join(path.dirname(pathname), dir)
-                    return fs.readdirSync(pkg).filter(d => /\.less$/.test(d)).map(d => `${pre}"${dir}${d}";`).join('\n')
-                }), {
-                    rootpath: conf.root,
-                    filename: pathname,
-                    javascriptEnabled: true,
-                    sourceMap: {
-                        sourceMapURL: outputMapPath.split('/').pop(),
-                        outputSourceFiles: true
-                    },
-                    ...(lessOptions.buildOptions || {})
-                })
-                
-
-                result.data = lessData.css
-                store.save({
-                    originPath: outputMapPath,
-                    outputPath: outputMapPath,
-                    data: lessData.map,
-                })
-                deps_map.set(pathname, pathname)
-                lessData.imports.forEach(file => {
-                    deps_map.set(_.pathname_fixer(file), pathname)
-                })
-            }
-            return result
+        onMemoryLoad: async (store) => {
+            const entries = [...entry_map.keys()]
+            await Promise.all(entries.map(origin => build(origin, store)))
         },
-        buildWatcher: (pathname, eventType, build, store) => {
+        buildWatcher: (pathname, eventType, __build, store) => {
             const main = deps_map.get(pathname)
             if (main) {
-                build(main)
+                try {
+                    build(main, store)
+                } catch (e) {
+                    logger.error(e)
+                }
             }
         }
     }

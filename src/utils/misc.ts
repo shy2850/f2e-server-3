@@ -2,7 +2,7 @@ import logger from "./logger"
 import mime from "mime"
 
 export const REG_FILENAME = /[^\\/,\s\t\n]+/g
-export const pathname_arr = (str = ''): string[] => (str.match(REG_FILENAME) || [])
+export const pathname_arr = (str = ''): string[] => (str.split(/[#?]+/)[0].replace(/^\.+\//, '').match(REG_FILENAME) || [])
 export const pathname_fixer = (str = '') => pathname_arr(str).join('/')
 export const pathname_dirname = (str = '') => (str.match(REG_FILENAME) || []).slice(0, -1).join('/')
 export const minimatch = (str = '', pattern = '') => {

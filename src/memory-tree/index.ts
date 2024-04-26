@@ -4,6 +4,7 @@ import { defaultOptions } from './defaults'
 import { inputProvider, beginWatch } from "./input"
 import { outputProvider } from "./output"
 import path from 'node:path'
+import url from 'node:url'
 import { createHash } from "node:crypto"
 import logger from "../utils/logger"
 
@@ -19,12 +20,14 @@ export const createStore = function (options: Pick<MemoryTree.Options, 'onGet'|'
     let o = {}
     const origin_map = new Map<string, MemoryTree.SetResult>()
     const store: MemoryTree.Store = {
+        ignores: new Set(),
         origin_map,
         _get(pathname) {
             const arr = _.pathname_arr(pathname)
             return arr.length ? _.get(o, arr) : o
         },
-        async load (pathname) {
+        async load (_pathname) {
+            const pathname = _.pathname_fixer(_pathname)
             let result = await onGet(pathname, store._get(pathname), store)
             if (result && namehash && namehash.entries && namehash.searchValue) {
                 if (inEntries(namehash.entries, pathname)) {
@@ -35,7 +38,9 @@ export const createStore = function (options: Pick<MemoryTree.Options, 'onGet'|'
                         const replacer = (mat: string, src: string) => {
                             const key = _.pathname_fixer('/' === src.charAt(0) ? src : path.join(path.dirname(pathname), src))
                             const out = origin_map.get(key)
-                            return out ? mat.replace(src, out.outputPath) : mat
+                            if (!out) return mat
+                            const targetSrc = url.resolve(namehash.publicPath || '/', out.outputPath)
+                            return mat.replace(src,  targetSrc)
                         }
                         result = result.replace(searchValue, replacer)
                     }
@@ -43,28 +48,18 @@ export const createStore = function (options: Pick<MemoryTree.Options, 'onGet'|'
             }
             return result
         },
-        save(_result) {
-            const result = {..._result}
+        save(result) {
             // outputPath 需要携带根路径 /
-            let outputPath = _.pathname_fixer(result.outputPath || result.originPath)
             if (namehash && (Buffer.isBuffer(result.data) || typeof result.data === 'string')) {
                 const hash = createHash('md5').update(result.data).digest('hex').slice(0, 8)
                 result.hash = hash
                 if (namehash.replacer && !inEntries(namehash?.entries, result.originPath)) {
-                    result.outputPath = namehash.replacer(outputPath, hash) || result.outputPath
-                    outputPath = _.pathname_fixer(result.outputPath.split(/[!#*?=]+/)[0])
+                    result.outputPath = namehash.replacer(_.pathname_fixer(result.outputPath || result.originPath), hash) || result.outputPath
                 }
             }
             origin_map.set(result.originPath, result)
-
-            if (outputPath) {
-                _.set(o, outputPath, result.data)
-            }
+            _.set(o, _.pathname_fixer(result.outputPath), result.data )
         },
-        _reset() {
-            o = {}
-            origin_map.clear()
-        }
     }
     return store
 }

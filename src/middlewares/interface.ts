@@ -20,7 +20,7 @@ export interface MiddlewareEvents extends Partial<MemoryTree.Events> {
      * @param resp     响应对象
      */
     beforeRoute?: {
-        (pathname: string, req: HttpRequest, resp: HttpResponse): string | false | void | Promise<string | false | void>
+        (pathname: string, req: HttpRequest, resp: HttpResponse, store: MemoryTree.Store): string | false | void | Promise<string | false | void>
     };
     /**
      * 路由解析后执行
@@ -31,7 +31,7 @@ export interface MiddlewareEvents extends Partial<MemoryTree.Events> {
      * @param body     POST请求完成的body
      */
     onRoute?: {
-        (pathname: string, req: HttpRequest, resp: HttpResponse, store?: MemoryTree.Store, body?: Buffer): string | false | void | Promise<string | false | void>
+        (pathname: string, req: HttpRequest, resp: HttpResponse, store: MemoryTree.Store, body?: Buffer): string | false | void | Promise<string | false | void>
     };
 }
 export interface MiddlewareResult extends MiddlewareEvents {

@@ -24,10 +24,10 @@ export const combineMiddleware = (conf: F2EConfigResult, middlewares: (Middlewar
     const outputFilters: Required<MiddlewareEvents>["outputFilter"][] = []
 
     /** 开始内置中间件加载 */
+    middlewares.push(middleware_less)
     middlewares.push(middleware_esbuild)
     middlewares.push(middleware_proxy)
     middlewares.push(middleware_livereload)
-    middlewares.push(middleware_less)
     /** tryfiles 顺序需要在最后 */
     middlewares.push(middleware_tryfiles)
 
@@ -64,20 +64,16 @@ export const combineMiddleware = (conf: F2EConfigResult, middlewares: (Middlewar
     }
     return {
         onMemoryInit: async (store) => {
-            for (let i = 0; i < onMemoryInits.length; i++) {
-                await onMemoryInits[i]?.(store);
-            }
+            await Promise.all(onMemoryInits.map(fn => fn?.(store)))
         },
         onMemoryLoad: async (store) => {
-            for (let i = 0; i < onMemoryLoads.length; i++) {
-                await onMemoryLoads[i]?.(store);
-            }
+            await Promise.all(onMemoryLoads.map(fn => fn?.(store)))
         },
-        beforeRoute: async (pathname, req, resp) => {
+        beforeRoute: async (pathname, req, resp, store) => {
             let _pathname = pathname
             for (let i = 0; i < beforeRoutes.length; i++) {
                 // beforeRoute 返回 false 停止继续
-                let res = await beforeRoutes[i](pathname, req, resp)
+                let res = await beforeRoutes[i](pathname, req, resp, store)
                 if (res === false) {
                     return res
                 }

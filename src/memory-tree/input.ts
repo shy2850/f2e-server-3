@@ -8,7 +8,7 @@ export const inputProvider: MemoryTree.BuildProvider = (options, store) => {
     const { buildFilter, onSet, root, mimeTypes = {} } = options
     return async function build (pathname: string) {
         // 路径被过滤，直接返回
-        if (pathname && (!buildFilter || !buildFilter(pathname))) {
+        if (pathname && (store.ignores.has(pathname) || !buildFilter || !buildFilter(pathname))) {
             return
         }
 
@@ -44,7 +44,21 @@ export const inputProvider: MemoryTree.BuildProvider = (options, store) => {
 export const beginWatch = (options: MemoryTree.Options, store: MemoryTree.Store, build: MemoryTree.Build) => () => {
     const { buildWatcher, watch, watchFilter, root } = options
     if (watch && watchFilter) {
-        (async () => {
+        const watcher_map = new Map<string, {
+            ready?: boolean,
+            excute: {(): Promise<void>}
+        }>();
+        setInterval(() => {
+            watcher_map.forEach((item, pathname) => {
+                if (item.ready) {
+                    watcher_map.delete(pathname)
+                    item.excute()
+                } else {
+                    item.ready = true
+                }
+            })
+        }, 50)
+        ;(async () => {
             const ac = new AbortController();
             try {
                 const watcher = fs.watch(root, {
@@ -60,8 +74,13 @@ export const beginWatch = (options: MemoryTree.Options, store: MemoryTree.Store,
                             if (info.filename) {
                                 const pathname = _.pathname_fixer(info.filename)
                                 if (watchFilter(pathname)) {
-                                    await build(pathname)
-                                    buildWatcher && buildWatcher(pathname, info.eventType, build, store)
+                                    watcher_map.set(pathname, {
+                                        ready: false,
+                                        excute: async () => {
+                                            await build(pathname)
+                                            buildWatcher && buildWatcher(pathname, info.eventType, build, store)
+                                        }
+                                    })
                                 }
                             }
                             break;

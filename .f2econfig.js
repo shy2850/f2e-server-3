@@ -10,13 +10,15 @@ const config = {
     port: 2850,
     mode: 'dev',
     gzip: true,
-    less: true,
+    less: {
+        entryPoints: ['test/app/app.less'],
+    },
     mimeTypes: {
         'ts': 'text/plain'
     },
     try_files: [
         { test: /redirect/, location: '/package.json' },
-        { test: /^test/, index: 'test/index.html', }
+        // { test: /^test/, index: 'test/index.html', }
     ],
     gzip_filter: () => true,
     buildFilter: (pathname) => {
@@ -40,6 +42,7 @@ const config = {
         return { data, originPath: pathname, outputPath: pathname }
     },
     namehash: {
+        // publicPath: 'http://localhost:2850/',
         replacer (output, hash) {
             /** sourcemap文件不改名 */
             if (/\.(map|js\.json)$/.test(output)) {

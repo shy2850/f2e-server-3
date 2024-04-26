@@ -80,6 +80,7 @@ const middleware_esbuild: MiddlewareCreater = (conf) => {
                 const found = origin_map.get(inputPath) || { index: i, rebuilds: new Set() }
                 found.rebuilds.add(rebuild)
                 origin_map.set(inputPath, found)
+                store.ignores.add(inputPath)
             })
             await save({ store, result, conf })
         }
@@ -95,6 +96,7 @@ const middleware_esbuild: MiddlewareCreater = (conf) => {
             const { reg_inject = /index\.html?$/, cache_root = '.f2e_cache' } = esbuildConfig
             const result = store.origin_map.get(pathname) || {
                 originPath: pathname,
+                outputPath: pathname,
                 data,
             }
             if (reg_inject.test(pathname) && data) {
@@ -105,7 +107,6 @@ const middleware_esbuild: MiddlewareCreater = (conf) => {
                     if (item) {
                         const sourcefile = _.template(LIB_FILE_NAME, { index: item.index })
                         const originPath = `${cache_root}/${sourcefile}`
-                        logger.debug('[esbuild inject external]', key, originPath)
                         return `<script src="/${originPath}"></script>\n${___}`
                     } else {
                         return ___

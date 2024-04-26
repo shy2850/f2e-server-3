@@ -14,7 +14,7 @@ export class NativeTemplatedApp implements TemplatedApp {
             const req = new NativeRequest(request)
             const resp = new NativeResponse(request, response)
             const location = new URL(request.url || '/', 'http://localhost')
-            for (let i = 0; i < listeners.length; i++) {
+            for (let i = listeners.length - 1; i >= 0; i--) {
                 const { glob, handler } = listeners[i];
                 if (minimatch(location.pathname, glob)) {
                     await handler(resp, req)

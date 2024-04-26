@@ -10,6 +10,8 @@ export namespace MemoryTree {
         (options: Options, store: Store): Build
     }
     export interface Store {
+        /** 支持动态添加忽略文件，对于esbuild 和 less等插件比较有用 */
+        ignores: Set<string>
         /** 原始资源映射 */
         origin_map: Map<string, SetResult>
         /** 保存资源，同时处理路径变更 */
@@ -23,10 +25,6 @@ export namespace MemoryTree {
         /** 加载资源，从内存获取后执行 onGet 返回结果 */
         load: {
             (path: string): Promise<DataBuffer>
-        }
-        /** 清空所有数据 */
-        _reset: {
-            (): void
         }
     }
 
@@ -118,4 +116,9 @@ export interface HashReplacerOptions {
      *
      */
     replacer?: (output: string, hash?: string) => string
+    /**
+     * 替换资源路径前缀
+     * @default "/"
+     */
+    publicPath?: string
 }

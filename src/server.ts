@@ -33,7 +33,7 @@ export const server_all = (conf: F2EConfigResult, events: Required<MiddlewareEve
     return async (resp: HttpResponse, req: HttpRequest) => {
         const location = new URL('http://127.0.0.1' + req.getUrl())
         let pathname = _.pathname_fixer(_.decode(location.pathname))
-        let pathnameTemp = await beforeRoute(pathname, req, resp)
+        let pathnameTemp = await beforeRoute(pathname, req, resp, memory.store)
         if (pathnameTemp === false) {
             return
         } else if (typeof pathnameTemp === 'string') {
