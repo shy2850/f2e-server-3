@@ -3,3 +3,4 @@ lib/
 output/
 lib_test/
 .f2e_cache
+*.less.d.ts

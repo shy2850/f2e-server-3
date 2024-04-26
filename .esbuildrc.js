@@ -1,3 +1,4 @@
+const PluginPostCSS = require('esbuild-plugin-postcss').default;
 // @ts-check
 /**
  * @type { import('esbuild').BuildOptions[] }
@@ -11,6 +12,11 @@ let config = [
         bundle: true,
         format: 'iife',
         target: 'chrome70',
+        plugins: [
+            PluginPostCSS({
+                declaration: true,
+            })
+        ],
         external: [
             'react',
             'react-dom/client',

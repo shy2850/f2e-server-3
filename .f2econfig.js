@@ -18,11 +18,11 @@ const config = {
     },
     try_files: [
         { test: /redirect/, location: '/package.json' },
-        // { test: /^test/, index: 'test/index.html', }
+        { test: /^home/, index: 'test/index.html', }
     ],
     gzip_filter: () => true,
     buildFilter: (pathname) => {
-        return /^(src|index|test|README|package|$)/.test(pathname)
+        return /^(src|index|test($|\/index\.html)|README|package|$)/.test(pathname)
     },
     onRoute: (pathname, req, resp, body) => {
         if (/src/i.test(pathname)) {
