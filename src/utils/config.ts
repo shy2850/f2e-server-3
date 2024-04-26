@@ -58,6 +58,7 @@ export const getConfigResult = function (conf: F2EConfig = {}) {
             build_external: true,
             with_metafile: mode === 'dev',
         }) || false,
+        less: conf.less || false,
     }
     return config;
 }

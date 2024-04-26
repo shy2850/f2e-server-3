@@ -7,7 +7,6 @@ import logger from "../utils/logger";
 export const inputProvider: MemoryTree.BuildProvider = (options, store) => {
     const { buildFilter, onSet, root, mimeTypes = {} } = options
     return async function build (pathname: string) {
-        
         // 路径被过滤，直接返回
         if (pathname && (!buildFilter || !buildFilter(pathname))) {
             return
@@ -18,7 +17,7 @@ export const inputProvider: MemoryTree.BuildProvider = (options, store) => {
 
         if (stat.isDirectory()) {
             store.save({
-                originPath: pathname, outputPath: '/' + pathname, data: {},
+                originPath: pathname, outputPath: pathname, data: {},
             })
             try {
                 const files = await fs.readdir(absolutePath)

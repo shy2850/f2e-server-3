@@ -6,7 +6,7 @@ export const pathname_arr = (str = ''): string[] => (str.match(REG_FILENAME) || 
 export const pathname_fixer = (str = '') => pathname_arr(str).join('/')
 export const pathname_dirname = (str = '') => (str.match(REG_FILENAME) || []).slice(0, -1).join('/')
 export const minimatch = (str = '', pattern = '') => {
-    const reg = new RegExp(pattern.replace(/\./g, '\\\\.').replace(/\*/g, '.*'))
+    const reg = new RegExp(pattern.replace(/\./g, '\\.').replace(/\*/g, '.*').replace(/,/g, '|'))
     return reg.test(str)
 }
 

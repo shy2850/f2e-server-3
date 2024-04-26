@@ -4,12 +4,13 @@ const { marked } = require('marked');
 
 let i = 1;
 /**
- * @type {import('.').F2EConfig}
+ * @type {import('./src/interface').F2EConfig}
  */
 const config = {
     port: 2850,
     mode: 'dev',
     gzip: true,
+    less: true,
     mimeTypes: {
         'ts': 'text/plain'
     },
@@ -50,11 +51,11 @@ const config = {
     proxies: ['/uniadmin', '/api', '/uni-auth'].map(location => {
         return {
             location,
-            origin: 'http://172.16.128.207:18588',
+            origin: 'http://uni.auth:18588',
             requestHeaders: headers => {
                 return {
                     ...headers,
-                    cookie: 'AUTH_SESSION_ID=uniAuth:session:32212d8c76e49b30f24b1bc670620c11'
+                    cookie: 'AUTH_SESSION_ID=uniAuth:session:834dd56e330e80d61f7d6f24cb784f4c'
                 }
             },
             responseRender: a => a,

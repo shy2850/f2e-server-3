@@ -12,7 +12,7 @@
         "forceConsistentCasingInFileNames": true,
         "outDir": "./lib",
         "declaration": true,
-        "declarationMap": true
+        "declarationMap": false
     },
     "include": ["src/**/*", "test/**/*", "typings.d.ts"],
     "exclude": ["node_modules", "lib"]

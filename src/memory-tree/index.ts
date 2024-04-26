@@ -18,19 +18,16 @@ export const createStore = function (options: Pick<MemoryTree.Options, 'onGet'|'
     const { onGet, namehash } = options
     let o = {}
     const origin_map = new Map<string, MemoryTree.SetResult>()
-    const output_map = new Map<string, MemoryTree.SetResult>()
     const store: MemoryTree.Store = {
         origin_map,
-        output_map,
         _get(pathname) {
             const arr = _.pathname_arr(pathname)
             return arr.length ? _.get(o, arr) : o
         },
         async load (pathname) {
             let result = await onGet(pathname, store._get(pathname), store)
-            if (result && namehash && namehash.entries && namehash.searchValue && namehash.replacer) {
-                const o = output_map.get(pathname)
-                if (o && inEntries(namehash.entries, o.originPath)) {
+            if (result && namehash && namehash.entries && namehash.searchValue) {
+                if (inEntries(namehash.entries, pathname)) {
                     const searchValues = namehash.searchValue.map(t => new RegExp(t, 'g'))
                     result = result.toString()
                     for (let i = 0; i < searchValues.length; i++) {
@@ -46,10 +43,10 @@ export const createStore = function (options: Pick<MemoryTree.Options, 'onGet'|'
             }
             return result
         },
-        save(result) {
+        save(_result) {
+            const result = {..._result}
             // outputPath 需要携带根路径 /
             let outputPath = _.pathname_fixer(result.outputPath || result.originPath)
-            result.outputPath = '/' + outputPath
             if (namehash && (Buffer.isBuffer(result.data) || typeof result.data === 'string')) {
                 const hash = createHash('md5').update(result.data).digest('hex').slice(0, 8)
                 result.hash = hash
@@ -59,7 +56,6 @@ export const createStore = function (options: Pick<MemoryTree.Options, 'onGet'|'
                 }
             }
             origin_map.set(result.originPath, result)
-            output_map.set(outputPath, result)
 
             if (outputPath) {
                 _.set(o, outputPath, result.data)
@@ -68,7 +64,6 @@ export const createStore = function (options: Pick<MemoryTree.Options, 'onGet'|'
         _reset() {
             o = {}
             origin_map.clear()
-            output_map.clear()
         }
     }
     return store

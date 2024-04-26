@@ -4,7 +4,7 @@ import { ConfigMode, F2EConfigResult } from "../interface";
 
 export interface MiddlewareEvents extends Partial<MemoryTree.Events> {
     /**
-     * memory-tree首次加载完成时触发
+     * memory-tree首次加载前触发
      * @param store memory-tree实例
      */
     onMemoryInit?(store: MemoryTree.Store): void | Promise<void>

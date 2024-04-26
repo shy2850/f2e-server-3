@@ -12,8 +12,6 @@ export namespace MemoryTree {
     export interface Store {
         /** 原始资源映射 */
         origin_map: Map<string, SetResult>
-        /** 结果资源映射 */
-        output_map: Map<string, SetResult>
         /** 保存资源，同时处理路径变更 */
         save: {
             (result: SetResult): void

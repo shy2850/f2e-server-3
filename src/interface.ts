@@ -5,6 +5,7 @@ import { TryFilesItem } from './middlewares/try_files/interface';
 import { LiveReloadConfig } from './middlewares/livereload/interface';
 import { ProxyItem } from './middlewares/proxy/interface';
 import { EsbuildConfig } from './middlewares/esbuild/interface';
+import { LessConfig } from './middlewares/less/interface';
 
 export type ConfigMode = "dev" | "build" | "prod";
 export interface APIContext {
@@ -93,6 +94,11 @@ export interface ServerConfig {
      * }
      */
     esbuild?: false | EsbuildConfig;
+    /**
+     * less配置
+     * @default false
+     */
+    less?: boolean | LessConfig;
 }
 export interface F2EConfig extends ServerConfig, Partial<MemoryTree.Options>, Partial<MiddlewareEvents> {
     /** 

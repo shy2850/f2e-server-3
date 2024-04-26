@@ -8,6 +8,7 @@ import middleware_livereload from './livereload';
 import middleware_tryfiles from './try_files';
 import middleware_proxy from './proxy';
 import middleware_esbuild from './esbuild';
+import middleware_less from './less';
 
 export const combineMiddleware = (conf: F2EConfigResult, middlewares: (MiddlewareCreater | MiddlewareReference)[]): Required<MiddlewareEvents> => {
     const { mode } = conf
@@ -26,6 +27,7 @@ export const combineMiddleware = (conf: F2EConfigResult, middlewares: (Middlewar
     middlewares.push(middleware_esbuild)
     middlewares.push(middleware_proxy)
     middlewares.push(middleware_livereload)
+    middlewares.push(middleware_less)
     /** tryfiles 顺序需要在最后 */
     middlewares.push(middleware_tryfiles)
 
@@ -103,14 +105,15 @@ export const combineMiddleware = (conf: F2EConfigResult, middlewares: (Middlewar
             buildWatchers.map(item => item(pathname, eventType, build, store))
         },
         onSet: async (pathname, data, store) => {
-            let temp: MemoryTree.SetResult = { data, originPath: pathname, outputPath: pathname }
+            let result: MemoryTree.SetResult = store.origin_map.get(pathname) || { data, originPath: pathname, outputPath: pathname }
             for (let i = 0; i < onSets.length; i++) {
-                let { data, outputPath } = await onSets[i](temp.outputPath, temp.data, store)
-                Object.assign(temp, {
-                    data, outputPath
-                })
+                const temp = await onSets[i](result.outputPath, result.data, store)
+                result = Object.assign({}, result, temp)
             }
-            return temp
+            return {
+                ...result,
+                originPath: pathname,
+            }
         },
         onGet: async (pathname, data, store) => {
             let temp = data

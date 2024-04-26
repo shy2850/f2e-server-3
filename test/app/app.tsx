@@ -21,6 +21,7 @@ const App = () => {
         <ConfigProvider locale={zh_CN}>
             <div>
                 <h1>antd version: {version}</h1>
+                <div className="red bold">red & bold <span className="borderd">borderd</span></div>
                 <Space>
                     <DatePicker />
                     <Button type="primary">Primary Button</Button>
