@@ -61,7 +61,7 @@ const middleware_livereload: MiddlewareCreater = (conf) => {
     return {
         name: 'livereload',
         mode: ['dev'],
-        onRoute: route.execute,
+        beforeRoute: route.execute,
         onGet: async (pathname, html) => {
             /** 脚本注入 */
             if (reg_inject.test(pathname) && html) {

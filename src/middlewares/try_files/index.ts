@@ -36,7 +36,7 @@ const middleware_tryfiles: MiddlewareCreater = (conf) => {
     return {
         name: 'try_files',
         mode: ['dev', 'prod'],
-        beforeRoute: async (pathname, req, resp, store) => {
+        onRoute: async (pathname, req, resp, store) => {
             let data = store._get(pathname)
             /** 没有数据才进行try_files */
             if (typeof data === 'string' || data instanceof Buffer) {

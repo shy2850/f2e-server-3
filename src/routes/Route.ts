@@ -83,8 +83,8 @@ export class Route implements IRoute {
                         break;
                 }
             } catch (e) {
-                console.error(pathname)
-                // handleError(resp, e + '')
+                console.error('onRoute Error:', pathname, e)
+                handleError(resp, e + '')
             }
             return false
         }
