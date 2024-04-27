@@ -1,6 +1,6 @@
 {
   "name": "f2e-server3",
-  "version": "3.1.5-rc",
+  "version": "1.0.0-alpha",
   "description": "f2e-server 3.0",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
@@ -9,7 +9,9 @@
     "lib",
     "src"
   ],
-  "bin": "lib/f2e.js",
+  "bin": {
+    "f2e": "lib/f2e.js"
+  },
   "scripts": {
     "tsc": "tsc",
     "test": "tsc -p tsconfig.test.json && node ./lib_test/test --debug",
@@ -27,20 +29,20 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "@types/bun": "^1.1.0",
+    "@types/less": "^3.0.6",
     "@types/node": "^20.12.7",
     "@types/react": "^18.2.79",
     "@types/react-dom": "^18.2.25",
     "antd": "^5.16.4",
+    "commander": "^12.0.0",
     "esbuild": "^0.20.2",
     "esbuild-plugin-postcss": "^0.2.1",
     "less": "^4.2.0",
     "marked": "^12.0.1",
+    "mime": "^4.0.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "typescript": "^5.4.5",
     "uWebSockets.js": "github:uNetworking/uWebSockets.js#v20.43.0"
-  },
-  "dependencies": {
-    "mime": "^3.0.0"
   }
 }

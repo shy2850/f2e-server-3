@@ -6,10 +6,10 @@ import { MiddlewareCreater } from "../middlewares/interface";
 import { combineMiddleware } from "../middlewares";
 
 let F2E_CONFIG_PATH = ''
-const F2E_CONFIG = '.f2econfig.js'
+export const F2E_CONFIG = '.f2econfig.js'
 export const setConfigPath = (path: string) => F2E_CONFIG_PATH = path
 const getConfig = (conf: F2EConfig = {}) => {
-    let pathname = F2E_CONFIG_PATH || path.join(process.cwd(), F2E_CONFIG)
+    let pathname = F2E_CONFIG_PATH.startsWith('/') ? F2E_CONFIG_PATH : path.join(process.cwd(), F2E_CONFIG)
     if (fs.existsSync(pathname)) {
         conf = {
             ...require(pathname),

@@ -1,6 +1,6 @@
 import logger from "./logger"
-import mime from "mime"
 import { networkInterfaces } from 'node:os'
+import mime from "./mime"
 
 export const REG_FILENAME = /[^\\/,\s\t\n]+/g
 export const pathname_arr = (str = ''): string[] => (str.split(/[#?]+/)[0].replace(/^\.+\//, '').match(REG_FILENAME) || [])

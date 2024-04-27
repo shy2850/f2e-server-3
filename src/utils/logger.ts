@@ -6,8 +6,12 @@ export enum LogLevel {
 }
 export class Logger {
     private _level: LogLevel
-    setLevel = (level: LogLevel) => {
-        this._level = level
+    setLevel = (level: LogLevel | keyof typeof LogLevel) => {
+        if (typeof level === 'string') {
+            this._level = LogLevel[level]
+        } else {
+            this._level = level
+        }
     }
     private _console: Console
     constructor (level = LogLevel.ERROR, _console?: Console) {
