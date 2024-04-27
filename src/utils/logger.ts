@@ -49,5 +49,5 @@ if (/^[0123]$/.test(process.env.LOG_LEVEL || "")) {
     level = LogLevel.DEBUG
 }
 
-const logger = new Logger(level)
+export const logger = new Logger(level)
 export default logger
