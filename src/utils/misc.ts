@@ -1,5 +1,6 @@
 import logger from "./logger"
 import mime from "mime"
+import { networkInterfaces } from 'node:os'
 
 export const REG_FILENAME = /[^\\/,\s\t\n]+/g
 export const pathname_arr = (str = ''): string[] => (str.split(/[#?]+/)[0].replace(/^\.+\//, '').match(REG_FILENAME) || [])
@@ -28,6 +29,9 @@ export const decode = (str: string) => {
         return str
     }
 }
+export const ServerIP = (Object.entries(networkInterfaces())
+    .find(([__, info]) => info?.filter((t) => t.family === 'IPv4' && !t.internal)[0])?.[1]?.filter((t) => t.family === 'IPv4' && !t.internal)[0]
+    || {address: '127.0.0.1'}).address
 
 export const queryparams = (search: string) => {
     const searchParams = new URLSearchParams(search)

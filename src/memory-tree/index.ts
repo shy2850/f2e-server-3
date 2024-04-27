@@ -58,6 +58,9 @@ export const createStore = function (options: Pick<MemoryTree.Options, 'onGet'|'
                 }
             }
             origin_map.set(result.originPath, result)
+            if(!_.isPlainObject(result.data)) {
+                logger.debug(`save ${result.originPath} -> ${result.outputPath}`)
+            }
             _.set(o, _.pathname_fixer(result.outputPath), result.data )
         },
     }

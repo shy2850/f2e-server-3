@@ -1,4 +1,5 @@
 import * as _ from '../src/utils/misc'
+import { filterBins } from '../src/utils/engine'
 
 export const run_template = () => {
     const tpl = `<ul><li><a href="/{{pathname}}">..</a></li>{{each files}}<li><a href="/{{path}}">{{name}}</a></li>{{/each}}</ul>`
@@ -16,3 +17,5 @@ export const run_template = () => {
         _.template(tpl, data)
     )
 }
+
+export const run_filterUWS = filterBins

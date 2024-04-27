@@ -4,9 +4,6 @@ import * as path from 'node:path'
 import * as fs from 'node:fs'
 import { MiddlewareCreater } from "../middlewares/interface";
 import { combineMiddleware } from "../middlewares";
-import { VERSION } from "./engine";
-import logger, { LogLevel } from "./logger";
-import { NativeResponse } from "../server-engine/native/response";
 
 let F2E_CONFIG_PATH = ''
 const F2E_CONFIG = '.f2econfig.js'

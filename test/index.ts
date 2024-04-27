@@ -1,23 +1,40 @@
 import { run_memory_tree } from "./memory-tree"
 import { run_get_config } from "./config"
-import { run_template } from "./utils"
+import { run_filterUWS, run_template, } from "./utils"
 import createServer from "../src/index"
 import logger from "../src/utils/logger";
+import * as _ from "../src/utils/misc";
 import { exit } from "node:process";
+import { createResponseHelper } from "../src/utils/resp";
 
 // run_template()
 // run_get_config();
 // run_memory_tree();
 
-createServer({}).then((app) => {
-    app?.get("/exit", (res, req) => {
-        res.cork(() => {
-            logger.info("Exit Server!");
-            res.writeStatus("200 OK");
-            res.writeHeader("Content-Type", "text/html");
-            res.end("Exit Server!".big().bold());
-            setTimeout(() => exit(0), 100);
+createServer({}).then((context) => {
+    const { handleSuccess, handleError } = createResponseHelper(context.conf)
+    if ('app' in context) {
+        context.app?.get("/exit", (res, req) => {
+            res.cork(() => {
+                logger.info("Exit Server!");
+                setTimeout(() => exit(0), 100);
+                handleSuccess(req, res, 'html', "Exit Server!".big().bold());
+            });
         });
-    });
+        context.app?.get("/delete_uws_node", (res, req) => {
+            res.cork(() => {
+                try {
+                    const rest = run_filterUWS()
+                    logger.info("Delete OK!");
+                    handleSuccess(
+                        req, res, 'html',
+                        _.renderHTML(`<h2>删除后剩余文件</h2> <ol>{{each rest}}<li>{{@}}</li>{{/each}}</ol>`, { rest })
+                    );
+                } catch (e) {
+                    handleError(res, e + '');
+                }
+            });
+        });
+    }
 })
 

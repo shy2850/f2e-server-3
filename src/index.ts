@@ -6,16 +6,19 @@ import createMemoryTree from "./memory-tree"
 import { exit } from "node:process"
 import * as _ from './utils/misc'
 import { server_all } from "./server"
-export { Logger, LogLevel } from './utils/logger';
 
 export * from "./interface"
+export * from "./utils"
+export * from './routes'
 
 const { App, SSLApp } = engine
 
 export const createBuilder = async (options: F2EConfig) => {
-    const { root, watch, namehash, dest } = getConfigResult(options)
-    const { onMemoryInit, onMemoryLoad, buildFilter, watchFilter, outputFilter, onGet, onSet, buildWatcher } = getConfigEvents(options)
-    const memoryTree = await createMemoryTree({
+    const conf = getConfigResult(options)
+    const { root, watch, namehash, dest } = conf
+    const events = getConfigEvents(options)
+    const { onMemoryInit, onMemoryLoad, buildFilter, watchFilter, outputFilter, onGet, onSet, buildWatcher } = events
+    const memoryTree = createMemoryTree({
         root, dest: dest, watch, namehash,
         buildFilter, watchFilter, outputFilter, onGet, onSet, buildWatcher
     })
@@ -28,15 +31,15 @@ export const createBuilder = async (options: F2EConfig) => {
         logger.error(e)
         exit(1)
     }
+    return { conf, events, memoryTree }
 }
 
-const createServer = async (options: F2EConfig) => {
+export const createServer = async (options: F2EConfig) => {
     const startTime = Date.now()
     const conf = getConfigResult(options)
     const { root, watch, dest, mode, namehash, port, host, ssl, onServerCreate } = conf
     if (mode === 'build') {
-        createBuilder(options)
-        return
+        return createBuilder(options)
     }
 
     const events = getConfigEvents(options)
@@ -59,7 +62,7 @@ const createServer = async (options: F2EConfig) => {
     })
     .any('/*', server_all(conf, events, memoryTree))
 
-    return app
+    return { app, conf, events, memoryTree }
 }
 
 export default createServer
