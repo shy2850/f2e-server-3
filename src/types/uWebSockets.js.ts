@@ -1,7 +1,3 @@
-declare module "mime";
-declare module "*.html";
-declare module "*.json";
-declare module "*.less";
 declare module "uWebSockets.js" {
     /*
     * Authored by Alex Hultman, 2018-2021.
@@ -403,5 +399,3 @@ declare module "uWebSockets.js" {
     /** Sliding dedicated decompress window, requires 32KB of memory per socket (plus about 23KB) */
     export var DEDICATED_DECOMPRESSOR: CompressOptions;
 }
-
-/// re
