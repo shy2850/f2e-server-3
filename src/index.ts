@@ -10,6 +10,8 @@ import { server_all } from "./server"
 export * from "./interface"
 export * from "./utils"
 export * from './routes'
+export * from './memory-tree/interface'
+export * from './middlewares/interface'
 
 const { App, SSLApp } = engine
 
