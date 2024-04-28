@@ -1,7 +1,7 @@
 import { run_memory_tree } from "./memory-tree"
 import { run_get_config } from "./config"
 import { run_filterUWS, run_template, } from "./utils"
-import createServer from "../src/index"
+import createServer, { Route } from "../src/index"
 import logger from "../src/utils/logger";
 import * as _ from "../src/utils/misc";
 import { exit } from "node:process";
@@ -11,7 +11,19 @@ import { createResponseHelper } from "../src/utils/resp";
 // run_get_config();
 // run_memory_tree();
 
-createServer({}).then((context) => {
+createServer({
+    middlewares: [
+        (conf) => {
+            const route = new Route(conf)
+            route.on('sse/time', async () => Date.now(), { type: 'sse' })
+            return {
+                name: 'server',
+                mode: ['dev', 'prod'],
+                onRoute: route.execute,
+            }
+        }
+    ],
+}).then((context) => {
     const { handleSuccess, handleError } = createResponseHelper(context.conf)
     if ('app' in context) {
         context.app?.get("/exit", (res, req) => {

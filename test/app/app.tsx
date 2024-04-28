@@ -10,12 +10,19 @@ import styles from './style.less'
 
 const App = () => {
     const [date, setDate] = useState(Date.now())
+    const [serverDate, setServerDate] = useState(Date.now())
+
     useEffect(function () {
         const interval = setInterval(function () {
             setDate(Date.now())
         }, 500)
+        const sse = new EventSource('/sse/time')
+        sse.addEventListener('message', function (e) {
+            setServerDate(Number(e.data))
+        })
         return function () {
             clearInterval(interval)
+            sse.close()
         }
     }, [])
 
@@ -30,8 +37,13 @@ const App = () => {
                 </Space>
                 <p />
                 {date && <Button.Group>
-                    <Button type="primary">当前时间</Button>
+                    <Button type="primary">当前浏览器时间</Button>
                     <Button className={styles.strong}>{dayjs(date).format('YYYY年M月D日 HH:mm:ss')}</Button>
+                </Button.Group>}
+                <p />
+                {serverDate && <Button.Group>
+                    <Button type="primary">当前服务器时间</Button>
+                    <Button className={styles.strong}>{dayjs(serverDate).format('YYYY年M月D日 HH:mm:ss')}</Button>
                 </Button.Group>}
             </div>
         </ConfigProvider>

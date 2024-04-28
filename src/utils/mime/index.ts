@@ -1,4 +1,3 @@
-import logger from '../logger'
 
 const types = {
     "text/html": ["html", "htm", "shtml"],
@@ -31,10 +30,8 @@ let mime = {
     }
 }
 
-try {
-    mime = require('mime')
-} catch (e) {
-    logger.debug('mime not found, use default mime')
+export const setMimeTypes = function (types: Record<string, string>) {
+    Object.assign(suffix_map, types)
 }
 
 export default mime

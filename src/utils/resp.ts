@@ -39,7 +39,7 @@ export const commonWriteHeaders = (resp: HttpResponse, headers?: OutgoingHttpHea
 
 export const createResponseHelper = (conf: F2EConfigResult) => {
     const {
-        gzip, gzip_filter, mimeTypes, range_size,
+        gzip, gzip_filter, range_size,
         page_404, page_50x, page_dir,
     } = conf
 
@@ -63,9 +63,9 @@ export const createResponseHelper = (conf: F2EConfigResult) => {
     const handleSuccess = (req: HttpRequest, resp: HttpResponse, pathname: string, data: string | Buffer ) => {
         const tag = engine.getHeader('if-none-match', req)
         const newTag = data && etag(data)
-        const txt = _.isText(pathname, mimeTypes)
+        const txt = _.isText(pathname)
         const gz = txt && gzip && gzip_filter(pathname, data?.length)
-        const type = _.getMimeType(pathname, mimeTypes) + (txt ? '; charset=utf-8' : '')
+        const type = _.getMimeType(pathname) + (txt ? '; charset=utf-8' : '')
         const range = engine.getHeader('range', req)
 
         if (tag && data && tag === newTag) {

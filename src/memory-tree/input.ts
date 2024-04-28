@@ -31,7 +31,7 @@ export const inputProvider: MemoryTree.BuildProvider = (options, store) => {
                 return
             }
             try {
-                const data = await fs.readFile(absolutePath, _.isText(pathname, mimeTypes) ? 'utf-8' : undefined)
+                const data = await fs.readFile(absolutePath, _.isText(pathname) ? 'utf-8' : undefined)
                 const result = await onSet(pathname, data, store)
                 store.save(result)
             } catch (e) {

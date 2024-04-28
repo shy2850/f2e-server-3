@@ -4,6 +4,7 @@ import * as path from 'node:path'
 import * as fs from 'node:fs'
 import { MiddlewareCreater } from "../middlewares/interface";
 import { combineMiddleware } from "../middlewares";
+import { setMimeTypes } from "./mime";
 
 let F2E_CONFIG_PATH = ''
 export const F2E_CONFIG = '.f2econfig.js'
@@ -16,6 +17,7 @@ const getConfig = (conf: F2EConfig = {}) => {
             ...conf,
         }
     }
+    if (conf.mimeTypes) setMimeTypes(conf.mimeTypes)
     return conf
 }
 
@@ -30,7 +32,7 @@ export const getConfigResult = function (conf: F2EConfig = {}) {
         root: conf.root || process.cwd(),
         ssl: conf.ssl || false,
         gzip: conf.gzip || false,
-        gzip_filter: conf.gzip_filter || function (pathname, size) { return _.isText(pathname, config.mimeTypes) && size > 4096; },
+        gzip_filter: conf.gzip_filter || function (pathname, size) { return _.isText(pathname) && size > 4096; },
         watch: typeof conf.watch === 'boolean' ? conf.watch : mode === 'dev',
         onServerCreate: conf.onServerCreate || function (server) { return server; },
         namehash: {

@@ -25,7 +25,7 @@ const config = {
         return /^(src|index|test($|\/index\.html)|README|package|$)/.test(pathname)
     },
     onRoute: (pathname, req, resp, body) => {
-        if (/src/i.test(pathname)) {
+        if (/^src$/i.test(pathname)) {
             resp.writeStatus('200 OK')
             resp.end('hello: ' + i++)
             return false

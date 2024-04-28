@@ -11,13 +11,12 @@ export const minimatch = (str = '', pattern = '') => {
     return reg.test(str)
 }
 
-export const getMimeType = (pathname: string, mimeTypes: { [key: string]: string }) => {
+export const getMimeType = (pathname: string) => {
     const suffix = (pathname || '').split('.').pop()  || ''
-    const type = (mimeTypes && mimeTypes[suffix]) || mime.getType(suffix) as string
-    return type || 'application/octet-stream'
+    return mime.getType(suffix) || 'application/octet-stream'
 }
-export const isText = (pathname: string, mimeTypes: { [key: string]: string }) => {
-    const type = getMimeType(pathname, mimeTypes)
+export const isText = (pathname: string) => {
+    const type = getMimeType(pathname)
     return /\b(html?|txt|javascript|json)\b/.test(type || 'exe')
 }
 
