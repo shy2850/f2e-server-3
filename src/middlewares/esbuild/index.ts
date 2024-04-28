@@ -50,6 +50,7 @@ const middleware_esbuild: MiddlewareCreater = (conf) => {
     }
     const origin_map = new Map<string, {
         index: number;
+        with_libs: boolean;
         rebuilds: Set<{(): Promise<void>}>;
     }>()
 
@@ -77,7 +78,11 @@ const middleware_esbuild: MiddlewareCreater = (conf) => {
             const result = await ctx.rebuild()
             Object.keys(result?.metafile?.inputs || {}).forEach(_inputPath => {
                 const inputPath = _.pathname_fixer(_inputPath)
-                const found = origin_map.get(inputPath) || { index: i, rebuilds: new Set() }
+                const found = origin_map.get(inputPath) || {
+                    index: i,
+                    with_libs: esbuildConfig.build_external && (!!option.external && option.external?.length > 0),
+                    rebuilds: new Set(),
+                }
                 found.rebuilds.add(rebuild)
                 origin_map.set(inputPath, found)
                 store.ignores.add(inputPath)
@@ -104,7 +109,7 @@ const middleware_esbuild: MiddlewareCreater = (conf) => {
                 .replace(/<script(?:(?:\s|.)+?)src=[\"\'](.+?)[\"\'](?!\<)(?:(?:\s|.)*?)(?:(?:\/\>)|(?:\>\s*?\<\/script\>))/g, function (___, src) {
                     const key = _.pathname_fixer('/' === src.charAt(0) ? src : path.join(path.dirname(pathname), src))
                     const item = origin_map.get(key)
-                    if (item) {
+                    if (item && item.with_libs) {
                         const sourcefile = _.template(LIB_FILE_NAME, { index: item.index })
                         const originPath = `${cache_root}/${sourcefile}`
                         return `<script src="/${originPath}"></script>\n${___}`
