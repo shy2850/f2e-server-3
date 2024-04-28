@@ -18,9 +18,12 @@ const App = () => {
         }, 500)
         const sse = new EventSource('/sse/time')
         sse.addEventListener('message', function (e) {
-            const res = JSON.parse(e.data)
-            if (res.time) {
-                setServerDate(res.time)
+            if (e.data) {
+                const res = JSON.parse(e.data)
+                if (res.time) {
+                    
+                    setServerDate(res.time)
+                }
             }
         })
         return function () {

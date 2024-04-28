@@ -6,6 +6,7 @@ import createMemoryTree from "./memory-tree"
 import { exit } from "node:process"
 import * as _ from './utils/misc'
 import { server_all } from "./server"
+import { ServerIP } from "./utils/misc"
 
 export * from "./interface"
 export * from "./utils"
@@ -16,6 +17,7 @@ export * from './middlewares/interface'
 const { App, SSLApp } = engine
 
 export const createBuilder = async (options: F2EConfig) => {
+    const beginTime = Date.now()
     const conf = getConfigResult(options)
     const { root, watch, namehash, dest } = conf
     const events = getConfigEvents(options)
@@ -29,6 +31,7 @@ export const createBuilder = async (options: F2EConfig) => {
         await memoryTree.input("")
         await onMemoryLoad(memoryTree.store)
         await memoryTree.output("")
+        logger.info(`Build success in ${Date.now() - beginTime}ms`)
     } catch (e) {
         logger.error(e)
         exit(1)
@@ -58,8 +61,7 @@ export const createServer = async (options: F2EConfig) => {
 
     const app = ssl ? SSLApp(ssl) : App()
     app.listen(host, port, function () {
-        logger.debug(`Server listening on ${host}:${port}`)
-        ssl && logger.debug(`SSL: ON`)
+        logger.debug(`Server start on ${conf.ssl ? 'https' : 'http'}://${ServerIP}:${conf.port}`)
         onServerCreate(app, conf)
     })
     .any('/*', server_all(conf, events, memoryTree))

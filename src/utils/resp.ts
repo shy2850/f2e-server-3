@@ -24,6 +24,11 @@ export const etag = (entity: Buffer | string) => {
     return '"' + len.toString(16) + '-' + hash + '"'
 }
 
+const gzipStore = new Map<string, {
+    etag: string;
+    data: Buffer | Uint8Array;
+}>()
+
 export const commonWriteHeaders = (resp: HttpResponse, headers?: OutgoingHttpHeaders) => {
     for (const key in headers) {
         if (Object.prototype.hasOwnProperty.call(headers, key)) {
@@ -100,8 +105,21 @@ export const createResponseHelper = (conf: F2EConfigResult) => {
                 'Content-Type': type,
                 'Content-Encoding': gz ? 'gzip' : 'utf-8',
                 'Etag': newTag,
+                'Cache-Control': `public, max-age=3600`,
+                'Last-Modified': new Date().toUTCString(),
             })
-            resp.end(gz ? gzipSync(data.toString()) : data)
+            if (gz) {
+                const temp = gzipStore.get(pathname)
+                if (temp && temp.etag === newTag) {
+                    resp.end(temp.data)
+                } else {
+                    const res = gzipSync(data)
+                    gzipStore.set(pathname, { data: res, etag: newTag })
+                    resp.end(res)
+                }
+            } else {
+                resp.end(data)
+            }
         })
     }
 
