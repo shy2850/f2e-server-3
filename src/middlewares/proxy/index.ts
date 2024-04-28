@@ -93,7 +93,6 @@ const middleware_proxy: MiddlewareCreater = (conf) => {
                         })
                         resp.onAborted(() => {
                             creq.destroy()
-                            resp.end()
                         })
                 }
             } catch (e) {
