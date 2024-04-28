@@ -45,7 +45,7 @@ const middleware_esbuild: MiddlewareCreater = (conf) => {
         minify: mode === 'build',
         sourcemap: true,
         banner: {
-            js: `require = ${GLOBAL_NAME}.require;`,
+            js: `require = ${GLOBAL_NAME} && ${GLOBAL_NAME}.require;`,
         },
     }
     const origin_map = new Map<string, {

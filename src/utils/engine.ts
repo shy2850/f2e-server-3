@@ -15,7 +15,7 @@ if (!isBun) {
     try {
         uWS = require('uWebSockets.js')
         logger.debug(
-            'uWebsucket.js version: ', version,
+            'uWebsuckets.js version: ', version,
         );
     } catch (e) {
         logger.debug('uWebSockets.js not found, use default node:http(s) module instead')
