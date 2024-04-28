@@ -18,7 +18,10 @@ const App = () => {
         }, 500)
         const sse = new EventSource('/sse/time')
         sse.addEventListener('message', function (e) {
-            setServerDate(Number(e.data))
+            const res = JSON.parse(e.data)
+            if (res.time) {
+                setServerDate(res.time)
+            }
         })
         return function () {
             clearInterval(interval)

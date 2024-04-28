@@ -6,6 +6,7 @@ import logger from "../src/utils/logger";
 import * as _ from "../src/utils/misc";
 import { exit } from "node:process";
 import { createResponseHelper } from "../src/utils/resp";
+import { server } from "./server";
 
 // run_template()
 // run_get_config();
@@ -13,15 +14,7 @@ import { createResponseHelper } from "../src/utils/resp";
 
 createServer({
     middlewares: [
-        (conf) => {
-            const route = new Route(conf)
-            route.on('sse/time', async () => Date.now(), { type: 'sse' })
-            return {
-                name: 'server',
-                mode: ['dev', 'prod'],
-                onRoute: route.execute,
-            }
-        }
+        server
     ],
 }).then((context) => {
     const { handleSuccess, handleError } = createResponseHelper(context.conf)

@@ -12,6 +12,7 @@ export interface APIContext {
     req: HttpRequest,
     resp: HttpResponse,
     pathname: string,
+    url: URL,
     store: MemoryTree.Store | undefined,
 }
 

@@ -47,7 +47,8 @@ export class Route implements IRoute {
         const { handleError, handleSuccess, handleNotFound, handleSSE } = this.respUtils
         const method = req.getMethod()
         const item = this.match(pathname, method)
-        const ctx: APIContext = { req, resp, pathname, store }
+        const ctx: APIContext = { req, resp, pathname, store,
+            url: new URL(req.getUrl() + '?' + (req.getQuery() || ''), `http://${req.getHeader('host')}`) }
         if (item) {
             let data: any = null
             try {

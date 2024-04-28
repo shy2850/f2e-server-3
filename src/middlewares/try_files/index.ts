@@ -42,7 +42,8 @@ const middleware_tryfiles: MiddlewareCreater = (conf) => {
             if (typeof data === 'string' || data instanceof Buffer) {
                 return pathname
             }
-            const ctx: APIContext = { pathname, req, resp, store }
+            const ctx: APIContext = { pathname, req, resp, store,
+                url: new URL(req.getUrl() + '?' + (req.getQuery() || ''), `http://${req.getHeader('host')}`) }
             for (let i = 0; i < tries.length; i++) {
                 const item = tries[i]
                 if (item.test.test(pathname)) {

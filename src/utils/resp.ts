@@ -161,17 +161,16 @@ export const createResponseHelper = (conf: F2EConfigResult) => {
             }
         }
         let interval2: Timer
-        const loop = async function loop () {
-            try {
-                const res = await item.handler(body, ctx)
+        const loop = function loop () {
+            item.handler(body, ctx).then((res: any) => {
                 if (res) {
                     resp.cork(() => {
                         resp.write(`data:${JSON.stringify(res)}\n\n`)
                     })
                 }
-            } catch (e) {
+            }).catch(function (e: any) {
                 logger.error('SSE LOOP:', e)
-            }
+            })
             if (interval) {
                 interval2 = setTimeout(loop, interval)
             }
