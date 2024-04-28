@@ -7,6 +7,7 @@ import * as https from 'node:https'
 import { renderItem } from "./renderItem"
 import { getProxyHeaders, toBuffer } from "./util"
 import { commonWriteHeaders } from "../../utils/resp"
+import { logger } from "../../utils"
 
 const middleware_proxy: MiddlewareCreater = (conf) => {
     const { proxies = [] } = conf
@@ -73,11 +74,7 @@ const middleware_proxy: MiddlewareCreater = (conf) => {
                         resp.end('504 Gateway Timeout')
                     })
                 }).on('error', function (err) {
-                    resp.cork(() => {
-                        resp.writeStatus('502 Bad Gateway')
-                        commonWriteHeaders(resp, {})
-                        resp.end(err.stack || err.message)
-                    })
+                    logger.error(`[proxy error]`, newPath, err)
                 })
                 switch (ENGINE_TYPE) {
                     case "node":
