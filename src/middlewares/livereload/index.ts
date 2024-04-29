@@ -47,12 +47,12 @@ const middleware_livereload: MiddlewareCreater = (conf) => {
     } = livereload
     const route = new Route(conf)
 
-    let updateTime = Date.now()
     let lastTimeMap = new WeakMap<HttpResponse, number>()
     /** SSE 接口 */
-    route.on(prefix, async (_, { resp, }) => {
+    route.on(prefix, async (_, { resp, store }) => {
+        const updateTime = store?.last_build
         const lastTime = lastTimeMap.get(resp)
-        if (updateTime != lastTime) {
+        if (updateTime && updateTime != lastTime) {
             lastTimeMap.set(resp, updateTime)
             return updateTime
         }
@@ -61,15 +61,12 @@ const middleware_livereload: MiddlewareCreater = (conf) => {
     return {
         name: 'livereload',
         mode: ['dev'],
-        beforeRoute: route.execute,
+        onRoute: route.execute,
         onGet: async (pathname, html) => {
             /** 脚本注入 */
             if (reg_inject.test(pathname) && html) {
                 return html.toString() + _.template(SERVER_SENT_SCRIPT, { prefix })
             }
-        },
-        buildWatcher: () => {
-            updateTime = Date.now()
         },
     }
 }

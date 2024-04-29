@@ -33,6 +33,7 @@ export const getConfigResult = function (conf: F2EConfig = {}) {
         ssl: conf.ssl || false,
         gzip: conf.gzip || false,
         gzip_filter: conf.gzip_filter || function (pathname, size) { return _.isText(pathname) && size > 4096; },
+        cache_filter: conf.cache_filter || function (pathname, size) { return !/\.html?$/.test(pathname) },
         watch: typeof conf.watch === 'boolean' ? conf.watch : mode === 'dev',
         onServerCreate: conf.onServerCreate || function (server) { return server; },
         namehash: {

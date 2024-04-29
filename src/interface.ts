@@ -48,6 +48,15 @@ export interface ServerConfig {
      */
     gzip_filter?: (pathname: string, size: number) => boolean;
     /**
+     * 运行时 是否对资源进行 cache-control
+     * 可以根据文件路径、文件大小给出结果, html文件作为入口文件，通常不需要缓存
+     * @default function (pathname, size) { return !/\.html?$/.test(pathname) }
+     * @param  {string} pathname 资源路径名
+     * @param  {number} size 资源大小
+     * @return {boolean}
+     */
+    cache_filter?: (pathname: string, size: number) => boolean;
+    /**
      * 基础服务启动后执行
     */
     onServerCreate?: (app: TemplatedApp, conf: F2EConfigResult) => void;

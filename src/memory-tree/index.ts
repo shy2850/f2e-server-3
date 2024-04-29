@@ -20,6 +20,7 @@ export const createStore = function (options: Pick<MemoryTree.Options, 'onGet'|'
     let o = {}
     const origin_map = new Map<string, MemoryTree.SetResult>()
     const store: MemoryTree.Store = {
+        last_build: Date.now(),
         ignores: new Set(),
         origin_map,
         _get(pathname) {
@@ -58,10 +59,11 @@ export const createStore = function (options: Pick<MemoryTree.Options, 'onGet'|'
                 }
             }
             origin_map.set(result.originPath, result)
+            _.set(o, _.pathname_fixer(result.outputPath), result.data )
+            store.last_build = Date.now()
             if(!_.isPlainObject(result.data)) {
                 logger.debug(`save ${result.originPath} -> ${result.outputPath}`)
             }
-            _.set(o, _.pathname_fixer(result.outputPath), result.data )
         },
     }
     return store

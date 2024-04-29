@@ -46,6 +46,7 @@ export const createResponseHelper = (conf: F2EConfigResult) => {
     const {
         gzip, gzip_filter, range_size,
         page_404, page_50x, page_dir,
+        cache_filter,
     } = conf
 
     const handleNotFound = (resp: HttpResponse, pathname: string) => {
@@ -101,13 +102,16 @@ export const createResponseHelper = (conf: F2EConfigResult) => {
 
         resp.cork(() => {
             resp.writeStatus('200 OK')
-            commonWriteHeaders(resp, {
+            const headers: OutgoingHttpHeaders = {
                 'Content-Type': type,
                 'Content-Encoding': gz ? 'gzip' : 'utf-8',
                 'Etag': newTag,
-                'Cache-Control': `public, max-age=3600`,
-                'Last-Modified': new Date().toUTCString(),
-            })
+            }
+            if (cache_filter(pathname, data?.length)) {
+                headers['Cache-Control'] = 'public, max-age=3600'
+                headers['Last-Modified'] = new Date().toUTCString()
+            }
+            commonWriteHeaders(resp, headers)
             if (gz) {
                 const temp = gzipStore.get(pathname)
                 if (temp && temp.etag === newTag) {

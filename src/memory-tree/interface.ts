@@ -10,6 +10,8 @@ export namespace MemoryTree {
         (options: Options, store: Store): Build
     }
     export interface Store {
+        /** 最后编译时间 */
+        last_build: number
         /** 支持动态添加忽略文件，对于esbuild 和 less等插件比较有用 */
         ignores: Set<string>
         /** 原始资源映射 */
