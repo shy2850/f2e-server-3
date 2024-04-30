@@ -99,7 +99,7 @@ const middleware_esbuild: MiddlewareCreater = (conf) => {
         },
         async onSet(pathname, data, store) {
             const { reg_inject = /index\.html?$/, cache_root = '.f2e_cache' } = esbuildConfig
-            const result = store.origin_map.get(pathname) || {
+            const result = {
                 originPath: pathname,
                 outputPath: pathname,
                 data,

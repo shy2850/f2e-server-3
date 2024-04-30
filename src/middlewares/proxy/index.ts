@@ -5,9 +5,8 @@ import { ProxyItemRendered } from "./interface"
 import * as http from 'node:http'
 import * as https from 'node:https'
 import { renderItem } from "./renderItem"
-import { getProxyHeaders, toBuffer } from "./util"
-import { commonWriteHeaders } from "../../utils/resp"
-import { logger } from "../../utils"
+import { commonWriteHeaders, getHttpHeaders } from "../../utils/resp"
+import { logger, toBuffer } from "../../utils"
 
 const middleware_proxy: MiddlewareCreater = (conf) => {
     const { proxies = [] } = conf
@@ -18,7 +17,7 @@ const middleware_proxy: MiddlewareCreater = (conf) => {
     return {
         name: 'proxy',
         mode: ['dev', 'prod'],
-        beforeRoute(pathname, req, resp) {
+        beforeRoute(pathname, {req, resp}) {
             const url = req.getUrl()
             const search = req.getQuery()
             const item = items.find(item => {
@@ -49,7 +48,7 @@ const middleware_proxy: MiddlewareCreater = (conf) => {
                 const creq = (/^https/i.test(newPath.protocol) ? https : http).request(newPath, {
                     method: req.getMethod(),
                     headers: {
-                        ...requestHeaders(getProxyHeaders(req)),
+                        ...requestHeaders(getHttpHeaders(req)),
                         host: newPath.host,
                     },
                     timeout,
@@ -62,7 +61,7 @@ const middleware_proxy: MiddlewareCreater = (conf) => {
                         const result = Buffer.concat(chunks)
                         resp.cork(() => {
                             resp.writeStatus(res.statusCode + ' ' + res.statusMessage)
-                            commonWriteHeaders(resp, responseHeaders(getProxyHeaders(res)))
+                            commonWriteHeaders(resp, responseHeaders(getHttpHeaders(res)))
                             resp.write(responseRender(result))
                             resp.end()
                         })

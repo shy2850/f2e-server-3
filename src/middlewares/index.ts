@@ -9,6 +9,7 @@ import middleware_tryfiles from './try_files';
 import middleware_proxy from './proxy';
 import middleware_esbuild from './esbuild';
 import middleware_less from './less';
+import middleware_auth from './auth';
 
 export const combineMiddleware = (conf: F2EConfigResult, middlewares: (MiddlewareCreater | MiddlewareReference)[]): Required<MiddlewareEvents> => {
     const { mode } = conf
@@ -31,6 +32,7 @@ export const combineMiddleware = (conf: F2EConfigResult, middlewares: (Middlewar
     /** tryfiles 顺序需要在最后 */
     middlewares.push(middleware_tryfiles)
 
+    middlewares.unshift(middleware_auth)
     for (let i = 0; i < middlewares.length; i++) {
         const m = middlewares[i];
         let middle: MiddlewareResult | undefined = undefined;
@@ -69,11 +71,11 @@ export const combineMiddleware = (conf: F2EConfigResult, middlewares: (Middlewar
         onMemoryLoad: async (store) => {
             await Promise.all(onMemoryLoads.map(fn => fn?.(store)))
         },
-        beforeRoute: async (pathname, req, resp, store) => {
+        beforeRoute: async (pathname, ctx) => {
             let _pathname = pathname
             for (let i = 0; i < beforeRoutes.length; i++) {
                 // beforeRoute 返回 false 停止继续
-                let res = await beforeRoutes[i](pathname, req, resp, store)
+                let res = await beforeRoutes[i](pathname, ctx)
                 if (res === false) {
                     return res
                 }
@@ -83,11 +85,11 @@ export const combineMiddleware = (conf: F2EConfigResult, middlewares: (Middlewar
             }
             return _pathname
         },
-        onRoute: async (pathname, req, resp, store, body) => {
+        onRoute: async (pathname, ctx) => {
             let _pathname = pathname
             for (let i = 0; i < onRoutes.length; i++) {
                 // onRoute 返回 false 停止继续
-                let res = await onRoutes[i](_pathname, req, resp, store, body)
+                let res = await onRoutes[i](_pathname, ctx)
                 if (res === false) {
                     return false
                 }
@@ -101,7 +103,7 @@ export const combineMiddleware = (conf: F2EConfigResult, middlewares: (Middlewar
             buildWatchers.map(item => item(pathname, eventType, build, store))
         },
         onSet: async (pathname, data, store) => {
-            let result: MemoryTree.SetResult = store.origin_map.get(pathname) || { data, originPath: pathname, outputPath: pathname }
+            let result: MemoryTree.SetResult = { data, originPath: pathname, outputPath: pathname }
             for (let i = 0; i < onSets.length; i++) {
                 const temp = await onSets[i](result.outputPath, result.data, store)
                 result = Object.assign({}, result, temp)

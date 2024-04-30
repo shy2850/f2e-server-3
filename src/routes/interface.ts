@@ -1,12 +1,12 @@
 import { MiddlewareEvents } from "../middlewares/interface";
 import { APIContext } from "../interface";
 
-type Execute = Required<MiddlewareEvents>['onRoute']
+type Execute = Required<MiddlewareEvents>['onRoute'] | Required<MiddlewareEvents>['beforeRoute']
 
 export interface ServerAPI<T extends object = object, F = any, R extends object = object> {
     (body: null | T, ctx: APIContext & R ): F | Promise<F>
 }
-export interface RouteItem<T extends object = object, F = any> {
+export interface RouteItem<T extends object = any, F = any> {
     path: string | RegExp
     handler: ServerAPI<T, F>
     method?: '*' | string
@@ -46,4 +46,14 @@ export interface IRoute {
     match: (path: string, method?: string) => RouteItem | undefined;
     /** 执行函数 */
     execute: Execute;
+    filter?: RouteFilter;
+}
+
+export interface RouteFilter {
+    /**
+     * 路由过滤器
+     * 返回false，函数内处理响应
+     * 返回string，将pathname替换为返回值
+    */
+    (pathname: string, ctx: APIContext): Promise<false | string | void>;
 }

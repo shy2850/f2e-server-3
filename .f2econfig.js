@@ -22,9 +22,9 @@ const config = {
     ],
     gzip_filter: () => true,
     buildFilter: (pathname) => {
-        return /^(src|index|test($|\/index\.html)|README|package|$)/.test(pathname)
+        return /^(src|index|login|test($|\/index\.html)|README|package|$)/.test(pathname)
     },
-    onRoute: (pathname, req, resp, body) => {
+    onRoute: (pathname, {resp}) => {
         if (/^src$/i.test(pathname)) {
             resp.writeStatus('200 OK')
             resp.end('hello: ' + i++)
@@ -48,7 +48,7 @@ const config = {
             if (/\.(map|js\.json)$/.test(output)) {
                 return '/' + output + '?' + hash
             }
-            return '/' + output.replace(/\.(\w+)$/, `.${hash}.$1`)
+            return '/' + output.replace(`.${hash}`, '').replace(/\.(\w+)$/, `.${hash}.$1`)
         }
     },
     proxies: ['/uniadmin', '/api', '/uni-auth'].map(location => {

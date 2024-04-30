@@ -14,7 +14,7 @@
   },
   "scripts": {
     "tsc": "tsc",
-    "test": "tsc -p tsconfig.test.json && node ./lib_test/test --debug",
+    "test": "tsc -p tsconfig.test.json && cp -rf ./templates lib_test/ && node ./lib_test/test --debug",
     "test:bun": "bun run ./test/index.ts --debug",
     "prepublishOnly": "tsc"
   },

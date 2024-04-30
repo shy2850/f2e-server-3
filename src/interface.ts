@@ -6,14 +6,22 @@ import { LiveReloadConfig } from './middlewares/livereload/interface';
 import { ProxyItem } from './middlewares/proxy/interface';
 import { EsbuildConfig } from './middlewares/esbuild/interface';
 import { LessConfig } from './middlewares/less/interface';
+import { HttpHeaders } from './utils/resp';
+import { AuthConfig } from './middlewares/auth/interface';
 
 export type ConfigMode = "dev" | "build" | "prod";
 export interface APIContext {
     req: HttpRequest,
     resp: HttpResponse,
     pathname: string,
-    url: URL,
+    location: URL,
+    method: string,
+    /** 请求头信息 */
+    headers: HttpHeaders,
     store: MemoryTree.Store | undefined,
+    body?: Buffer,
+    /** 需要添加的响应头信息 */
+    responseHeaders?: HttpHeaders,
 }
 
 /** 启动服务器相关配置 */
@@ -109,6 +117,8 @@ export interface ServerConfig {
      * @default false
      */
     less?: false | LessConfig;
+    /** auth登录认证配置 */
+    auth?: false | AuthConfig;
 }
 export interface F2EConfig extends ServerConfig, Partial<MemoryTree.Options>, Partial<MiddlewareEvents> {
     /** 

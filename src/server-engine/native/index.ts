@@ -16,8 +16,3 @@ export const parseBody = async (req: HttpRequest, resp: HttpResponse) => {
         })
     })
 }
-export const getHeader = (name: string, req: HttpRequest) => {
-    const request = (req as NativeRequest).req
-    const header = request.headers[name.toLowerCase()]
-    return header && header.toString()
-}

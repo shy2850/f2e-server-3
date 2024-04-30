@@ -24,9 +24,3 @@ export const parseBody = async (req: HttpRequest, resp: HttpResponse) => {
         })
     })
 }
-
-// uWS.HttpRequest must not be accessed after await or route handler return.
-export const getHeader = (name: string, req: HttpRequest) => {
-    const headers = headers_map.get(req) || {}
-    return headers[name]
-}

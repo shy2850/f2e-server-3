@@ -36,14 +36,13 @@ const middleware_tryfiles: MiddlewareCreater = (conf) => {
     return {
         name: 'try_files',
         mode: ['dev', 'prod'],
-        onRoute: async (pathname, req, resp, store) => {
-            let data = store._get(pathname)
+        onRoute: async (pathname, ctx) => {
+            const {req, resp, store} = ctx
+            let data = store?._get(pathname)
             /** 没有数据才进行try_files */
             if (typeof data === 'string' || data instanceof Buffer) {
                 return pathname
             }
-            const ctx: APIContext = { pathname, req, resp, store,
-                url: new URL(req.getUrl() + '?' + (req.getQuery() || ''), `http://${req.getHeader('host')}`) }
             for (let i = 0; i < tries.length; i++) {
                 const item = tries[i]
                 if (item.test.test(pathname)) {

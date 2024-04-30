@@ -1,11 +1,13 @@
 import logger from "./logger"
 import { networkInterfaces } from 'node:os'
 import mime from "./mime"
+import { page_layout } from "./templates"
 
 export const REG_FILENAME = /[^\\/,\s\t\n]+/g
 export const pathname_arr = (str = ''): string[] => (str.split(/[#?]+/)[0].replace(/^\.+\//, '').match(REG_FILENAME) || [])
 export const pathname_fixer = (str = '') => pathname_arr(str).join('/')
 export const pathname_dirname = (str = '') => (str.match(REG_FILENAME) || []).slice(0, -1).join('/')
+export const createSessionId = () => 'xxxx-xxxx-xxxx-xxxx'.replace(/xxxx/g, () => Math.floor((1 << 16) + Math.random() * (1 << 24)).toString(16).substring(0, 4))
 export const minimatch = (str = '', pattern = '') => {
     const reg = new RegExp(pattern.replace(/\./g, '\\.').replace(/\*/g, '.*').replace(/,/g, '|'))
     return reg.test(str)
@@ -28,6 +30,15 @@ export const decode = (str: string) => {
         return str
     }
 }
+export const toBuffer = function (arrayBuffer: ArrayBuffer) {
+    const buffer = Buffer.alloc(arrayBuffer.byteLength);
+    const arrayBufferView = new Uint8Array(arrayBuffer);
+    for (let i = 0; i < arrayBufferView.length; i++) {
+        buffer[i] = arrayBufferView[i];
+    }
+    return buffer
+}
+
 export const ServerIP = (Object.entries(networkInterfaces())
     .find(([__, info]) => info?.filter((t) => t.family === 'IPv4' && !t.internal)[0])?.[1]?.filter((t) => t.family === 'IPv4' && !t.internal)[0]
     || {address: '127.0.0.1'}).address
@@ -102,19 +113,11 @@ export const template = function template (tpl: string, data: any, index?: numbe
 }
 
 export const renderHTML = (body: string, data: any) => {
-    const html = `
-    <!DOCTYPE html>
-    <html lang="zh-CN">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta http-equiv="X-UA-Compatible" content="ie=edge">
-        <title>{{title}}</title>
-    </head>
-    <body>${body}</body>
-    </html>`
     if (!isPlainObject(data)) {
-        return html
+        return body
     }
-    return template(html, data)
+    return template(page_layout, {
+        title: data.title || 'F2E Page',
+        body: template(body, data)
+    })
 }

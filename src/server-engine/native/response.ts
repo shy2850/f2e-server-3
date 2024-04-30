@@ -58,13 +58,16 @@ export class NativeResponse implements HttpResponse {
         throw new Error('Method not implemented.');
     }
     getRemoteAddressAsText(): ArrayBuffer {
-        throw new Error('Method not implemented.');
+        const buffer = Buffer.from((this.request.socket.remoteAddress || '').split(',')[0], 'utf-8')
+        return buffer.buffer.slice(buffer.byteOffset, buffer.byteLength) as ArrayBuffer;
     }
     getProxiedRemoteAddress(): ArrayBuffer {
         throw new Error('Method not implemented.');
     }
     getProxiedRemoteAddressAsText(): ArrayBuffer {
-        throw new Error('Method not implemented.');
+        const ip = this.request.headers['x-forwarded-for'];
+        const buffer = Buffer.from((ip ? ip.toString() : '').split(',')[0], 'utf-8')
+        return buffer.buffer.slice(buffer.byteOffset, buffer.byteLength) as ArrayBuffer;
     }
     cork(cb: () => void): HttpResponse {
         const resp = this.response

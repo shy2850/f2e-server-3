@@ -1,6 +1,6 @@
 import { HttpRequest, HttpResponse } from "uWebSockets.js";
 import { MemoryTree } from "../memory-tree";
-import { ConfigMode, F2EConfigResult } from "../interface";
+import { APIContext, ConfigMode, F2EConfigResult } from "../interface";
 
 export interface MiddlewareEvents extends Partial<MemoryTree.Events> {
     /**
@@ -15,23 +15,15 @@ export interface MiddlewareEvents extends Partial<MemoryTree.Events> {
     onMemoryLoad?(store: MemoryTree.Store): void | Promise<void>
     /**
      * 路由解析前执行
-     * @param pathname 格式化之后的路径，形如: api/user/list
-     * @param req      请求对象
-     * @param resp     响应对象
      */
     beforeRoute?: {
-        (pathname: string, req: HttpRequest, resp: HttpResponse, store: MemoryTree.Store): string | false | void | Promise<string | false | void>
+        (pathname: string, ctx: APIContext): string | false | void | Promise<string | false | void>
     };
     /**
      * 路由解析后执行
-     * @param pathname 格式化之后的路径，形如: api/user/list
-     * @param req      请求对象
-     * @param resp     响应对象
-     * @param store    memory-tree实例
-     * @param body     POST请求完成的body
      */
     onRoute?: {
-        (pathname: string, req: HttpRequest, resp: HttpResponse, store: MemoryTree.Store, body?: Buffer): string | false | void | Promise<string | false | void>
+        (pathname: string, ctx: APIContext): string | false | void | Promise<string | false | void>
     };
 }
 export interface MiddlewareResult extends MiddlewareEvents {

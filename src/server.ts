@@ -1,17 +1,19 @@
 import { HttpRequest, HttpResponse } from "uWebSockets.js"
 import { MiddlewareEvents } from "./middlewares/interface"
 import * as _ from './utils/misc'
-import { F2EConfigResult } from "./interface"
+import { APIContext, F2EConfigResult } from "./interface"
 import { MemoryTree } from "./memory-tree"
-import { createResponseHelper } from "./utils/resp"
+import { createResponseHelper, getHttpHeaders } from "./utils/resp"
 import engine from "./server-engine"
 import logger from "./utils/logger"
+import { IncomingMessage } from "node:http"
 
 export const server_all = (conf: F2EConfigResult, events: Required<MiddlewareEvents>, memory: MemoryTree.MemoryTree) => {
     const { onRoute, beforeRoute } = events
     const { handleDirectory, handleNotFound, handleSuccess, handleError } = createResponseHelper(conf)
-    const execute = async (pathname: string, req: HttpRequest, resp: HttpResponse, body?: Buffer) => {
-        const routeResult = await onRoute(pathname, req, resp, memory.store, body)
+    const execute = async (pathname: string, ctx: APIContext) => {
+        const {req, resp} = ctx
+        const routeResult = await onRoute(pathname, ctx)
         if (routeResult === false) {
             return
         } else if (typeof routeResult === 'string') {
@@ -24,16 +26,22 @@ export const server_all = (conf: F2EConfigResult, events: Required<MiddlewareEve
         } else if (typeof data === 'undefined') {
             handleNotFound(resp, pathname)
         } else if (typeof data === 'string' || Buffer.isBuffer(data)) {
-            handleSuccess(req, resp, pathname, data)
+            handleSuccess(ctx, pathname, data)
         } else {
             handleError(resp, 'Unknown Error!\n Wrong Data in memory')
         }
     }
 
     return async (resp: HttpResponse, req: HttpRequest) => {
-        const location = new URL('http://127.0.0.1' + req.getUrl())
+        const location = new URL(req.getUrl() + '?' + (req.getQuery() || ''), `http://${req.getHeader('host')}`)
         let pathname = _.pathname_fixer(_.decode(location.pathname))
-        let pathnameTemp = await beforeRoute(pathname, req, resp, memory.store)
+        const headers = getHttpHeaders('request' in req ? (req.request as IncomingMessage) : req)
+        const ctx: APIContext = {
+            req, resp, location, pathname,
+            store: memory.store, method: req.getMethod() || 'get',
+            headers,
+        }
+        let pathnameTemp = await beforeRoute(pathname, ctx)
         if (pathnameTemp === false) {
             return
         } else if (typeof pathnameTemp === 'string') {
@@ -44,6 +52,6 @@ export const server_all = (conf: F2EConfigResult, events: Required<MiddlewareEve
         if (body) {
             logger.debug(location.pathname, body.toString())
         }
-        await execute(pathname, req, resp, body)
+        await execute(pathname, { ...ctx, body })
     }
 }

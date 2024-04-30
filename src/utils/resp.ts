@@ -4,10 +4,40 @@ import { createHash } from "node:crypto"
 import * as _ from './misc'
 import * as zlib from "node:zlib"
 import logger from "./logger"
-import engine, { ENGINE_TYPE } from "../server-engine"
+import { ENGINE_TYPE } from "../server-engine"
 import { VERSION } from "./engine"
 import { RouteItem } from "../routes/interface"
 import { OutgoingHttpHeaders } from "node:http"
+import { IncomingMessage } from "node:http";
+
+export type HttpHeaders = OutgoingHttpHeaders & {
+    [key: string]: string | number | string[] | undefined
+}
+
+export const getIpAddress = (resp: HttpResponse) => {
+    const bf1 = resp.getProxiedRemoteAddressAsText()
+    if (bf1.byteLength > 0) {
+        return Buffer.from(bf1).toString('utf-8')
+    }
+    const bf2 = resp.getRemoteAddressAsText()
+    if (bf2.byteLength > 0) {
+        return Buffer.from(bf2).toString('utf-8')
+    }
+    return ''
+}
+export const getHttpHeaders = (req: HttpRequest | IncomingMessage) => {
+    const headers: HttpHeaders = {}
+    if (req instanceof IncomingMessage) {
+        for (let i = 0; i < req.rawHeaders.length; i += 2) {
+            headers[req.rawHeaders[i]] = req.rawHeaders[i + 1]
+        }
+    } else {
+        req.forEach((key, value) => {
+            headers[key.trim()] = value.trim()
+        })
+    }
+    return headers
+}
 
 const gzipSync = ENGINE_TYPE === 'bun' ? Bun.gzipSync : zlib.gzipSync
 
@@ -66,18 +96,28 @@ export const createResponseHelper = (conf: F2EConfigResult) => {
             resp.end(error_body)
         })
     }
-    const handleSuccess = (req: HttpRequest, resp: HttpResponse, pathname: string, data: string | Buffer ) => {
-        const tag = engine.getHeader('if-none-match', req)
+    const handleRedirect = (resp: HttpResponse, location: string) => {
+        resp.cork(() => {
+            resp.writeStatus('302 Found')
+            commonWriteHeaders(resp, {
+                location,
+            })
+            resp.end()
+        })
+    }
+    const handleSuccess = (ctx: Pick<APIContext, 'headers' | 'resp' | 'responseHeaders'>, pathname: string, data: string | Buffer) => {
+        const { resp, headers = {}, responseHeaders = {} } = ctx
+        const tag = headers['if-none-match']
         const newTag = data && etag(data)
         const txt = _.isText(pathname)
         const gz = txt && gzip && gzip_filter(pathname, data?.length)
         const type = _.getMimeType(pathname) + (txt ? '; charset=utf-8' : '')
-        const range = engine.getHeader('range', req)
+        const range = headers['range']?.toString()
 
         if (tag && data && tag === newTag) {
             resp.cork(() => {
                 resp.writeStatus("304 Not Modified")
-                commonWriteHeaders(resp, {})
+                commonWriteHeaders(resp, responseHeaders)
                 resp.endWithoutBody()
             })
             return
@@ -94,6 +134,7 @@ export const createResponseHelper = (conf: F2EConfigResult) => {
                     'Content-Range': `bytes ${start}-${end - 1}/${data.length}`,
                     'Content-Length': d.length,
                     'Accept-Ranges': 'bytes',
+                    ...responseHeaders,
                 })
                 resp.end(d)
             })
@@ -106,6 +147,7 @@ export const createResponseHelper = (conf: F2EConfigResult) => {
                 'Content-Type': type,
                 'Content-Encoding': gz ? 'gzip' : 'utf-8',
                 'Etag': newTag,
+                ...responseHeaders,
             }
             if (cache_filter(pathname, data?.length)) {
                 headers['Cache-Control'] = 'public, max-age=3600'
@@ -159,7 +201,8 @@ export const createResponseHelper = (conf: F2EConfigResult) => {
         })
     }
 
-    const handleSSE = (req: HttpRequest, resp: HttpResponse, item: RouteItem, body: any, ctx: APIContext) => {
+    const handleSSE = (ctx: APIContext, item: RouteItem, body: any) => {
+        const { resp } = ctx
         const {
             interval = 1000,
             interval_beat = 30000,
@@ -206,6 +249,6 @@ export const createResponseHelper = (conf: F2EConfigResult) => {
         return false
     }
     return {
-        handleSuccess, handleError, handleNotFound, handleDirectory, handleSSE
+        handleSuccess, handleError, handleNotFound, handleDirectory, handleSSE, handleRedirect
     }
 }

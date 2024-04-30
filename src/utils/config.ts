@@ -5,6 +5,7 @@ import * as fs from 'node:fs'
 import { MiddlewareCreater } from "../middlewares/interface";
 import { combineMiddleware } from "../middlewares";
 import { setMimeTypes } from "./mime";
+import { page_404, page_500, page_dir } from "./templates";
 
 let F2E_CONFIG_PATH = ''
 export const F2E_CONFIG = '.f2econfig.js'
@@ -37,7 +38,7 @@ export const getConfigResult = function (conf: F2EConfig = {}) {
         watch: typeof conf.watch === 'boolean' ? conf.watch : mode === 'dev',
         onServerCreate: conf.onServerCreate || function (server) { return server; },
         namehash: {
-            entries: ['index\\.html$'],
+            entries: ['\\.html$'],
             searchValue: ['\\s(?:src)="([^"]*?)"', '\\s(?:href)="([^"]*?)"'],
             replacer: (output, hash) => `/${output}?${hash}`,
             ...(conf.namehash || {})
@@ -45,9 +46,9 @@ export const getConfigResult = function (conf: F2EConfig = {}) {
         mimeTypes: conf.mimeTypes || {},
         dest: conf.dest || path.join(process.cwd(), './output'),
         range_size: conf.range_size || 1024 * 1024 * 10,
-        page_404: conf.page_404 || `<h2 style="text-align: center"> 404: <small>{{pathname}}</small> is gone!</h2>`,
-        page_50x: conf.page_50x || `<h2 style="text-align: center"> 500: ServerError </h2> <pre><code>{{error}}</code></pre>`,
-        page_dir: conf.page_dir || `<ul><li><a href="/{{pathname}}">..</a></li>{{each files}}<li><a href="/{{path}}">{{name}}</a></li>{{/each}}</ul>`,
+        page_404: conf.page_404 || page_404,
+        page_50x: conf.page_50x || page_500,
+        page_dir: conf.page_dir || page_dir,
 
         // 以下为内置中间件相关配置
         try_files: conf.try_files || false,
@@ -59,6 +60,7 @@ export const getConfigResult = function (conf: F2EConfig = {}) {
             with_metafile: mode === 'dev',
         }) || false,
         less: conf.less || false,
+        auth: conf.auth || false,
     }
     return config;
 }

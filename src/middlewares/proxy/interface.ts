@@ -1,8 +1,6 @@
 import { RequestOptions } from "node:http";
+import { HttpHeaders } from "../../utils/resp";
 
-export interface ProxyHeaders {
-    [k: string]: string | string[];
-}
 export interface ProxyItem {
     /** 需要代理的路径 */
     location: string | RegExp;
@@ -18,11 +16,11 @@ export interface ProxyItem {
     /**
      * 代理请求发起前执行： 可用于设置请求头等操作
     */
-    requestHeaders?: { (headers: ProxyHeaders): ProxyHeaders };
+    requestHeaders?: { (headers: HttpHeaders): HttpHeaders };
     /**
      * 响应结束前执行： 可用于设置响应头等操作
     */
-    responseHeaders?: { (headers: ProxyHeaders): ProxyHeaders };
+    responseHeaders?: { (headers: HttpHeaders): HttpHeaders };
     /** 代理请求参数统一设置 */
     requestOptions?: RequestOptions;
     /** 代理响应结果修改后输出 */

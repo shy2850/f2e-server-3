@@ -1,5 +1,5 @@
 import { HttpRequest, HttpResponse } from 'uWebSockets.js'
-import { IRoute, RouteItem } from './interface'
+import { IRoute, RouteFilter, RouteItem } from './interface'
 import { MemoryTree } from '../memory-tree'
 import { queryparams } from '../utils/misc'
 import { APIContext, F2EConfigResult } from '../interface'
@@ -11,13 +11,15 @@ export class Route implements IRoute {
     route_map = new Map<string, RouteItem>()
     options: F2EConfigResult
     respUtils: ReturnType<typeof createResponseHelper>
-    constructor (options: F2EConfigResult) {
+    filter?: RouteFilter
+    constructor (options: F2EConfigResult, filter?: RouteFilter) {
         this.options = options
         this.respUtils = createResponseHelper(options)
+        this.filter = filter
     }
     private find (path: string, method = '*') {
         return this.routes.find(r => {
-            if (r.method === method || r.method === '*') {
+            if (r.method?.toUpperCase() === method.toUpperCase() || r.method === '*') {
                 return typeof r.path === 'string' ? r.path === path : r.path.test(path)
             } else {
                 return false
@@ -43,43 +45,54 @@ export class Route implements IRoute {
         }
         return undefined
     };
-    execute = async (pathname: string, req: HttpRequest, resp: HttpResponse, store?: MemoryTree.Store, body?: Buffer) => {
+    execute = async (pathname: string, ctx: APIContext) => {
         const { handleError, handleSuccess, handleNotFound, handleSSE } = this.respUtils
-        const method = req.getMethod()
-        const item = this.match(pathname, method)
-        const ctx: APIContext = { req, resp, pathname, store,
-            url: new URL(req.getUrl() + '?' + (req.getQuery() || ''), `http://${req.getHeader('host')}`) }
-        if (item) {
-            let data: any = null
+        const { req, resp, body, headers = {} } = ctx
+        if (this.filter) {
+            const filterResult = await this.filter(pathname, ctx)
+            if (false === filterResult) {
+                return false
+            }
+            if (typeof filterResult === 'string') {
+                pathname = filterResult
+            }
+        }
+        let data: any = null
+        if (body && body.length > 0) {
+            const contentType = headers['content-type'] || 'application/x-www-form-urlencoded'
             try {
-                if (method === 'post' && body && body.length > 0) {
-                    const contentType = req.getHeader('content-type') || 'application/x-www-form-urlencoded'
-                    switch (contentType) {
-                        case 'application/json':
-                            data = JSON.parse(body.toString())
-                            break
-                        default:
-                            data = queryparams(body.toString())
-                            break
-                    }
+                switch (contentType) {
+                    case 'application/json':
+                        data = JSON.parse(body.toString())
+                        break
+                    default:
+                        data = queryparams(body.toString())
+                        break
                 }
+            } catch (e) {
+                console.error('onRoute Error:', pathname, e)
+            }
+        }
+        const item = this.match(pathname, body ? 'post' : 'get')
+        if (item) {
+            try {
                 switch (item.type || 'json') {
                     case 'json':
-                        handleSuccess(req, resp, '.json', JSON.stringify(await item.handler(data, ctx)))
+                        handleSuccess(ctx, '.json', JSON.stringify(await item.handler(data, ctx)))
                         break
                     case 'jsonp':
                         const callback = req.getQuery('callback') || 'callback'
-                        handleSuccess(req, resp, '.js', `${callback}(${JSON.stringify(await item.handler(data, ctx))})`)
+                        handleSuccess(ctx, '.js', `${callback}(${JSON.stringify(await item.handler(data, ctx))})`)
                         break
                     case 'sse':
-                        handleSSE(req, resp, item, data, ctx)
+                        handleSSE(ctx, item, data)
                         break;
                     default:
                         const result = await item.handler(data, ctx)
                         if (typeof result === 'undefined') {
                             handleNotFound(resp, pathname)
                         } else {
-                            handleSuccess(req, resp, item.sourceType || 'txt', result)
+                            handleSuccess(ctx, item.sourceType || 'txt', result)
                         }
                         break;
                 }
