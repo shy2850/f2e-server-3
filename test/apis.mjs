@@ -1,11 +1,10 @@
-import { ServerAPI, queryparams, MiddlewareCreater, Route } from "../src";
-import { createAuthHelper } from "../src/middlewares/auth";
+// @ts-check
+import { queryparams, Route, createAuthHelper } from "../lib/index.js";
 
-export interface ServerTimeResp {
-    time: number;
-    [k:string]: any;
-}
-const server_time: ServerAPI = async (body, ctx) => {
+/**
+ * @type {import("../lib/index.js").ServerAPI}
+ */
+const server_time = async (body, ctx) => {
     const data = queryparams(ctx.location.search)
     const post = body && JSON.parse(body.toString())
     return {
@@ -14,7 +13,10 @@ const server_time: ServerAPI = async (body, ctx) => {
     }
 }
 
-export const server: MiddlewareCreater = (conf) => {
+/**
+ * @type {import("../lib/index.js").MiddlewareCreater}
+ */
+export const server = (conf) => {
     const route = new Route(conf)
     const { getLoginUser } = createAuthHelper(conf)
 

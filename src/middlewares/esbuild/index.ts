@@ -60,6 +60,16 @@ const middleware_esbuild: MiddlewareCreater = (conf) => {
             const option = { ..._option, ...commonOptions, }
             await external_build({conf, store, option, index: i})
             const result = await builder.build(option)
+            Object.keys(result?.metafile?.inputs || {}).forEach(_inputPath => {
+                const inputPath = _.pathname_fixer(_inputPath)
+                const found = origin_map.get(inputPath) || {
+                    index: i,
+                    with_libs: esbuildConfig.build_external && (!!option.external && option.external?.length > 0),
+                    rebuilds: new Set(),
+                }
+                origin_map.set(inputPath, found)
+                store.ignores.add(inputPath)
+            })
             await save({ store, result, conf })
         }
     }

@@ -13,8 +13,7 @@ export * from "./utils"
 export * from './routes'
 export * from './memory-tree/interface'
 export * from './middlewares/interface'
-export * from './middlewares/auth/interface'
-export * from './middlewares/auth/store'
+export * from './middlewares/auth/index'
 
 const { App, SSLApp } = engine
 
@@ -59,7 +58,7 @@ export const createServer = async (options: F2EConfig) => {
     await memoryTree.input("")
     await onMemoryLoad(memoryTree.store)
     logger.debug('server init: ' + (Date.now() - startTime) + 'ms')
-    memoryTree.watch()
+    watch && memoryTree.watch()
 
     const app = ssl ? SSLApp(ssl) : App()
     app.listen(host, port, function () {

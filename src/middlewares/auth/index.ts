@@ -7,6 +7,8 @@ import { page_layout, page_login } from "../../utils/templates";
 import { AuthConfig, LoginInfo } from "./interface";
 import { getIpAddress } from "../../utils/resp";
 import { APIContext, F2EConfigResult } from "../../interface";
+export * from "./interface"
+export * from "./store"
 
 const login_user_map = new Map<string, LoginInfo[]>()
 const token_map = new Map<string, LoginInfo>()

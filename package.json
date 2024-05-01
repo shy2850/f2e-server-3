@@ -1,6 +1,6 @@
 {
   "name": "f2e-server3",
-  "version": "1.2.1-alpha",
+  "version": "1.2.2-alpha",
   "description": "f2e-server 3.0",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
@@ -15,8 +15,10 @@
   },
   "scripts": {
     "tsc": "tsc",
-    "test": "tsc -p tsconfig.test.json && cp -rf ./templates lib_test/ && node ./lib_test/test --debug",
-    "test:bun": "bun run ./test/index.ts --debug",
+    "test": "tsc && node ./test/start.mjs --debug dev",
+    "test:bun": "bun ./test/start.mjs --debug dev",
+    "build": "tsc && node ./test/start.mjs --debug build",
+    "build:bun": "node ./test/start.mjs --debug build",
     "prepublishOnly": "tsc"
   },
   "repository": {
@@ -38,6 +40,7 @@
     "commander": "^12.0.0",
     "esbuild": "^0.20.2",
     "esbuild-plugin-postcss": "^0.2.1",
+    "highlight.js": "^11.9.0",
     "less": "^4.2.0",
     "marked": "^12.0.1",
     "mime": "^4.0.3",
