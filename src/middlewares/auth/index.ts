@@ -15,10 +15,6 @@ const append_error = (ip: string) => {
     const times = ip_error_count_map.get(ip) || 0
     ip_error_count_map.set(ip, times + 1)
 }
-/** 每隔5分钟清除错误次数 */
-setInterval(() => {
-    ip_error_count_map.clear()
-}, 1000 * 60 * 5)
 
 /**
  * 账户提交加密算法
@@ -58,9 +54,14 @@ const defaultConfig: Required<Omit<AuthConfig, 'store'>> = {
     },
 } 
 const middleware_auth: MiddlewareCreater = (conf) => {
-    if (!conf.auth || !conf.auth.store) {
+    if (!conf.auth || !conf.auth.store || conf.mode === 'build') {
         return
     }
+    /** 每隔5分钟清除错误次数 */
+    setInterval(() => {
+        ip_error_count_map.clear()
+    }, 1000 * 60 * 5)
+
     const {
         max_login_count = defaultConfig.max_login_count,
         max_error_count = defaultConfig.max_error_count,
