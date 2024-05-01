@@ -177,6 +177,7 @@ const middleware_auth: MiddlewareCreater = (conf) => {
         loginInfo.user = user
         const login_clients = login_user_map.get(user.username) || []
         login_clients.push(loginInfo)
+        login_user_map.set(user.username, login_clients)
         while (login_clients.length > max_login_count) {
             const deleted = login_clients.shift()
             if (deleted) {
@@ -188,6 +189,13 @@ const middleware_auth: MiddlewareCreater = (conf) => {
         }
     })
 
+    /** 存储引擎删除用户，需要清除登录信息 */
+    store.onDeleteUser(username => {
+        login_user_map.get(username)?.forEach(c => {
+            token_map.delete(c.token)
+        })
+        login_user_map.delete(username)
+    })
     return {
         name: 'auth',
         mode: ['dev', 'prod'],
