@@ -15,6 +15,7 @@ import path from "node:path";
 
 createServer({
     auth: {
+        redirect: true,
         store: new UserStore(path.join(process.cwd(), '.f2e_cache/auth.db')),
     },
     middlewares: [

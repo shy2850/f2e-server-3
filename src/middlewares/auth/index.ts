@@ -1,7 +1,7 @@
 import { Route, RouteFilter } from "../../routes";
 import { MiddlewareCreater } from "../interface";
 import { createCookie, getCookie } from "../../utils/cookie";
-import { createResponseHelper } from "../../utils";
+import { createResponseHelper, logger } from "../../utils";
 import * as _ from '../../utils/misc'
 import { page_layout, page_login } from "../../utils/templates";
 import { AuthConfig, LoginInfo } from "./interface";
@@ -94,7 +94,6 @@ const middleware_auth: MiddlewareCreater = (conf) => {
         token_map.set(crsf_token, loginInfo)
         /** 登录页面直接跳过 */
         if (pathname === login_path && method.toUpperCase() === 'GET') {
-            loginInfo.last_url = ''
             responseHeaders['Set-Cookie'] = createCookie({ ...cookie, value: crsf_token, })
             ctx.responseHeaders = responseHeaders
             handleSuccess(ctx, '.html', _.template(login_page, {
@@ -105,11 +104,11 @@ const middleware_auth: MiddlewareCreater = (conf) => {
             return false
         }
         if (pathname != login_path) {
+            if (!/\.(js|css|svg|ico|png|gif|jpe?g)$/.test(pathname)) {
+                loginInfo.last_url = location.pathname + (location.search ? '?' + location.search : '')
+            }
             /** 未登录，跳转登录页，并记录跳转前访问地址 */
             if (!loginInfo.user) {
-                if (!/\.(js|css|svg|ico|png|gif|jpe?g)$/.test(pathname)) {
-                    loginInfo.last_url = location.pathname + (location.search ? '?' + location.search : '')
-                }
                 handleRedirect(ctx.resp, '/' + login_path)
                 return false
             }
