@@ -29,8 +29,14 @@ export interface IUserStore {
 }
 
 export interface AuthConfig {
-    /** 登录路径 */
+    /** 登录路径
+     * @default 'login'
+    */
     login_path?: string;
+    /** 登出路径
+     * @default 'logout'
+    */
+    logout_path?: string;
     /** 
      * 登录页面内容
      * 可参考 [page_login.hbs](../../../templates/page_login.hbs)

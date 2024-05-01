@@ -8,7 +8,7 @@ import { AuthConfig, LoginInfo } from "./interface";
 import { getIpAddress } from "../../utils/resp";
 import { APIContext, F2EConfigResult } from "../../interface";
 export * from "./interface"
-export * from "./store"
+export * from "./user_store"
 
 const login_user_map = new Map<string, LoginInfo[]>()
 const token_map = new Map<string, LoginInfo>()
@@ -46,6 +46,7 @@ const defaultConfig: Required<Omit<AuthConfig, 'store'>> = {
     max_error_count: 5,
     redirect: '/',
     login_path: 'login',
+    logout_path: 'logout',
     login_page: page_layout.replace('{{body}}', page_login),
     cookie: { name: 'f2e_auth', maxAge: 60 * 60 * 24 * 7, httpOnly: true, secure: false, sameSite: 'strict' },
     messages: {
@@ -70,6 +71,7 @@ const middleware_auth: MiddlewareCreater = (conf) => {
         redirect = defaultConfig.redirect,
         store,
         login_path = defaultConfig.login_path,
+        logout_path = defaultConfig.logout_path,
         login_page = defaultConfig.login_page,
         cookie = defaultConfig.cookie,
         messages = defaultConfig.messages,
@@ -94,6 +96,22 @@ const middleware_auth: MiddlewareCreater = (conf) => {
             expire: Date.now() + 1000 * 60 * 60 * 24,
         }
         token_map.set(crsf_token, loginInfo)
+        /** 登出页面操作完成跳转登录页 */
+        if (pathname === logout_path) {
+            const loginInfo = token_map.get(crsf_token)
+            if (loginInfo) {
+                token_map.delete(crsf_token)
+                if (loginInfo.user) {
+                    const login_clients = login_user_map.get(loginInfo.user.username)
+                    if (login_clients) {
+                        login_user_map.set(loginInfo.user.username, login_clients.filter(c => c.token !== crsf_token))
+                    }
+                }
+                loginInfo.user = undefined
+            }
+            handleRedirect(resp, '/' + login_path)
+            return false
+        }
         /** 登录页面直接跳过 */
         if (pathname === login_path && method.toUpperCase() === 'GET') {
             responseHeaders['Set-Cookie'] = createCookie({ ...cookie, value: crsf_token, })

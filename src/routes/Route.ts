@@ -1,5 +1,5 @@
 import { IRoute, RouteFilter, RouteItem } from './interface'
-import { queryparams } from '../utils/misc'
+import { queryparams, pathname_fixer } from '../utils/misc'
 import { APIContext, F2EConfigResult } from '../interface'
 import { createResponseHelper } from '../utils/resp'
 export * from './interface'
@@ -26,7 +26,7 @@ export class Route implements IRoute {
     }
     on = (path: string | RegExp, handler: RouteItem['handler'], ext?: Omit<RouteItem, 'path' | 'handler'>) => {
         this.routes.push({
-            path, handler, method: '*', ...(ext || {}),
+            path: typeof path === 'string' ? pathname_fixer(path) : path, handler, method: '*', ...(ext || {}),
         })
     }
     match = (path: string, method = '*') => {
