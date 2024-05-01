@@ -51,6 +51,10 @@ export interface AuthConfig {
      * @default '/'
      */
     redirect?: true | string;
+    /**
+     * 白名单, 跳过鉴权，正则字符串
+     */
+    white_list?: string[];
     
 
     /**

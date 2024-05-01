@@ -48,6 +48,7 @@ const defaultConfig: Required<Omit<AuthConfig, 'store'>> = {
     login_path: 'login',
     logout_path: 'logout',
     login_page: page_layout.replace('{{body}}', page_login),
+    white_list: [],
     cookie: { name: 'f2e_auth', maxAge: 60 * 60 * 24 * 7, httpOnly: true, secure: false, sameSite: 'strict' },
     messages: {
         crsf_token_invalid: 'token不合法',
@@ -73,6 +74,7 @@ const middleware_auth: MiddlewareCreater = (conf) => {
         login_path = defaultConfig.login_path,
         logout_path = defaultConfig.logout_path,
         login_page = defaultConfig.login_page,
+        white_list = defaultConfig.white_list,
         cookie = defaultConfig.cookie,
         messages = defaultConfig.messages,
     } = conf.auth
@@ -122,6 +124,10 @@ const middleware_auth: MiddlewareCreater = (conf) => {
                 crsf_token,
             }))
             return false
+        }
+        /** 白名单页面直接跳过 */
+        if (white_list.length > 0 && white_list.some(p => new RegExp(p).test(pathname))) {
+            return pathname
         }
         if (pathname != login_path) {
             if (!/\.(js|css|svg|ico|png|gif|jpe?g)$/.test(pathname)) {
