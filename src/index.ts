@@ -63,7 +63,7 @@ export const createServer = async (options: F2EConfig) => {
 
     const app = ssl ? SSLApp(ssl) : App()
     app.listen(host, port, function () {
-        logger.debug(`Server start on ${conf.ssl ? 'https' : 'http'}://${ServerIP}:${conf.port}`)
+        logger.debug(`Server start on ${conf.ssl ? 'https' : 'http'}://${host === '0.0.0.0' ? ServerIP : host}:${conf.port}`)
         onServerCreate(app, conf)
     })
     .any('/*', server_all(conf, events, memoryTree))

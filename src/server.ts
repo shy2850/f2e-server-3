@@ -34,6 +34,12 @@ export const server_all = (conf: F2EConfigResult, events: Required<MiddlewareEve
 
     return async (resp: HttpResponse, req: HttpRequest) => {
         const location = new URL(req.getUrl() + '?' + (req.getQuery() || ''), `http://${req.getHeader('host')}`)
+        if (conf.host != '0.0.0.0') {
+            if (location.hostname != conf.host) {
+                handleError(resp, 'Wrong Host!')
+                return
+            }
+        }
         let pathname = _.pathname_fixer(_.decode(location.pathname))
         const headers = getHttpHeaders('request' in req ? (req.request as IncomingMessage) : req)
         const ctx: APIContext = {

@@ -1,6 +1,4 @@
-import { HttpRequest, HttpResponse } from 'uWebSockets.js'
 import { IRoute, RouteFilter, RouteItem } from './interface'
-import { MemoryTree } from '../memory-tree'
 import { queryparams } from '../utils/misc'
 import { APIContext, F2EConfigResult } from '../interface'
 import { createResponseHelper } from '../utils/resp'

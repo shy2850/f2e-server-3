@@ -70,7 +70,9 @@ export interface ServerConfig {
     onServerCreate?: (app: TemplatedApp, conf: F2EConfigResult) => void;
     /** 映射文件后缀名到指定MIME */
     mimeTypes?: { [key: string]: string };
-    /** 流数据分片大小 */
+    /** 流数据分片大小
+     * @default 1024 * 1024 * 10
+     */
     range_size?: number;
 
     /** 默认404页面 */

@@ -1,5 +1,3 @@
-import { HttpRequest } from "uWebSockets.js";
-
 export interface Cookie {
     name: string;
     value: string;

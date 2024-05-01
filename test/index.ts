@@ -14,6 +14,7 @@ import path from "node:path";
 // run_memory_tree();
 
 createServer({
+    // host: "server.local",
     auth: {
         redirect: true,
         store: new UserStore(path.join(process.cwd(), '.f2e_cache/auth.db')),

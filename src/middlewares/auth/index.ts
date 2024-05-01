@@ -6,7 +6,6 @@ import * as _ from '../../utils/misc'
 import { page_layout, page_login } from "../../utils/templates";
 import { AuthConfig, LoginInfo } from "./interface";
 import { getIpAddress } from "../../utils/resp";
-import { HttpResponse } from "uWebSockets.js";
 import { APIContext, F2EConfigResult } from "../../interface";
 
 const login_user_map = new Map<string, LoginInfo[]>()
