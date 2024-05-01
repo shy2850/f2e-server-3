@@ -106,7 +106,7 @@ mode = `build` 时，http代理配置无效
 
 ### auth 配置
 支持简单的登录验证
-参考： [test/index.ts](test/index.ts) 
+参考： [test/start.mjs](test/start.mjs) 
 | 参数 | 类型 | 默认值 | 说明 |
 | --- | --- | --- | --- |
 | auth | [AuthConfig](src/middlewares/auth/interface.ts) | `false` | auth配置 |
