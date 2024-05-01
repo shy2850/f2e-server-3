@@ -29,11 +29,11 @@ export const getHttpHeaders = (req: HttpRequest | IncomingMessage) => {
     const headers: HttpHeaders = {}
     if (req instanceof IncomingMessage) {
         for (let i = 0; i < req.rawHeaders.length; i += 2) {
-            headers[req.rawHeaders[i]] = req.rawHeaders[i + 1]
+            headers[req.rawHeaders[i].trim().toLowerCase()] = req.rawHeaders[i + 1]
         }
     } else {
         req.forEach((key, value) => {
-            headers[key.trim()] = value.trim()
+            headers[key.trim().toLowerCase()] = value.trim()
         })
     }
     return headers
