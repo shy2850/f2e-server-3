@@ -25,7 +25,7 @@ const middleware_esbuild: MiddlewareCreater = (conf) => {
     try {
         require(conf_path)
     } catch (e) {
-        logger.error(`[esbuild] esbuildrc: ${conf_path} is not a valid json file`)
+        logger.error(`[esbuild] esbuildrc: ${conf_path} is not valid:`, e)
         exit(1)
     }
 
