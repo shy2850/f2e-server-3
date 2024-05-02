@@ -69,11 +69,13 @@ export const getConfigResult = function (conf: F2EConfig = {}) {
 export const getConfigEvents = (conf: F2EConfig = {}) => {
     conf = getConfig(conf)
     const { buildFilter, watchFilter, outputFilter, onGet, onSet, onRoute, beforeRoute, buildWatcher, middlewares = [] } = conf
-    const middlewareBase: MiddlewareCreater = () => {
-        return {
-            name: "system",
-            mode: ["dev", "build", "prod"],
-            buildFilter, watchFilter, outputFilter, onGet, onSet, onRoute, beforeRoute, buildWatcher,
+    const middlewareBase: MiddlewareCreater = {
+        name: "system",
+        mode: ["dev", "build", "prod"],
+        execute: () => {
+            return {
+                buildFilter, watchFilter, outputFilter, onGet, onSet, onRoute, beforeRoute, buildWatcher,
+            }
         }
     }
     return combineMiddleware(getConfigResult(conf), [middlewareBase, ...middlewares])

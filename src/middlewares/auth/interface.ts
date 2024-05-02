@@ -26,8 +26,8 @@ export interface LoginInfo {
 export interface IUserStore {
     /** 查询登录用户信息 */
     getUser(username: string, password: string): Promise<LoginUser | undefined>,
-    /** 删除用户时，同步清空已经登录的用户信息 */
-    onDeleteUser(callback: (username: string) => void): void,
+    /** 非必须，如果有定义，当删除用户时，同步清空已经登录的用户信息 */
+    onDeleteUser?(callback: (username: string) => void): void,
 }
 
 export interface AuthConfig {

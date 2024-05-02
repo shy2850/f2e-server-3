@@ -1,7 +1,7 @@
 import { F2EConfigResult } from "../interface";
 import { MemoryTree } from "../memory-tree";
 import logger from "../utils/logger";
-import { MiddlewareEvents, MiddlewareCreater, MiddlewareReference, MiddlewareResult } from "./interface";
+import { MiddlewareEvents, MiddlewareCreater, MiddlewareReference } from "./interface";
 import { exit } from 'node:process';
 import * as _ from '../utils/misc';
 import middleware_livereload from './livereload';
@@ -12,7 +12,6 @@ import middleware_less from './less';
 import middleware_auth from './auth';
 
 export const combineMiddleware = (conf: F2EConfigResult, middlewares: (MiddlewareCreater | MiddlewareReference)[]): Required<MiddlewareEvents> => {
-    const { mode } = conf
     const onMemoryLoads: Required<MiddlewareEvents>["onMemoryLoad"][] = []
     const onMemoryInits: Required<MiddlewareEvents>["onMemoryInit"][] = []
     const beforeRoutes: Required<MiddlewareEvents>["beforeRoute"][] = []
@@ -34,34 +33,39 @@ export const combineMiddleware = (conf: F2EConfigResult, middlewares: (Middlewar
 
     middlewares.unshift(middleware_auth)
     for (let i = 0; i < middlewares.length; i++) {
-        const m = middlewares[i];
-        let middle: MiddlewareResult | undefined = undefined;
-        if ('middleware' in m) {
-            const middlewareName = `f2e-middle-${m.middleware}`
-            try {
-                middle = require(middlewareName)(conf, m.options)
-                if (middle) {
-                    middle.name = m.middleware
+        const m = middlewares[i]
+        const middle = 'execute' in m ? m : (function (m) {
+            let middle: MiddlewareCreater | undefined = undefined;
+            if ('middleware' in m) {
+                const middlewareName = `f2e-middle-${m.middleware}`
+                try {
+                    middle = require(middlewareName)
+                    if (middle) {
+                        middle.name = middle.name || middlewareName
+                    }
+                } catch (e) {
+                    logger.error(e)
+                    exit(1)
                 }
-            } catch (e) {
-                logger.error(e)
-                exit(1)
             }
-        }
-        if (typeof m === 'function') {
-            middle = m(conf)
-        }
-        if (middle && middle.mode.includes(mode)) {
-            middle.onMemoryInit && onMemoryInits.push(middle.onMemoryInit)
-            middle.onMemoryLoad && onMemoryLoads.push(middle.onMemoryLoad)
-            middle.beforeRoute && beforeRoutes.push(middle.beforeRoute)
-            middle.onRoute && onRoutes.push(middle.onRoute)
-            middle.buildWatcher && buildWatchers.push(middle.buildWatcher)
-            middle.onSet && onSets.push(middle.onSet)
-            middle.onGet && onGets.push(middle.onGet)
-            middle.buildFilter && buildFilters.push(middle.buildFilter)
-            middle.watchFilter && watchFilters.push(middle.watchFilter)
-            middle.outputFilter && outputFilters.push(middle.outputFilter)
+            return middle
+        })(m);
+        if (!middle) continue;
+        const { mode = ['dev', 'build', 'prod'], name = 'system', execute } = middle
+        if (mode.includes(conf.mode)) {
+            const result = execute(conf)
+            if (!result) continue;
+            const { onMemoryInit, onMemoryLoad, beforeRoute, onRoute, buildWatcher, onSet, onGet, buildFilter, watchFilter, outputFilter } = result
+            onMemoryInit && onMemoryInits.push(onMemoryInit)
+            onMemoryLoad && onMemoryLoads.push(onMemoryLoad)
+            beforeRoute && beforeRoutes.push(beforeRoute)
+            onRoute && onRoutes.push(onRoute)
+            buildWatcher && buildWatchers.push(buildWatcher)
+            onSet && onSets.push(onSet)
+            onGet && onGets.push(onGet)
+            buildFilter && buildFilters.push(buildFilter)
+            watchFilter && watchFilters.push(watchFilter)
+            outputFilter && outputFilters.push(outputFilter)
         }
     }
     return {

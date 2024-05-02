@@ -26,14 +26,17 @@ export interface MiddlewareEvents extends Partial<MemoryTree.Events> {
         (pathname: string, ctx: APIContext): string | false | void | Promise<string | false | void>
     };
 }
-export interface MiddlewareResult extends MiddlewareEvents {
-    /** 该中间件可以在哪些mode下运行 */
-    mode: ConfigMode[];
-    /** 中间件名称，没有实际意义，方便调试 */
-    name: string;
-}
 export interface MiddlewareCreater {
-    (conf: F2EConfigResult): MiddlewareResult | undefined;
+    /** 该中间件可以在哪些mode下运行
+     * @default {} ['dev', 'build', 'prod']
+    */
+    mode?: ConfigMode[];
+    /** 中间件名称，没有实际意义，方便调试 */
+    name?: string;
+    /**
+     * 执行器，返回需要各环节操作的事件
+     */
+    execute: {(conf: F2EConfigResult): MiddlewareEvents | undefined};
 }
 
 export interface MiddlewareReference {
