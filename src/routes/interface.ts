@@ -20,8 +20,6 @@ export interface RouteItem<T extends object = any, F = any> {
      * @default 'json'
      */
     sourceType?: string
-    /** 一般将path为string的加入cache，正则的不加入 */
-    cache?: boolean
     
     /**
      * type = 'sse'时，interval为轮询间隔, 设置为false时，只触发心跳，需要自己主动触发 resp.write 信息进行推送

@@ -36,7 +36,7 @@ export class Route implements IRoute {
         }
         item = this.find(path, method)
         if (item) {
-            if (item.cache) {
+            if (typeof item.path === 'string') {
                 this.route_map.set(path + ':' + item.method, item)
             }
             return item
