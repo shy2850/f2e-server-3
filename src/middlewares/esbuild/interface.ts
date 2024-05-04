@@ -19,6 +19,11 @@ export interface EsbuildConfig {
      */
     reg_inject?: RegExp;
     /**
+     * 如何替换脚本
+     * @default {} /<script\s.*?src="(.*?)".*?>\s*<\/script\>/g
+     */
+    reg_replacer?: RegExp;
+    /**
      * 缓存目录
      * @default '.f2e_cache'
      */

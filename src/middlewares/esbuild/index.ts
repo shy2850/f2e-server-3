@@ -47,9 +47,6 @@ const middleware_esbuild: MiddlewareCreater = {
             metafile: true,
             minify: mode === 'build',
             sourcemap: true,
-            banner: {
-                js: `require = ${GLOBAL_NAME} && ${GLOBAL_NAME}.require;`,
-            },
         }
         const origin_map = new Map<string, {
             index: number;
@@ -60,7 +57,11 @@ const middleware_esbuild: MiddlewareCreater = {
         const build = async function (store: MemoryTree.Store) {
             for (let i = 0; i < esbuildOptions.length; i++) {
                 const _option = esbuildOptions[i];
-                const option = { ..._option, ...commonOptions, }
+                const option = { ..._option, ...commonOptions, 
+                    banner: _option.external ? {
+                        js: `require = ${GLOBAL_NAME} && ${GLOBAL_NAME}.require;`,
+                    } : _option.banner,
+                }
                 await external_build({conf, store, option, index: i})
                 const result = await builder.build(option)
                 Object.keys(result?.metafile?.inputs || {}).forEach(_inputPath => {
@@ -80,7 +81,11 @@ const middleware_esbuild: MiddlewareCreater = {
         const watch = async function (store: MemoryTree.Store) {
             for (let i = 0; i < esbuildOptions.length; i++) {
                 const _option = esbuildOptions[i];
-                const option = { ..._option, ...commonOptions, }
+                const option = { ..._option, ...commonOptions, 
+                    banner: _option.external ? {
+                        js: `require = ${GLOBAL_NAME} && ${GLOBAL_NAME}.require;`,
+                    } : _option.banner,
+                }
                 await external_build({conf, store, option, index: i})
                 const ctx = await builder.context(option)
                 const rebuild = async function rebuild() {
@@ -109,7 +114,7 @@ const middleware_esbuild: MiddlewareCreater = {
                 return mode === 'dev' ? await watch(store) : await build(store)
             },
             async onSet(pathname, data, store) {
-                const { reg_inject = /index\.html?$/, cache_root = '.f2e_cache' } = esbuildConfig
+                const { reg_inject = /index\.html?$/, reg_replacer, cache_root = '.f2e_cache' } = esbuildConfig
                 const result = {
                     originPath: pathname,
                     outputPath: pathname,
@@ -117,7 +122,8 @@ const middleware_esbuild: MiddlewareCreater = {
                 }
                 if (reg_inject.test(pathname) && data) {
                     result.data = data.toString()
-                    .replace(/<script(?:(?:\s|.)+?)src=[\"\'](.+?)[\"\'](?!\<)(?:(?:\s|.)*?)(?:(?:\/\>)|(?:\>\s*?\<\/script\>))/g, function (___, src) {
+                    // 原来正则在某些情况下会导致v8(node和chrome)卡死，JavaScriptCore(bun和safari)不会，所以这里用简单正则替换
+                    .replace(reg_replacer || /<script\s.*?src="(.*?)".*?>\s*<\/script\>/g, function (___, src) {
                         const key = _.pathname_fixer('/' === src.charAt(0) ? src : path.join(path.dirname(pathname), src))
                         const item = origin_map.get(key)
                         if (item && item.with_libs) {
