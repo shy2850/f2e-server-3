@@ -40,7 +40,7 @@ export const createStore = function (options: Pick<MemoryTree.Options, 'onGet'|'
                             const key = _.pathname_fixer('/' === src.charAt(0) ? src : path.join(path.dirname(pathname), src))
                             const out = origin_map.get(key)
                             if (!out) return mat
-                            const targetSrc = url.resolve(namehash.publicPath || '/', out.outputPath)
+                            const targetSrc = (namehash.publicPath || '/') + out.outputPath.replace(/^\/+/, '')
                             return mat.replace(src,  targetSrc)
                         }
                         result = result.replace(searchValue, replacer)
