@@ -4,13 +4,14 @@ import { NativeResponse } from './response';
 import * as http from 'node:http'
 import * as https from 'node:https'
 import { minimatch } from '../../utils/misc';
+import { readFileSync } from 'node:fs';
 
 export class NativeTemplatedApp implements TemplatedApp {
     private listeners: { glob: string, handler: (res: HttpResponse, req: HttpRequest) => void | Promise<void> }[] = [];
     server: https.Server<typeof http.IncomingMessage, typeof http.ServerResponse> | http.Server<typeof http.IncomingMessage, typeof http.ServerResponse>;
     constructor(options?: AppOptions) {
         const listeners = this.listeners;
-        this.server = options ? https.createServer() : http.createServer(async (request, response) => {
+        const callback: http.RequestListener = async (request, response) => {
             const req = new NativeRequest(request)
             const resp = new NativeResponse(request, response)
             const location = new URL(request.url || '/', 'http://localhost')
@@ -20,7 +21,12 @@ export class NativeTemplatedApp implements TemplatedApp {
                     await handler(resp, req)
                 }
             }
-        })
+        }
+        this.server = options ? https.createServer({
+            passphrase: options.passphrase + '',
+            key: readFileSync(options.key_file_name + ''),
+            cert: readFileSync(options.cert_file_name + ''),
+        }, callback) : http.createServer(callback)
     }
     listen(host: RecognizedString, port: number, cb: (listenSocket: false | us_listen_socket) => void | Promise<void>): TemplatedApp;
     listen(port: number, cb: (listenSocket: false | us_listen_socket) => void | Promise<void>): TemplatedApp;

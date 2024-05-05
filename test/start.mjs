@@ -13,6 +13,11 @@ createServer({
     mode: mode === 'dev' || mode === 'build' ? mode : 'prod',
     // host: "server.local",
     gzip: true,
+    ssl: {
+        passphrase: 'x509',
+        key_file_name: path.join(import.meta.dirname, './private.pem'),
+        cert_file_name: path.join(import.meta.dirname, './csr.crt'),
+    },
     less: {
         entryPoints: ['test/app/app.less', 'test/app/highlight.less'],
     },
