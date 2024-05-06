@@ -19,7 +19,12 @@ createServer({
         cert_file_name: path.join(import.meta.dirname, './csr.crt'),
     },
     less: {
-        entryPoints: ['test/app/app.less', 'test/app/highlight.less'],
+        entryPoints: ['test/app/app.less'],
+    },
+    alias: {
+        // 'highlight/highlight.js': 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js',
+        // 'highlight/highlight.css': 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css',
+        'highlight/monokai-sublime.css': 'node_modules/highlight.js/styles/monokai-sublime.css',
     },
     mimeTypes: {
         'ts': 'text/plain',

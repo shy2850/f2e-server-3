@@ -10,6 +10,7 @@ import middleware_proxy from './proxy';
 import middleware_esbuild from './esbuild';
 import middleware_less from './less';
 import middleware_auth from './auth';
+import middleware_alias from './alias';
 
 export const combineMiddleware = (conf: F2EConfigResult, middlewares: (MiddlewareCreater | MiddlewareReference)[]): Required<MiddlewareEvents> => {
     const onMemoryLoads: Required<MiddlewareEvents>["onMemoryLoad"][] = []
@@ -24,6 +25,7 @@ export const combineMiddleware = (conf: F2EConfigResult, middlewares: (Middlewar
     const outputFilters: Required<MiddlewareEvents>["outputFilter"][] = []
 
     /** 开始内置中间件加载 */
+    middlewares.push(middleware_alias)
     middlewares.push(middleware_less)
     middlewares.push(middleware_esbuild)
     middlewares.push(middleware_proxy)

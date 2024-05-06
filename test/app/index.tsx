@@ -16,7 +16,7 @@ if (iframe) {
         if (doc) {
             const link = doc.createElement("link");
             link.setAttribute("rel", "stylesheet");
-            link.setAttribute("href", "/test/app/highlight.css?" + Math.random());
+            link.setAttribute("href", "/highlight/monokai-sublime.css?" + Math.random());
             doc.head.appendChild(link);
             doc.querySelectorAll('pre').forEach(code => {
                 console.log(code);

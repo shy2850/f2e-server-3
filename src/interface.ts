@@ -121,6 +121,13 @@ export interface ServerConfig {
     less?: false | LessConfig;
     /** auth登录认证配置 */
     auth?: false | AuthConfig;
+    /**
+     * 索引资源配置
+     * 将原始资源映射到指定路径out
+     * 原始路径支持绝对路径和相对路径，以及http(s)协议URL
+     * 只在资源构建之前加载一次, 配置不当，可能被其他构建结果覆盖
+    */
+    alias?: false | {[out: string]: string}
 }
 export interface F2EConfig extends ServerConfig, Partial<MemoryTree.Options>, Partial<MiddlewareEvents> {
     /** 

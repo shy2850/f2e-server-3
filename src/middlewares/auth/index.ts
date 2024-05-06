@@ -9,6 +9,8 @@ import { getIpAddress } from "../../utils/resp";
 import { APIContext, F2EConfigResult } from "../../interface";
 export * from "./interface"
 export * from "./user_store"
+import * as path from "node:path"
+import * as fs from "node:fs"
 
 const login_user_map = new Map<string, LoginInfo[]>()
 const token_map = new Map<string, LoginInfo>()
@@ -18,25 +20,23 @@ const append_error = (ip: string) => {
     ip_error_count_map.set(ip, times + 1)
 }
 
-/**
- * 账户提交加密算法
- * @param account 
- * @param token 
- */
-const decrypt_account = (account: string, token: string) => {
-    if (!account || !token) return null
-    var bits = new Set(token.substring(4, 12).split('').map(n => parseInt(n, 16)));
-    const chars = []
-    for (let i = 0; i < account.length; i++) {
-        if (!bits.has(i)) {
-            chars.push(account[i])
-        }
-    }
+/** 登录信息缓存 */
+const saveMap = function (filename: string | false, map: Map<string, any>) {
+    if (!filename) return
+    const mapstring = JSON.stringify([...map], null, 2)
+    fs.writeFileSync(filename, mapstring)
+    logger.debug('save auth cache:', filename)
+}
+/** 登录信息从缓存加载 */
+const loadMap = function (filename: string | false, map: Map<string, any>) {
+    if (!filename) return
+    if (!fs.existsSync(filename)) return
+    const mapstring = fs.readFileSync(filename, 'utf-8')
     try {
-        const { username, password = '' } = JSON.parse(atob(chars.join('')))
-        return { username, password }
+        const data: [string, any][] = JSON.parse(mapstring)
+        data.forEach(([key, value]) => map.set(key, value))
     } catch (e) {
-        return null
+        logger.error('load auth cache wrong:', e)
     }
 }
 
@@ -55,6 +55,23 @@ const defaultConfig: Required<Omit<AuthConfig, 'store'>> = {
         crsf_token_not_found: 'token失效',
         account_not_found: '用户名密码错误',
         ip_error_count_exceed: '错误次数过的，请稍后再试',
+    },
+    cache_root: path.resolve(process.cwd(), '.f2e_cache'),
+    decrypt_account: (account: string, token: string) => {
+        if (!account || !token) return null
+        var bits = new Set(token.substring(4, 12).split('').map(n => parseInt(n, 16)));
+        const chars = []
+        for (let i = 0; i < account.length; i++) {
+            if (!bits.has(i)) {
+                chars.push(account[i])
+            }
+        }
+        try {
+            const { username, password = '' } = JSON.parse(atob(chars.join('')))
+            return { username, password }
+        } catch (e) {
+            return null
+        }
     },
 } 
 const middleware_auth: MiddlewareCreater = {
@@ -80,6 +97,8 @@ const middleware_auth: MiddlewareCreater = {
             white_list = defaultConfig.white_list,
             cookie = defaultConfig.cookie,
             messages = defaultConfig.messages,
+            decrypt_account = defaultConfig.decrypt_account,
+            cache_root = defaultConfig.cache_root,
         } = conf.auth
         const {
             crsf_token_invalid,
@@ -87,7 +106,17 @@ const middleware_auth: MiddlewareCreater = {
             account_not_found,
             ip_error_count_exceed,
         } = {...defaultConfig.messages, ...messages}
-    
+
+        if (cache_root != false) {
+            if (!fs.existsSync(cache_root)) {
+                fs.mkdirSync(cache_root, {recursive: true})
+            }
+        }
+        const path_login_user_map = cache_root && path.resolve(cache_root, 'login_user_map.json')
+        const path_token_map = cache_root && path.resolve(cache_root, 'token_map.json')
+        loadMap(path_login_user_map, login_user_map)
+        loadMap(path_token_map, token_map)
+
         const { handleSuccess, handleRedirect } = createResponseHelper(conf)
         
         const filter: RouteFilter  = async (pathname, ctx) => {
@@ -113,6 +142,8 @@ const middleware_auth: MiddlewareCreater = {
                         }
                     }
                     loginInfo.user = undefined
+                    saveMap(path_login_user_map, login_user_map)
+                    saveMap(path_token_map, token_map)
                 }
                 handleRedirect(resp, '/' + login_path)
                 return false
@@ -193,6 +224,8 @@ const middleware_auth: MiddlewareCreater = {
                     token_map.delete(deleted.token)
                 }
             }
+            saveMap(path_login_user_map, login_user_map)
+            saveMap(path_token_map, token_map)
             return {
                 success: true,
             }

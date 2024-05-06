@@ -45,6 +45,11 @@ export interface AuthConfig {
      * */
     login_page?: string;
     /**
+     * 账户提交加密算法, 需要跟登录页面的算法保持一致
+     * 可参考 [auth/index.ts](./index.ts)
+     */
+    decrypt_account?: (account: string, token: string) => { username: string, password: string } | null
+    /**
      * 登录成功是否跳转原路径
      * 设置为 true 跳转原路径
      * 设置为 字符串 表示直接跳转的路径
@@ -72,6 +77,11 @@ export interface AuthConfig {
      * 用户存储引擎
      */
     store: IUserStore;
+    /** 登录缓存目录
+     * 如果设置成 false，则不缓存登录信息，每次重启都需要客户端重新登陆
+     * @default process.cwd() + '/.f2e_cache'
+     */
+    cache_root?: string | false;
 
     messages?: {
         crsf_token_not_found?: string;

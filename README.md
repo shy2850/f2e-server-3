@@ -118,6 +118,15 @@ mode = `build` 时，http代理配置无效
 | auth.store | [UserStore](src/middlewares/auth/interface.ts#L26) | | 用户存储引擎 |
 | auth.store.getUser | `(username: string, password: string): Promise<LoginUser>` | | 判断账户密码是否匹配 |
 
+### alias 配置
+索引资源配置
+0. 将原始资源映射到指定路径out
+0. 原始路径支持绝对路径和相对路径，以及http(s)协议URL
+0. 只在资源构建之前加载一次, 配置不当，可能被其他构建结果覆盖
+0. **配置在多种mode模式下生效，build 和 prod模式同时配置可能重复，需要注意**
+| 参数 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| alias | `{[out: string]: string}` | `false` | 索引资源配置 |
 
 
 ## 其他参考示例
