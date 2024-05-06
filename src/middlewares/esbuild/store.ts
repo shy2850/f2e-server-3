@@ -29,7 +29,7 @@ export const save = async function (params: SaveParams) {
         /** js文件索引meta信息 */
         if ( with_metafile && metafile && /\.js$/.test(outputPath)) {
             store.save({
-                originPath: originPath + '.meta',
+                originPath: outputPath + '.json',
                 outputPath: outputPath + '.json',
                 data: JSON.stringify(metafile, null, 2)
             })

@@ -7,6 +7,7 @@ console.log(zh)
 import zh_CN from 'antd/locale/zh_CN'
 
 import styles from './style.less'
+import Hello from "./Hello";
 
 const App = () => {
     const [date, setDate] = useState(Date.now())
@@ -36,6 +37,7 @@ const App = () => {
         <ConfigProvider locale={zh_CN}>
             <div>
                 <h1>antd version: {version}</h1>
+                {/* <Hello /> */}
                 <Space>
                     <DatePicker />
                     <Button type="primary">Primary Button</Button>

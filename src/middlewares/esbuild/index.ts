@@ -53,6 +53,34 @@ const middleware_esbuild: MiddlewareCreater = {
             with_libs: boolean;
             rebuilds: Set<{(): Promise<void>}>;
         }>()
+        const build_origin_map = function ({
+            index,
+            inputs,
+            rebuild,
+            store,
+            with_libs,
+        }: {
+            index: number;
+            inputs: {[path: string]: any};
+            rebuild?: {(): Promise<void>};
+            store: MemoryTree.Store;
+            with_libs: boolean;
+        }) {
+            if (!inputs) return
+            Object.keys(inputs || {}).forEach(_inputPath => {
+                const inputPath = _.pathname_fixer(_inputPath)
+                const found = origin_map.get(inputPath) || {
+                    index,
+                    with_libs,
+                    rebuilds: new Set(),
+                }
+                if (rebuild) {
+                    found.rebuilds.add(rebuild)
+                }
+                origin_map.set(inputPath, found)
+                store.ignores.add(inputPath)
+            })
+        }
     
         const build = async function (store: MemoryTree.Store) {
             for (let i = 0; i < esbuildOptions.length; i++) {
@@ -64,16 +92,14 @@ const middleware_esbuild: MiddlewareCreater = {
                 }
                 await external_build({conf, store, option, index: i})
                 const result = await builder.build(option)
-                Object.keys(result?.metafile?.inputs || {}).forEach(_inputPath => {
-                    const inputPath = _.pathname_fixer(_inputPath)
-                    const found = origin_map.get(inputPath) || {
+                if (result?.metafile?.inputs) {
+                    build_origin_map({
                         index: i,
+                        inputs: result?.metafile?.inputs,
+                        store,
                         with_libs: esbuildConfig.build_external && (!!option.external && option.external?.length > 0),
-                        rebuilds: new Set(),
-                    }
-                    origin_map.set(inputPath, found)
-                    store.ignores.add(inputPath)
-                })
+                    })
+                }
                 await save({ store, result, conf })
             }
         }
@@ -88,23 +114,35 @@ const middleware_esbuild: MiddlewareCreater = {
                 }
                 await external_build({conf, store, option, index: i})
                 const ctx = await builder.context(option)
-                const rebuild = async function rebuild() {
-                    const result = await ctx.rebuild()
-                    logger.debug(`[esbuild] ${JSON.stringify(option.entryPoints)} rebuild`)
-                    await save({ store, result, conf })
-                }
-                const result = await ctx.rebuild()
-                Object.keys(result?.metafile?.inputs || {}).forEach(_inputPath => {
-                    const inputPath = _.pathname_fixer(_inputPath)
-                    const found = origin_map.get(inputPath) || {
-                        index: i,
-                        with_libs: esbuildConfig.build_external && (!!option.external && option.external?.length > 0),
-                        rebuilds: new Set(),
+                const rebuild = (function (index) {
+                    return async function () {
+                        const result = await ctx.rebuild()
+                        if (result?.metafile?.inputs) {
+                            build_origin_map({
+                                index: i,
+                                inputs: result?.metafile?.inputs,
+                                rebuild,
+                                store,
+                                with_libs: esbuildConfig.build_external && (!!option.external && option.external?.length > 0),
+                            })
+                        }
+                        logger.debug(
+                            `[esbuild] ${JSON.stringify(option.entryPoints)} rebuild`,
+                            // [...origin_map.keys()].filter(k => !k.includes('node_modules'))
+                        )
+                        await save({ store, result, conf })
                     }
-                    found.rebuilds.add(rebuild)
-                    origin_map.set(inputPath, found)
-                    store.ignores.add(inputPath)
-                })
+                })(i)
+                const result = await ctx.rebuild()
+                if (result?.metafile?.inputs) {
+                    build_origin_map({
+                        index: i,
+                        inputs: result?.metafile?.inputs,
+                        rebuild,
+                        store,
+                        with_libs: esbuildConfig.build_external && (!!option.external && option.external?.length > 0),
+                    })
+                }
                 await save({ store, result, conf })
             }
         }
