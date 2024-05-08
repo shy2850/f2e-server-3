@@ -6,6 +6,7 @@ import { MiddlewareCreater } from "../middlewares/interface";
 import { combineMiddleware } from "../middlewares";
 import { setMimeTypes } from "./mime";
 import { page_404, page_500, page_dir } from "./templates";
+import { defaultOptions } from "../memory-tree";
 
 let F2E_CONFIG_PATH = ''
 export const F2E_CONFIG = '.f2econfig.js'
@@ -69,7 +70,10 @@ export const getConfigResult = function (conf: F2EConfig = {}) {
 /** 整理中间件配置 */
 export const getConfigEvents = (conf: F2EConfig = {}) => {
     conf = getConfig(conf)
-    const { buildFilter, watchFilter, outputFilter, onGet, onSet, onRoute, beforeRoute, buildWatcher, middlewares = [] } = conf
+    const {
+        buildFilter = defaultOptions.buildFilter,
+        watchFilter = defaultOptions.watchFilter,
+        outputFilter, onGet, onSet, onRoute, beforeRoute, buildWatcher, middlewares = [] } = conf
     const middlewareBase: MiddlewareCreater = {
         name: "system",
         mode: ["dev", "build", "prod"],
