@@ -9,28 +9,38 @@ interface Option<R extends string> {
 }
 
 type PickArgs<T extends string> = T extends `-${string}, --${string} <${infer R}>` ? R : never;
+type PickCmd<T extends string> = T extends `${string} <${infer F}>` ? Command<F> : Command;
 
-export class Command<Args extends string = never, F extends string = never> {
+export class Command<Args extends string = never> {
     options: Option<Args>[] = [];
     commands = new Map<string, Command>();
-    
     name: string;
-    subname: string;
+    subname: string | undefined;
     _version = '';
     _description = '';
 
-    constructor (name: `${string}` | `${string} <${F}>`) {
+    constructor (name: string) {
         this.name = name
-        this.subname = name.split(' ')[1]?.replace(/<(.+)>/, '')
     }
     version (v: string) {
         this._version = v;
         return this
     }
-    command (name: string) {
-        const c = new Command(name)
-        this.commands.set(name, c)
-        return c
+    command <T extends string> (name: T) {
+        if (this.subname) {
+            throw new Error('subcommand already defined')
+        }
+        const [name1, name2] = name.split(/[\s\t]+/)
+        const c = new Command(name1)
+        if (name2) {
+            if (/^<(.*?)>$/.test(name2)) {
+                c.subname = name2.slice(1, -1)
+            } else {
+                throw new Error('invalid subcommand name')
+            }
+        }
+        this.commands.set(name1, c)
+        return c as PickCmd<T>
     }
     description (description: string) {
         this._description = description
@@ -51,8 +61,8 @@ export class Command<Args extends string = never, F extends string = never> {
         return t
     }
 
-    actions: {(options: Record<Args, string>): void | Promise<void>}[] = []
-    action (ac: {(options: Record<Args, string>): void | Promise<void>}) {
+    actions: {(options: {[k in Args]: string}): void | Promise<void>}[] = []
+    action (ac: {(options: {[k in Args]: string}): void | Promise<void>}) {
         this.actions.push(ac)
         return this
     }
@@ -94,6 +104,10 @@ export class Command<Args extends string = never, F extends string = never> {
                     exit(1)
                 } else {
                     command = cmd
+                    if (command.subname) {
+                        result[command.subname] = next
+                        i++
+                    }
                 }
             }
         }
@@ -104,7 +118,7 @@ export class Command<Args extends string = never, F extends string = never> {
     }
 
     private showHelp() {
-        const { name, _version, _description } = this
+        const { name, subname, _version, _description } = this
         const options = this.options.slice(0)
         const commands = [...this.commands.values()]
         if (_version) {
@@ -119,7 +133,7 @@ ${options.map(option => `  ${option.short}, ${option.name}\t\t${option.descripti
 `,
             commands.length > 0 && `
 Commands:
-${commands.map(cmd => `  ${cmd.name}${cmd.options.length > 0 ? ', [options]' : '          '}\t${cmd._description}`).join('\n')}
+${commands.map(cmd => `  ${cmd.name}${subname ? ` <${subname}>` : ''}${cmd.options.length > 0 ? ' [options]' : '          '}\t${cmd._description}`).join('\n')}
             `
         ].filter(l => !!l).join('\n')
     }
