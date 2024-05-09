@@ -28,4 +28,14 @@ export interface EsbuildConfig {
      * @default '.f2e_cache'
      */
     cache_root?: string;
+    /**
+     * 注入全局变量名
+     * @default '__f2e_esbuild_inject__'
+     */
+    inject_global_name?: string;
+    /**
+     * external bundle 文件名
+     * @default 'external_lib_{{index}}.js'
+     */
+    external_lib_name?: (index: number) => string;
 }

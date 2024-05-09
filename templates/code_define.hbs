@@ -1,0 +1,22 @@
+// create by {{VERSION}}
+{{GLOBAL_NAME}} = {{GLOBAL_NAME}} || (function () {
+    var modules = {};
+    return {
+        define: function (moduleId, moduleResult) {
+            if (modules[moduleId]) {
+                throw new Error("module already defined: " + moduleId);
+            }
+            if ('default' in moduleResult) {
+                moduleResult = Object.assign(moduleResult.default, moduleResult);
+            }
+            modules[moduleId] = moduleResult;
+        },
+        require: function (moduleId) {
+            var moduleResult = modules[moduleId];
+            if (!moduleResult && '.' != moduleId.charAt(0)) {
+                throw new Error("module not found: " + moduleId);
+            }
+            return moduleResult;
+        }
+    }
+})();

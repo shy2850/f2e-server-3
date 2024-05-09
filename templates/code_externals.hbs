@@ -1,0 +1,5 @@
+{{each external}}
+import * as item{{@index}} from '{{@}}';{{/each}}
+const define = {{GLOBAL_NAME}}.define;
+{{each external}}
+define('{{@}}', item{{@index}});{{/each}}

@@ -7,7 +7,7 @@ import * as _ from '../../utils/misc'
 import { MemoryTree } from "../../memory-tree/interface";
 import type { BuildOptions } from 'esbuild'
 import { save } from './store'
-import { GLOBAL_NAME, LIB_FILE_NAME, external_build } from "./external_build";
+import { external_build } from "./external_build";
 
 const middleware_esbuild: MiddlewareCreater = {
     name: 'esbuild',
@@ -39,7 +39,12 @@ const middleware_esbuild: MiddlewareCreater = {
             logger.error(`[esbuild] esbuild not found, esbuild middleware disabled`)
             exit(1)
         }
-    
+        const {
+            inject_global_name = '__f2e_esbuild_inject__',
+            external_lib_name = 'external_lib_{{index}}.js',
+        } = esbuildConfig
+        const GLOBAL_NAME = `window["${inject_global_name}"]`
+        const LIB_FILE_NAME = typeof external_lib_name === 'function' ? external_lib_name : (index: number) => external_lib_name.replace('{{index}}', index + '')
         const builder: typeof import('esbuild') = require('esbuild')
         const esbuildOptions: BuildOptions[] = [].concat(require(conf_path))
         const commonOptions: BuildOptions = {
@@ -165,7 +170,7 @@ const middleware_esbuild: MiddlewareCreater = {
                         const key = _.pathname_fixer('/' === src.charAt(0) ? src : path.join(path.dirname(pathname), src))
                         const item = origin_map.get(key)
                         if (item && item.with_libs) {
-                            const sourcefile = _.template(LIB_FILE_NAME, { index: item.index })
+                            const sourcefile = LIB_FILE_NAME(item.index)
                             const originPath = `${cache_root}/${sourcefile}`
                             return `<script src="/${originPath}"></script>\n${___}`
                         } else {
