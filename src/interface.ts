@@ -8,6 +8,7 @@ import { EsbuildConfig } from './middlewares/esbuild/interface';
 import { LessConfig } from './middlewares/less/interface';
 import { HttpHeaders } from './utils/resp';
 import { AuthConfig } from './middlewares/auth/interface';
+import type { RequestOptions } from 'node:https'
 
 export type ConfigMode = "dev" | "build" | "prod";
 export interface APIContext {
@@ -127,7 +128,7 @@ export interface ServerConfig {
      * 原始路径支持绝对路径和相对路径，以及http(s)协议URL
      * 只在资源构建之前加载一次, 配置不当，可能被其他构建结果覆盖
     */
-    alias?: false | {[out: string]: string}
+    alias?: false | {[out: string]: string | { url: string; options?: RequestOptions }}
 }
 export interface F2EConfig extends ServerConfig, Partial<MemoryTree.Options>, Partial<MiddlewareEvents> {
     /** 

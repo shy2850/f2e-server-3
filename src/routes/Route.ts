@@ -2,6 +2,7 @@ import { IRoute, RouteFilter, RouteItem } from './interface'
 import { queryparams, pathname_fixer } from '../utils/misc'
 import { APIContext, F2EConfigResult } from '../interface'
 import { createResponseHelper } from '../utils/resp'
+import { logger } from '../utils'
 export * from './interface'
 
 export class Route implements IRoute {
@@ -68,7 +69,7 @@ export class Route implements IRoute {
                         break
                 }
             } catch (e) {
-                console.error('onRoute Error:', pathname, e)
+                logger.error('onRoute Error:', pathname, e)
             }
         }
         const item = this.match(pathname, body ? 'post' : 'get')
@@ -95,7 +96,7 @@ export class Route implements IRoute {
                         break;
                 }
             } catch (e) {
-                console.error('onRoute Error:', pathname, e)
+                logger.error('onRoute Error:', pathname, e)
                 handleError(resp, e + '')
             }
             return false

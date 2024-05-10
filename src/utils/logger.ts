@@ -1,9 +1,23 @@
 export enum LogLevel {
-    DEBUG,
-    INFO,
-    WARN,
-    ERROR,
+    DEBUG = 0,
+    INFO = 1,
+    LOG = 1,
+    WARN = 2,
+    ERROR = 3,
+    OFF = 5,
 }
+
+type LogType = 'debug' | 'info' | 'log' | 'warn' | 'error'
+
+const LogTypeShow = {
+    debug: 'DEBUG',
+    info: 'INFO',
+    log: 'LOG',
+    warn: 'WARN',
+    error: 'ERROR',
+}
+
+const time_show_map: Record<number, string> = {}
 export class Logger {
     private _level: LogLevel
     setLevel = (level: LogLevel | keyof typeof LogLevel) => {
@@ -18,39 +32,32 @@ export class Logger {
         this._level = level
         this._console = _console || console
     }
-    log = (...data: any[]) => {
-        if (this._level <= LogLevel.INFO) {
-            this._console.log(new Date().toLocaleTimeString(), 'INFO:', ...data)
+    private logWrapper(level: LogLevel, type: LogType, ...data: any[]) {
+        if (this._level <= level) {
+            const now = new Date();
+            const time = Math.floor(now.getTime() / 1000);
+            const show = time_show_map[time] || (time_show_map[time] = now.toLocaleString());
+            this._console[type](show, LogTypeShow[type], ...data);
         }
     }
-    debug = (...data: any[]) => {
-        if (this._level <= LogLevel.DEBUG) {
-            this._console.debug(new Date().toLocaleTimeString(), 'DEBUG:', ...data)
-        }
-    }
-    info = (...data: any[]) => {
-        if (this._level <= LogLevel.INFO) {
-            this._console.info(new Date().toLocaleTimeString(), 'INFO:', ...data)
-        }
-    }
-    warn = (...data: any[]) => {
-        if (this._level <= LogLevel.WARN) {
-            this._console.warn(new Date().toLocaleTimeString(), 'WARN:', ...data)
-        }
-    }
-    error = (...data: any[]) => {
-        if (this._level <= LogLevel.ERROR) {
-            this._console.error(new Date().toLocaleTimeString(), 'ERROR:', ...data)
-        }
-    }
+    log = (...data: any[]) => this.logWrapper(LogLevel.INFO, 'log', ...data);
+    debug = (...data: any[]) => this.logWrapper(LogLevel.DEBUG, 'debug', ...data);
+    info = (...data: any[]) => this.logWrapper(LogLevel.INFO, 'info', ...data);
+    warn = (...data: any[]) => this.logWrapper(LogLevel.WARN, 'warn', ...data);
+    error = (...data: any[]) => this.logWrapper(LogLevel.ERROR, 'error', ...data);
 }
 
 let level = LogLevel.INFO
 
-if (/^[0123]$/.test(process.env.LOG_LEVEL || "")) {
-    level = parseInt(process.env.LOG_LEVEL || "1")
-} else if (process.argv.find(arg => arg === "--debug")) {
-    level = LogLevel.DEBUG
+try {
+    const logLevelEnv = process.env.LOG_LEVEL;
+    if (/^[0123]$/.test(logLevelEnv || "")) {
+        level = parseInt(logLevelEnv || "1", 10);
+    } else if (process.argv.find(arg => arg === "--debug")) {
+        level = LogLevel.DEBUG;
+    }
+} catch (error) {
+    console.error("Failed to parse LOG_LEVEL:", error);
 }
 
 export const logger = new Logger(level)

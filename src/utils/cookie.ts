@@ -8,33 +8,63 @@ export interface Cookie {
     httpOnly?: boolean;
     sameSite?: 'lax' | 'strict' | 'none';
     maxAge?: number;
-    secureCookie?: boolean;
     signed?: boolean;
     signedCookie?: boolean;
 }
 
+/**
+ * 创建一个Cookie字符串。
+ * @param cookie Cookie对象
+ * @returns 构造的Cookie字符串
+ */
 export const createCookie = (cookie: Cookie) => {
-    const { name, value, expires, domain, path, secure, httpOnly, sameSite, maxAge } = cookie;
-    return [
-        `${encodeURIComponent(name)}=${encodeURIComponent(value)}`,
-        expires ? `Expires=${expires}` : '',
-        domain ? `Domain=${domain}` : '',
-        path ? `Path=${path}` : '',
-        secure ? 'Secure' : '',
-        httpOnly ? 'HttpOnly' : '',
-        sameSite ? `SameSite=${sameSite}` : '',
-        maxAge ? `Max-Age=${maxAge}` : '',
-    ].filter(a => !!a).join('; ')
+    const cookieOptions = Object.entries(cookie)
+        .filter(([_, value]) => value !== undefined) // 过滤未定义的值
+        .map(([key, value]) => {
+            if (key === 'secure' || key === 'httpOnly') {
+                // 对于布尔值直接返回键名
+                return value ? key : '';
+            }
+            if (key === 'name' || key === 'value') {
+                // 对于name和value进行编码
+                return `${encodeURIComponent(key)}=${encodeURIComponent(value)}`;
+            }
+            if (key === 'expires') {
+                // 对于expires，确保其为有效的时间戳
+                if (Number.isInteger(value) && value <= Date.now()) {
+                    return `Expires=${value}`;
+                }
+            }
+            return `${key}=${value}`;
+        })
+        .join('; ');
+
+    return cookieOptions;
 }
-export const getCookie = (name: string, cookie = '') => {
-    if (!cookie) {
-        return ''
+/**
+ * 从cookie字符串中获取指定名称的cookie值。
+ * @param name 需要获取的cookie的名称
+ * @param cookieString 可选，cookie字符串，默认为空字符串
+ * @returns 指定名称的cookie值，若未找到则返回空字符串
+ */
+export const getCookie = (name: string, cookieString: string = '') => {
+    if (!cookieString) {
+        return '';
     }
-    const cookies = cookie.split(';')
-    for (let i = 0; i < cookies.length; i++) {
-        const [key, value] = cookies[i].split('=')
-        if (key.trim() === name) {
-            return decodeURIComponent(value)
+
+    try {
+        const decodedCookie = decodeURIComponent(cookieString);
+        const cookies = decodedCookie.split('; ');
+        for (let i = 0; i < cookies.length; i++) {
+            const [key, value] = cookies[i].split('=');
+            if (key.trim() === name) {
+                return value;
+            }
         }
+    } catch (error) {
+        console.error("Error parsing cookie:", error);
+        return '';
     }
+    
+    return '';
 }
