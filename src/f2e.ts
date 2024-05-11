@@ -2,11 +2,11 @@
 
 import { ConfigMode, createBuilder, createServer } from './index'
 import { F2E_CONFIG, setConfigPath } from './utils/config'
-import logger, { LogLevel } from './utils/logger'
+import logger from './utils/logger'
 import * as _ from './utils/misc'
 import path from 'node:path'
 import fs from 'node:fs'
-import { Command } from './utils/commander/command'
+import { Command } from './utils/commander'
 
 const program = new Command('f2e')
 program.version(require('../package.json').version);
