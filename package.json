@@ -1,6 +1,6 @@
 {
   "name": "f2e-server3",
-  "version": "1.4.6-alpha",
+  "version": "1.4.7-alpha",
   "description": "f2e-server 3.0",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
@@ -11,7 +11,7 @@
     "src"
   ],
   "bin": {
-    "f2e": "lib/f2e.js"
+    "f2e3": "lib/f2e.js"
   },
   "scripts": {
     "tsc": "tsc",
