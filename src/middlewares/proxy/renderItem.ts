@@ -1,8 +1,8 @@
-import logger from "../../utils/logger";
 import { ProxyItem, ProxyItemRendered } from "./interface";
+import { APIContext } from "../../interface";
 
 export const renderItem = (item: ProxyItem): ProxyItemRendered => {
-    let getOrigin: () => string;
+    let getOrigin: (url: string, req: APIContext) => string;
     let i = 0
     if (typeof item.origin === 'string') {
         if (/^https?:\/\//.test(item.origin)) {
@@ -10,7 +10,7 @@ export const renderItem = (item: ProxyItem): ProxyItemRendered => {
         } else {
             throw new Error('代理配置origin错误')
         }
-    } else {
+    } else if (Array.isArray(item.origin)) {
         const origins = item.origin.filter(item => /^https?:\/\//.test(item))
         const len = origins.length
         switch (len) {
@@ -23,6 +23,8 @@ export const renderItem = (item: ProxyItem): ProxyItemRendered => {
                 getOrigin = () => origins[i++ % len]
                 break
         }
+    } else {
+        getOrigin = item.origin
     }
 
     let match = item.location instanceof RegExp ? function (url: string) {

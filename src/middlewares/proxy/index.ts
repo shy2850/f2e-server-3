@@ -7,6 +7,8 @@ import * as https from 'node:https'
 import { renderItem } from "./renderItem"
 import { commonWriteHeaders, getHttpHeaders } from "../../utils/resp"
 import { logger, toBuffer } from "../../utils"
+import * as fs from 'fs'
+import * as path from 'path'
 
 const middleware_proxy: MiddlewareCreater = {
     name: 'proxy',
@@ -18,7 +20,8 @@ const middleware_proxy: MiddlewareCreater = {
         }
         const items: ProxyItemRendered[] = proxies.map(renderItem)
         return {
-            beforeRoute(pathname, {req, resp}) {
+            beforeRoute(pathname, ctx) {
+                const {req, resp} = ctx
                 const url = req.getUrl()
                 const search = req.getQuery()
                 const item = items.find(item => {
@@ -28,7 +31,7 @@ const middleware_proxy: MiddlewareCreater = {
                     return
                 }
     
-                const origin = item.getOrigin()
+                const origin = item.getOrigin(url, ctx)
                 const {
                     timeout = 5000,
                     requestOptions = {},
@@ -45,11 +48,36 @@ const middleware_proxy: MiddlewareCreater = {
                     newPath.search = search
                 }
                 
+                const saver = item.saver
+                let proxyHeadersMap: Record<string, any> = {}
+                const _pathname = saver?.pathFixer ? saver.pathFixer(pathname, ctx) : pathname
+                const dataPath = saver?.pathBodyDir ? path.join(saver.pathBodyDir, _pathname) : null
+                if (saver && dataPath) {
+                    if (!fs.existsSync(saver.pathBodyDir)) {
+                        fs.mkdirSync(saver.pathBodyDir, { recursive: true })
+                    }
+                    if (!fs.existsSync(saver.pathHeaders)) {
+                        fs.mkdirSync(path.dirname(saver.pathHeaders), { recursive: true })
+                        fs.writeFileSync(saver.pathHeaders, JSON.stringify(proxyHeadersMap))
+                    } else {
+                        proxyHeadersMap = JSON.parse(fs.readFileSync(saver.pathHeaders, 'utf-8'))
+                    }
+                    if (fs.existsSync(dataPath)) {
+                        resp.cork(() => {
+                            resp.writeStatus('200 OK')
+                            commonWriteHeaders(resp, proxyHeadersMap[_pathname] || {})
+                            resp.write(fs.readFileSync(dataPath))
+                            resp.end()
+                        })
+                        return false
+                    }
+                }
+
                 try {
                     const creq = (/^https/i.test(newPath.protocol) ? https : http).request(newPath, {
                         method: req.getMethod(),
                         headers: {
-                            ...requestHeaders(getHttpHeaders(req)),
+                            ...requestHeaders(getHttpHeaders(req), ctx),
                             host: newPath.host,
                         },
                         timeout,
@@ -59,11 +87,22 @@ const middleware_proxy: MiddlewareCreater = {
                         res.on('data', function (data) {
                             chunks.push(data)
                         }).on('end', function () {
-                            const result = Buffer.concat(chunks)
+                            const result = responseRender(Buffer.concat(chunks), res, ctx)
+                            const headers = responseHeaders(getHttpHeaders(res), res, ctx)
+                            if (saver) {
+                                const _pathname = saver.pathFixer ? saver.pathFixer(pathname, ctx) : pathname
+                                const dataPath = path.join(saver.pathBodyDir, _pathname)
+                                proxyHeadersMap[_pathname] = headers
+                                fs.writeFileSync(saver.pathHeaders, JSON.stringify(proxyHeadersMap, null, 2))
+                                if (!fs.existsSync(dataPath)) {
+                                    fs.mkdirSync(path.dirname(dataPath), { recursive: true })
+                                }
+                                fs.writeFileSync(dataPath, result)
+                            }
                             resp.cork(() => {
                                 resp.writeStatus(res.statusCode + ' ' + res.statusMessage)
-                                commonWriteHeaders(resp, responseHeaders(getHttpHeaders(res)))
-                                resp.write(responseRender(result))
+                                commonWriteHeaders(resp, headers)
+                                resp.write(result)
                                 resp.end()
                             })
                         })
