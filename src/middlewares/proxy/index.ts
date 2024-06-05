@@ -49,27 +49,29 @@ const middleware_proxy: MiddlewareCreater = {
                 }
                 
                 const saver = item.saver
-                let proxyHeadersMap: Record<string, any> = {}
                 const _pathname = saver?.pathFixer ? saver.pathFixer(pathname, ctx) : pathname
                 const dataPath = saver?.pathBodyDir ? path.join(saver.pathBodyDir, _pathname) : null
+
                 if (saver && dataPath) {
                     if (!fs.existsSync(saver.pathBodyDir)) {
                         fs.mkdirSync(saver.pathBodyDir, { recursive: true })
                     }
                     if (!fs.existsSync(saver.pathHeaders)) {
                         fs.mkdirSync(path.dirname(saver.pathHeaders), { recursive: true })
-                        fs.writeFileSync(saver.pathHeaders, JSON.stringify(proxyHeadersMap))
-                    } else {
-                        proxyHeadersMap = JSON.parse(fs.readFileSync(saver.pathHeaders, 'utf-8'))
+                        fs.writeFileSync(saver.pathHeaders, JSON.stringify({}))
                     }
+                    const proxyHeadersMap = JSON.parse(fs.readFileSync(saver.pathHeaders, 'utf-8'))
                     if (fs.existsSync(dataPath)) {
-                        resp.cork(() => {
-                            resp.writeStatus('200 OK')
-                            commonWriteHeaders(resp, proxyHeadersMap[_pathname] || {})
-                            resp.write(fs.readFileSync(dataPath))
-                            resp.end()
-                        })
-                        return false
+                        const stats = fs.statSync(dataPath)
+                        if (stats.isFile()) {
+                            resp.cork(() => {
+                                resp.writeStatus('200 OK')
+                                commonWriteHeaders(resp, proxyHeadersMap[_pathname] || {})
+                                resp.write(fs.readFileSync(dataPath))
+                                resp.end()
+                            })
+                            return false
+                        }
                     }
                 }
 
@@ -89,15 +91,16 @@ const middleware_proxy: MiddlewareCreater = {
                         }).on('end', function () {
                             const result = responseRender(Buffer.concat(chunks), res, ctx)
                             const headers = responseHeaders(getHttpHeaders(res), res, ctx)
-                            if (saver) {
-                                const _pathname = saver.pathFixer ? saver.pathFixer(pathname, ctx) : pathname
-                                const dataPath = path.join(saver.pathBodyDir, _pathname)
+                            if (saver && dataPath) {
+                                const proxyHeadersMap = JSON.parse(fs.readFileSync(saver.pathHeaders, 'utf-8'))
                                 proxyHeadersMap[_pathname] = headers
                                 fs.writeFileSync(saver.pathHeaders, JSON.stringify(proxyHeadersMap, null, 2))
                                 if (!fs.existsSync(dataPath)) {
                                     fs.mkdirSync(path.dirname(dataPath), { recursive: true })
+                                    fs.writeFileSync(dataPath, result)
+                                } else if (!fs.statSync(dataPath).isDirectory()) {
+                                    fs.writeFileSync(dataPath, result)
                                 }
-                                fs.writeFileSync(dataPath, result)
                             }
                             resp.cork(() => {
                                 resp.writeStatus(res.statusCode + ' ' + res.statusMessage)
