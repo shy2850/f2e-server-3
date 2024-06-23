@@ -31,7 +31,7 @@ export interface IUserStore {
 }
 
 export interface AuthConfig {
-    /** 登录路径
+    /** 登录路径，登录成功后登录信息可以从 login_path + '/info' 获取
      * @default 'login'
     */
     login_path?: string;
@@ -92,7 +92,7 @@ export interface AuthConfig {
 
     /**
      * cookie设置配置
-     * @default { name: 'f2e_auth', maxAge: 60 * 60 * 24 * 7, httpOnly: true, secure: true, sameSite: 'strict' }
+     * @default { name: 'f2e_auth', options: { maxAge: 60 * 60 * 24 * 7, httpOnly: true, secure: true, sameSite: 'strict' } }
      */
     cookie?: Omit<Cookie, 'value'>;
 }

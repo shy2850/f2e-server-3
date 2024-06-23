@@ -49,7 +49,7 @@ const defaultConfig: Required<Omit<AuthConfig, 'store'>> = {
     logout_path: 'logout',
     login_page: page_layout.replace('{{body}}', page_login),
     white_list: [],
-    cookie: { name: 'f2e_auth', maxAge: 60 * 60 * 24 * 7, httpOnly: true, secure: false, sameSite: 'strict' },
+    cookie: { name: 'f2e_auth', options: { maxAge: 60 * 60 * 24 * 7, httpOnly: true, secure: false, sameSite: 'strict' } },
     messages: {
         crsf_token_invalid: 'token不合法',
         crsf_token_not_found: 'token失效',
@@ -175,6 +175,11 @@ const middleware_auth: MiddlewareCreater = {
         
                 /** 验证登录成功, 续签 */
                 loginInfo.expire = Date.now() + 1000 * 60 * 60 * 24
+
+                if (pathname === login_path + '/info') {
+                    handleSuccess(ctx, '.json', JSON.stringify(loginInfo))
+                    return false
+                }
             }
     
         }

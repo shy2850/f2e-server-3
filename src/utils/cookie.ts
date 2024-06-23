@@ -1,15 +1,17 @@
 export interface Cookie {
     name: string;
     value: string;
-    expires?: number;
-    domain?: string;
-    path?: string;
-    secure?: boolean;
-    httpOnly?: boolean;
-    sameSite?: 'lax' | 'strict' | 'none';
-    maxAge?: number;
-    signed?: boolean;
-    signedCookie?: boolean;
+    options?: {
+        expires?: number;
+        domain?: string;
+        path?: string;
+        secure?: boolean;
+        httpOnly?: boolean;
+        sameSite?: 'lax' | 'strict' | 'none';
+        maxAge?: number;
+        signed?: boolean;
+        signedCookie?: boolean;
+    };
 }
 
 /**
@@ -18,20 +20,17 @@ export interface Cookie {
  * @returns 构造的Cookie字符串
  */
 export const createCookie = (cookie: Cookie) => {
-    const cookieOptions = Object.entries(cookie)
+    const base = `${encodeURIComponent(cookie.name)}=${encodeURIComponent(cookie.value)}; `
+    const cookieOptions = Object.entries(cookie.options || {})
         .filter(([_, value]) => value !== undefined) // 过滤未定义的值
         .map(([key, value]) => {
             if (key === 'secure' || key === 'httpOnly') {
                 // 对于布尔值直接返回键名
                 return value ? key : '';
             }
-            if (key === 'name' || key === 'value') {
-                // 对于name和value进行编码
-                return `${encodeURIComponent(key)}=${encodeURIComponent(value)}`;
-            }
             if (key === 'expires') {
                 // 对于expires，确保其为有效的时间戳
-                if (Number.isInteger(value) && value <= Date.now()) {
+                if (typeof value === "number" && value <= Date.now()) {
                     return `Expires=${value}`;
                 }
             }
@@ -39,7 +38,7 @@ export const createCookie = (cookie: Cookie) => {
         })
         .join('; ');
 
-    return cookieOptions;
+    return base + cookieOptions;
 }
 /**
  * 从cookie字符串中获取指定名称的cookie值。
