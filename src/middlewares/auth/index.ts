@@ -1,6 +1,6 @@
 import { Route, RouteFilter } from "../../routes";
 import { MiddlewareCreater } from "../interface";
-import { createCookie, getCookie } from "../../utils/cookie";
+import { Cookie, createCookie, getCookie } from "../../utils/cookie";
 import { createResponseHelper, logger } from "../../utils";
 import * as _ from '../../utils/misc'
 import { page_layout, page_login } from "../../utils/templates";
@@ -249,10 +249,8 @@ const middleware_auth: MiddlewareCreater = {
     }
 }
 
-export const createAuthHelper = (conf: F2EConfigResult) => {
-    const {
-        cookie = defaultConfig.cookie,
-    } = conf.auth || {}
+export const createAuthHelper = (config: Omit<AuthConfig, 'store'> = defaultConfig) => {
+    const { cookie } = {...defaultConfig, ...config}
     const getLoginUser = (ctx: APIContext) => {
         const { headers = {} } = ctx
         const crsf_token = getCookie(cookie.name, headers.cookie as string)
