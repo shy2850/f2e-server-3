@@ -26,6 +26,8 @@ export interface LoginInfo {
 export interface IUserStore {
     /** 查询登录用户信息 */
     getUser(username: string, password: string): Promise<LoginUser | undefined>,
+    /** 直接通过token查询登录用户信息 */
+    getLoginUser(crsf_token?: string): Promise<LoginUser | undefined>,
     /** 非必须，如果有定义，当删除用户时，同步清空已经登录的用户信息 */
     onDeleteUser?(callback: (username: string) => void): void,
 }
@@ -60,7 +62,12 @@ export interface AuthConfig {
      * 白名单, 跳过鉴权，正则字符串
      */
     white_list?: string[];
-    
+    /**
+     * 忽略记录，正则字符串
+     * 说明：正常记录所有访问请求作为登录后跳转的路径,如需要忽略,使用此配置
+     * @default ["[.](js|css|svg|ico|png|gif|jpe?g)$", "^(api|login|logout)"]
+     */
+    record_ignores?: string[];
 
     /**
      * 允许最多登录客户端数量
@@ -76,12 +83,12 @@ export interface AuthConfig {
     /**
      * 用户存储引擎
      */
-    store: IUserStore;
-    /** 登录缓存目录
-     * 如果设置成 false，则不缓存登录信息，每次重启都需要客户端重新登陆
+    store?: IUserStore;
+    /** 
+     * 登录信息缓存目录
      * @default process.cwd() + '/.f2e_cache'
      */
-    cache_root?: string | false;
+    cache_root?: string;
 
     messages?: {
         crsf_token_not_found?: string;

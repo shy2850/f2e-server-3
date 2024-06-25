@@ -8,6 +8,7 @@ export class UserStore implements IUserStore {
     private user_map = new Map<string, LoginUser>();
     private deleteCallbacks: {(username: string): void}[] = []
     private watcher?: fs.StatWatcher;
+    private mock_user?: LoginUser;
     /**
      * @param db_path 用户密码存储文件路径
      * 用户密码文件格式（密码为md5密文）: 每行一个用户
@@ -17,7 +18,8 @@ export class UserStore implements IUserStore {
      *      username3:password3:nickname3
      * ```
      */
-    constructor (db_path: string) {
+    constructor (db_path: string, mock_user?: LoginUser) {
+        this.mock_user = mock_user
         this.db_path = db_path
         if (!fs.existsSync(db_path)) {
             throw new Error(`db_path: ${db_path} not exists`)
@@ -61,5 +63,8 @@ export class UserStore implements IUserStore {
             this.watcher =this.init_watch()
         }
         this.deleteCallbacks.push(callback)
+    }
+    async getLoginUser(): Promise<LoginUser | undefined> {
+        return this.mock_user
     }
 }

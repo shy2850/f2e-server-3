@@ -21,7 +21,7 @@ export const server = {
     mode: ['dev', 'prod'],
     execute: (conf) => {
         const route = new Route(conf)
-        const { getLoginUser } = createAuthHelper(conf)
+        const { getLoginUser } = createAuthHelper(conf.auth || {})
 
         /** 返回 sse, 支持配置轮询时间 */
         route.on('sse/time', server_time, { type: 'sse' })

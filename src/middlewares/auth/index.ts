@@ -11,6 +11,7 @@ export * from "./interface"
 export * from "./user_store"
 import * as path from "node:path"
 import * as fs from "node:fs"
+import { UserStore } from "./user_store";
 
 const login_user_map = new Map<string, LoginInfo[]>()
 const token_map = new Map<string, LoginInfo>()
@@ -49,6 +50,7 @@ const defaultConfig: Required<Omit<AuthConfig, 'store'>> = {
     logout_path: 'logout',
     login_page: page_layout.replace('{{body}}', page_login),
     white_list: [],
+    record_ignores: ["[.](js|css|svg|ico|png|gif|jpe?g)$", "^(api|login|logout|server-sent-bit)"],
     cookie: { name: 'f2e_auth', options: { maxAge: 60 * 60 * 24 * 7, httpOnly: true, secure: false, sameSite: 'strict' } },
     messages: {
         crsf_token_invalid: 'token不合法',
@@ -73,7 +75,7 @@ const defaultConfig: Required<Omit<AuthConfig, 'store'>> = {
             return null
         }
     },
-} 
+}
 const middleware_auth: MiddlewareCreater = {
     mode: ['dev', 'prod'],
     name: 'auth',
@@ -90,16 +92,17 @@ const middleware_auth: MiddlewareCreater = {
             max_login_count = defaultConfig.max_login_count,
             max_error_count = defaultConfig.max_error_count,
             redirect = defaultConfig.redirect,
-            store,
             login_path = defaultConfig.login_path,
             logout_path = defaultConfig.logout_path,
             login_page = defaultConfig.login_page,
             white_list = defaultConfig.white_list,
+            record_ignores = defaultConfig.record_ignores,
             cookie = defaultConfig.cookie,
             messages = defaultConfig.messages,
             decrypt_account = defaultConfig.decrypt_account,
             cache_root = defaultConfig.cache_root,
         } = conf.auth
+        const store = conf.auth.store || new UserStore(path.resolve(cache_root, 'auth.db'))
         const {
             crsf_token_invalid,
             crsf_token_not_found,
@@ -107,7 +110,7 @@ const middleware_auth: MiddlewareCreater = {
             ip_error_count_exceed,
         } = {...defaultConfig.messages, ...messages}
 
-        if (cache_root != false) {
+        if (cache_root) {
             if (!fs.existsSync(cache_root)) {
                 fs.mkdirSync(cache_root, {recursive: true})
             }
@@ -128,6 +131,7 @@ const middleware_auth: MiddlewareCreater = {
                 ip: getIpAddress(resp),
                 ua: headers['user-agent'] as string,
                 expire: Date.now() + 1000 * 60 * 60 * 24,
+                user: await store.getLoginUser?.(crsf_token)
             }
             token_map.set(crsf_token, loginInfo)
             /** 登出页面操作完成跳转登录页 */
@@ -164,7 +168,7 @@ const middleware_auth: MiddlewareCreater = {
                 return pathname
             }
             if (pathname != login_path) {
-                if (!/\.(js|css|svg|ico|png|gif|jpe?g)$/.test(pathname)) {
+                if (!record_ignores.some(p => new RegExp(p).test(pathname))) {
                     loginInfo.last_url = location.pathname + (location.search ? '?' + location.search : '')
                 }
                 /** 未登录，跳转登录页，并记录跳转前访问地址 */
@@ -249,7 +253,7 @@ const middleware_auth: MiddlewareCreater = {
     }
 }
 
-export const createAuthHelper = (config: Omit<AuthConfig, 'store'> = defaultConfig) => {
+export const createAuthHelper = (config: AuthConfig = defaultConfig) => {
     const { cookie } = {...defaultConfig, ...config}
     const getLoginUser = (ctx: APIContext) => {
         const { headers = {} } = ctx

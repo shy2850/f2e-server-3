@@ -56,7 +56,10 @@ createServer({
     ],
     auth: {
         redirect: true,
-        store: new UserStore(path.join(process.cwd(), '.f2e_cache/auth.db')),
+        store: new UserStore(path.join(process.cwd(), '.f2e_cache/auth.db'), {
+            username: 'admin',
+            nickname: '管理员',
+        }),
     },
     middlewares: [
         server,
