@@ -8,7 +8,7 @@ export class NativeRequest implements HttpRequest {
     constructor (req: IncomingMessage) {
         this.req = req
         this.location = new URL(req.url || '/', 'http://localhost')
-        this.searchParams = new URLSearchParams(this.location.search)
+        this.searchParams = new URLSearchParams(this.location.search?.replace(/^[?]+/, ''))
     }
     getHeader(lowerCaseKey: RecognizedString): string {
         return this.req.headers[lowerCaseKey.toString()]?.toString() || ''
