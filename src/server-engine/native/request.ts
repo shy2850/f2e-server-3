@@ -31,7 +31,7 @@ export class NativeRequest implements HttpRequest {
         if (key) {
             return this.searchParams.get(key.toString()) || undefined
         } else {
-            return this.location.search || undefined
+            return this.location.search?.replace(/^[?]+/, '') || undefined
         }
     }
     forEach(cb: (key: string, value: string) => void): void {
