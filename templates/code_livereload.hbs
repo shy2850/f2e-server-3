@@ -1,0 +1,45 @@
+<script>
+    (function () {
+        if(window.EventSource) {
+            var expire
+            /** @type {EventSource} */
+            var sse;
+            function start_listen () {
+                sse = new EventSource('/{{prefix}}?referer={{referer}}' + (expire ? `&expire=${expire}` : ''));
+                sse.addEventListener('message', function (e) {
+                    if (!e.data.trim()) {return;}
+                    /** @type {{ update: boolean; updateDeps: {origin:string; output:string; hash:string;}[] }} */
+                    const info = JSON.parse(e.data);
+                    expire = info.expire;
+                    if (info.update) {
+                        {{reload_page}};
+                    }
+                    if (info.updateDeps) {
+                        info.updateDeps.forEach(function ({ origin, output, hash }) {
+                            const el = document.querySelector('[data-origin="' + origin + '"]');
+                            if (el) {
+                                const _hash = el.getAttribute('data-hash');
+                                if (hash === _hash) { return; }
+                                el.setAttribute('data-hash', hash);
+                                if ('href' in el) {
+                                    {{reload_link}};
+                                } else {
+                                    {{reload_script}};
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+            function visibilityChange () {
+                if (document.hidden) {
+                    if (!!sse) sse.close();
+                } else  {
+                    start_listen();
+                }
+            };
+            document.addEventListener("visibilitychange", visibilityChange, false);
+            visibilityChange();
+        }
+    })()
+</script>;

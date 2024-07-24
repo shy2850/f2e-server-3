@@ -10,8 +10,6 @@ export namespace MemoryTree {
         (options: Options, store: Store): Build
     }
     export interface Store {
-        /** 最后编译时间 */
-        last_build: number
         /** 支持动态添加忽略文件，对于esbuild 和 less等插件比较有用 */
         ignores: Set<string>
         /** 原始资源映射 */
@@ -61,12 +59,17 @@ export namespace MemoryTree {
     export interface SetResult {
         /** 数据 */
         data: DataBuffer;
-        /** 数据MD5摘要 */
-        hash?: string;
         /** 资源原始路径，资源输出根路径的相对路径： a/b/c */
         originPath: string;
         /** 资源输出路径，资源原始根路径的相对路径： a/b/c, 根据namehash 配置可能携带hash信息如： static/index.js?123456 */
         outputPath: string;
+        
+        /** 数据MD5摘要 */
+        hash?: string;
+        /** 更新时间 */
+        updateTime?: number;
+        /** 依赖的编译资源路径列表 */
+        deps?: string[];
     }
     /** 构建配置 */
     export interface Options extends Events {
@@ -76,6 +79,10 @@ export namespace MemoryTree {
         dest?: string
         /** 监听文件修改并输出 */
         watch?: boolean
+        /** 资源更新检测间隔时间
+         * @default 100
+         */
+        watch_timeout?: number
         /** 是否计算资源hash并修改文件名 */
         namehash?: HashReplacerOptions
         /** 映射文件后缀名到指定MIME */

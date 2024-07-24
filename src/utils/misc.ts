@@ -90,24 +90,26 @@ export const isPlainObject = function (value: any) {
 }
 
 /** 简单字符串模板，类似 handlebars */
-export const template = function template (tpl: string, data: any, index?: number): string {
+export const template = function template (tpl: string, data: any, toBlank = true, index?: number): string {
     return tpl
         .replace(/\{\{(\w+)\s+(\w+)[^{}]*\}\}([\s\S\t\r\n]*?)\{\{\/\1\}\}/g, function (_: any, fn: any, item_key: any, line: any) {
             const items = data[item_key]
+            const _placeholder = toBlank ? '' : _
             switch (fn) {
                 case 'each':
-                    return items ? items.map((item: any, index: number) => template(line, item, index)).join('') : ''
+                    return items ? items.map((item: any, index: number) => template(line, item, toBlank, index)).join('') : _placeholder
                 case 'if':
-                    return items ? template(line, items) : ''
+                    return items ? template(line, items) : _placeholder
                 default:
                     return template(line, items)
-            } 
+            }
         })
         .replace(/\{\{([@\$\.\w]+)\}\}/g, (__, key) => {
+            const _placeholder = toBlank ? '' : __
             switch (key) {
-                case '@': return data;
+                case '@': return typeof data !== 'undefined' ? data : _placeholder;
                 case '@index': return index;
-                default: return typeof data[key] !== 'undefined' ? data[key] : ''
+                default: return typeof data[key] !== 'undefined' ? data[key] : _placeholder
             }
         })
 }

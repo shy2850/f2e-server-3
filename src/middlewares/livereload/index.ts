@@ -2,36 +2,9 @@ import { HttpResponse } from "uWebSockets.js"
 import { MiddlewareCreater } from "../interface"
 import { Route } from "../../routes"
 import * as _ from "../../utils/misc"
+import { code_livereload } from "../../utils/templates"
 
-const SERVER_SENT_SCRIPT = `<script>
-    (function () {
-        if(window.EventSource) {
-            var updateTime;
-            var sse;
-            function start_listen () {
-                sse = new EventSource('/{{prefix}}');
-                sse.addEventListener('message', function (e) {
-                    if (!e.data.trim()) {return;}
-                    if (updateTime != e.data) {
-                        if (updateTime) {
-                            location.reload();
-                        }
-                        updateTime = e.data;
-                    }
-                });
-            }
-            function visibilityChange () {
-                if (document.hidden) {
-                    if (!!sse) sse.close();
-                } else  {
-                    start_listen();
-                }
-            };
-            document.addEventListener("visibilitychange", visibilityChange, false);
-            visibilityChange();
-        }
-    })()
-</script>`.replace(/[\r\n\s]+/g, ' ')
+const SERVER_SENT_SCRIPT = code_livereload
 
 const middleware_livereload: MiddlewareCreater = {
     name: 'livereload',
@@ -46,26 +19,81 @@ const middleware_livereload: MiddlewareCreater = {
             prefix = 'server-sent-bit',
             heartBeatTimeout = 30000,
             reg_inject = /\.html$/,
+            reload_scripts = {},
         } = livereload
         const route = new Route(conf)
     
         let lastTimeMap = new WeakMap<HttpResponse, number>()
         /** SSE 接口 */
-        route.on(prefix, async (_, { resp, store }) => {
-            const updateTime = store?.last_build
-            const lastTime = lastTimeMap.get(resp)
-            if (updateTime && updateTime != lastTime) {
-                lastTimeMap.set(resp, updateTime)
-                return updateTime
+        route.on(prefix, async (_, { resp, location, store }) => {
+            const referer = location.searchParams.get('referer')
+            if (!referer) {
+                return
+            }
+            const expire = location.searchParams.get('expire')
+            if (expire) {
+                lastTimeMap.set(resp, Number(expire))
+            }
+            const entry = store?.origin_map.get(referer)
+            if (entry && entry.updateTime) {
+                const { updateTime, deps = [] } = entry
+                const lastTime = lastTimeMap.get(resp)
+                if (!lastTime) {
+                    // 新开监听
+                    lastTimeMap.set(resp, updateTime)
+                    return {
+                        update: false,
+                    }
+                }
+                if (lastTime && lastTime < updateTime) {
+                    lastTimeMap.set(resp, updateTime)
+                    // 需要页面更新啦
+                    return {
+                        update: true,
+                    }
+                }
+                const updateDeps: {
+                    origin: string;
+                    output: string;
+                    hash?: string;
+                }[] = []
+
+                let expire = updateTime
+                for (let i = 0; lastTime && i < deps.length; i++) {
+                    const item = store?.origin_map.get(deps[i]);
+                    if (item && item.updateTime && item.updateTime > lastTime) {
+                        expire = expire < item.updateTime ? item.updateTime : expire
+                        updateDeps.push({
+                            origin: item.originPath,
+                            output: item.outputPath,
+                            hash: item.hash,
+                        })
+                    }
+                }
+                if (updateDeps.length) {
+                    lastTimeMap.set(resp, expire)
+                    // 依赖文件有更新
+                    return {
+                        update: false,
+                        updateDeps,
+                    }
+                }
             }
         }, { type: 'sse', interval: 100, interval_beat: heartBeatTimeout })
     
+        const inject_script = _.template(SERVER_SENT_SCRIPT, {
+            prefix,
+            reload_page: 'location.reload()',
+            reload_link: 'el.href = output',
+            reload_script: 'location.reload()',
+            ...reload_scripts,
+        }, false)
         return {
             onRoute: route.execute,
             onGet: async (pathname, html) => {
                 /** 脚本注入 */
                 if (reg_inject.test(pathname) && html) {
-                    return html.toString() + _.template(SERVER_SENT_SCRIPT, { prefix })
+                    return html.toString() + inject_script.replaceAll('{{referer}}', pathname)
                 }
             },
         }

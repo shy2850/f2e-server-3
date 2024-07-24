@@ -43,7 +43,7 @@ export const inputProvider: MemoryTree.BuildProvider = (options, store) => {
 }
 
 export const beginWatch = (options: MemoryTree.Options, store: MemoryTree.Store, build: MemoryTree.Build) => () => {
-    const { buildWatcher, watch, watchFilter, root } = options
+    const { buildWatcher, watch, watch_timeout = 100, watchFilter, root } = options
     if (watch && watchFilter) {
         let chokidar: typeof import('chokidar') | undefined = undefined
         try {
@@ -57,36 +57,43 @@ export const beginWatch = (options: MemoryTree.Options, store: MemoryTree.Store,
             }
         }
 
+        const watcher_map = new Map<string, {
+            ready?: boolean,
+            excute: {(): Promise<void>}
+        }>();
+        const loop_watcher = function loop () {
+            watcher_map.forEach((item, pathname) => {
+                if (item.ready) {
+                    watcher_map.delete(pathname)
+                    item.excute()
+                } else {
+                    item.ready = true
+                }
+            })
+            setTimeout(loop, watch_timeout);
+        }
+        loop_watcher()
+
         if (chokidar) {
             chokidar.watch(root, {
+                ignoreInitial: true,
                 ignored: [(filename: string) => {
                     const p = _.pathname_fixer(filename.replace(root, ''))
                     return !!p && !watchFilter(p)
                 }]
             }).on('all', async (eventType, filename) => {
                 const p = _.pathname_fixer(filename.replace(root, ''))
-                if (!p || watchFilter(p)) {
-                    await build(p)
-                    buildWatcher && buildWatcher(p, eventType, build, store)
+                if (p && watchFilter(p)) {
+                    watcher_map.set(p, {
+                        ready: false,
+                        excute: async () => {
+                            await build(p)
+                            buildWatcher && buildWatcher(p, eventType, build, store)
+                        }
+                    })
                 }
             })
         } else {
-            const watcher_map = new Map<string, {
-                ready?: boolean,
-                excute: {(): Promise<void>}
-            }>();
-            const loop_watcher = function loop () {
-                watcher_map.forEach((item, pathname) => {
-                    if (item.ready) {
-                        watcher_map.delete(pathname)
-                        item.excute()
-                    } else {
-                        item.ready = true
-                    }
-                })
-                setTimeout(loop, 50);
-            }
-            loop_watcher()
             ;(async () => {
                 const ac = new AbortController();
                 try {

@@ -90,10 +90,12 @@ const middleware_esbuild: MiddlewareCreater = {
         const build = async function (store: MemoryTree.Store) {
             for (let i = 0; i < esbuildOptions.length; i++) {
                 const _option = esbuildOptions[i];
+                const banner = _option.banner || {}
                 const option = { ..._option, ...commonOptions, 
-                    banner: _option.external ? {
-                        js: `require = ${GLOBAL_NAME} && ${GLOBAL_NAME}.require;`,
-                    } : _option.banner,
+                    banner: {
+                        ...banner,
+                        js: `${banner.js || ''}\nrequire = ${GLOBAL_NAME} && ${GLOBAL_NAME}.require;`,
+                    },
                 }
                 await external_build({conf, store, option, index: i})
                 const result = await builder.build(option)
@@ -112,10 +114,12 @@ const middleware_esbuild: MiddlewareCreater = {
         const watch = async function (store: MemoryTree.Store) {
             for (let i = 0; i < esbuildOptions.length; i++) {
                 const _option = esbuildOptions[i];
+                const banner = _option.banner || {}
                 const option = { ..._option, ...commonOptions, 
-                    banner: _option.external ? {
-                        js: `require = ${GLOBAL_NAME} && ${GLOBAL_NAME}.require;`,
-                    } : _option.banner,
+                    banner: {
+                        ...banner,
+                        js: `${banner.js || ''}\nrequire = ${GLOBAL_NAME} && ${GLOBAL_NAME}.require;`,
+                    },
                 }
                 await external_build({conf, store, option, index: i})
                 const ctx = await builder.context(option)

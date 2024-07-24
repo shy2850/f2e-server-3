@@ -12,3 +12,4 @@ export const page_login = fs.readFileSync(path.join(__dirname, '../../templates/
 
 export const code_define = fs.readFileSync(path.join(__dirname, '../../templates/code_define.hbs'), 'utf8')
 export const code_externals = fs.readFileSync(path.join(__dirname, '../../templates/code_externals.hbs'), 'utf8')
+export const code_livereload = fs.readFileSync(path.join(__dirname, '../../templates/code_livereload.hbs'), 'utf8')
