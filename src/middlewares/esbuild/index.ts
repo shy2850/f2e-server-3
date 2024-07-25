@@ -89,23 +89,24 @@ const middleware_esbuild: MiddlewareCreater = {
     
         const build = async function (store: MemoryTree.Store) {
             for (let i = 0; i < esbuildOptions.length; i++) {
-                const _option = esbuildOptions[i];
-                const banner = _option.banner || {}
-                const GLOBAL_NAME = _GLOBAL_NAME(i);
-                const option = { ..._option, ...commonOptions, 
-                    banner: {
-                        ...banner,
-                        js: `${banner.js || ''}\nrequire = ${GLOBAL_NAME} && ${GLOBAL_NAME}.require;`,
-                    },
+                const { ..._option } = esbuildOptions[i];
+                const option = { ..._option, ...commonOptions }
+                const with_libs = esbuildConfig.build_external && option.format === 'iife' && (!!option.external && option.external?.length > 0)
+                if (with_libs) {
+                    const GLOBAL_NAME = _GLOBAL_NAME(i);
+                    option.banner = {
+                        ...(option.banner || {}),
+                        js: `${option.banner?.js || ''}\nrequire = ${GLOBAL_NAME} && ${GLOBAL_NAME}.require;`,
+                    }
+                    await external_build({conf, store, option, index: i})
                 }
-                await external_build({conf, store, option, index: i})
                 const result = await builder.build(option)
                 if (result?.metafile?.inputs) {
                     build_origin_map({
                         index: i,
                         inputs: result?.metafile?.inputs,
                         store,
-                        with_libs: esbuildConfig.build_external && (!!option.external && option.external?.length > 0),
+                        with_libs: esbuildConfig.build_external && option.format === 'iife' && (!!option.external && option.external?.length > 0),
                     })
                 }
                 await save({ store, result, conf })
@@ -114,27 +115,28 @@ const middleware_esbuild: MiddlewareCreater = {
     
         const watch = async function (store: MemoryTree.Store) {
             for (let i = 0; i < esbuildOptions.length; i++) {
-                const _option = esbuildOptions[i];
-                const banner = _option.banner || {}
-                const GLOBAL_NAME = _GLOBAL_NAME(i);
-                const option = { ..._option, ...commonOptions, 
-                    banner: {
-                        ...banner,
-                        js: `${banner.js || ''}\nrequire = ${GLOBAL_NAME} && ${GLOBAL_NAME}.require;`,
-                    },
+                const { ..._option } = esbuildOptions[i];
+                const option = { ..._option, ...commonOptions }
+                const with_libs = esbuildConfig.build_external && option.format === 'iife' && (!!option.external && option.external?.length > 0)
+                if (with_libs) {
+                    const GLOBAL_NAME = _GLOBAL_NAME(i);
+                    option.banner = {
+                        ...(option.banner || {}),
+                        js: `${option.banner?.js || ''}\nrequire = ${GLOBAL_NAME} && ${GLOBAL_NAME}.require;`,
+                    }
+                    await external_build({conf, store, option, index: i})
                 }
-                await external_build({conf, store, option, index: i})
                 const ctx = await builder.context(option)
                 const rebuild = (function (index) {
                     return async function () {
                         const result = await ctx.rebuild()
                         if (result?.metafile?.inputs) {
                             build_origin_map({
-                                index: i,
+                                index,
                                 inputs: result?.metafile?.inputs,
                                 rebuild,
                                 store,
-                                with_libs: esbuildConfig.build_external && (!!option.external && option.external?.length > 0),
+                                with_libs,
                             })
                         }
                         logger.debug(
@@ -151,7 +153,7 @@ const middleware_esbuild: MiddlewareCreater = {
                         inputs: result?.metafile?.inputs,
                         rebuild,
                         store,
-                        with_libs: esbuildConfig.build_external && (!!option.external && option.external?.length > 0),
+                        with_libs,
                     })
                 }
                 await save({ store, result, conf })
