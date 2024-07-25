@@ -31,7 +31,7 @@ createServer({
         'hbs': 'text/plain',
     },
     buildFilter: (pathname) => {
-        return /^(src|templates|index|test($|\/index\.html)|README|package|$)/.test(pathname)
+        return /^(index|test($|\/index\.html)|README|package|$)/.test(pathname)
     },
     onRoute: (pathname, {resp}) => {
         if (/^src$/i.test(pathname)) {

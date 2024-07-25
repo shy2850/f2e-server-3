@@ -5,15 +5,14 @@
         "jsx": "react",
         "jsxFactory": "React.createElement",
         "jsxFragmentFactory": "React.Fragment",
-        "resolveJsonModule": true,
         "strict": true,
+        "outDir": "./lib",
         "esModuleInterop": true,
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true,
-        "outDir": "./lib_test",
         "declaration": true,
         "declarationMap": false
     },
-    "include": ["src/**/*", "test/**/*"],
-    "exclude": ["node_modules", "lib"]
+    "include": ["src/**/*"],
+    "exclude": ["node_modules", "lib", "package.json"]
 }

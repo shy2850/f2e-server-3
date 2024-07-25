@@ -1,7 +1,7 @@
 const PluginPostCSS = require('esbuild-plugin-postcss').default;
 // @ts-check
 /**
- * @type { import('esbuild').BuildOptions[] }
+ * @type { (import('esbuild').BuildOptions & {hot_modules: string[]})[] }
  */
 let config = [
     {
@@ -25,6 +25,9 @@ let config = [
             '@ant-design/icons',
             'dayjs',
             'dayjs/locale/zh-cn',
+        ],
+        hot_modules: [
+            "@/Hello",
         ],
         loader: {
             '.tsx': 'tsx',

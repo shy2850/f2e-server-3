@@ -38,7 +38,7 @@ export interface EsbuildConfig {
     inject_global_name?: string;
     /**
      * external bundle 文件名
-     * @default 'external_lib_{{index}}.js'
+     * @default 'external_lib.js'
      */
-    external_lib_name?: (index: number) => string;
+    external_lib_name?: string;
 }

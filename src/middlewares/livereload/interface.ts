@@ -19,14 +19,4 @@ export interface LiveReloadConfig {
      * @default /index\.html$/
      */
     reg_inject?: RegExp;
-    /**
-     * 刷新脚本
-     * @default 
-     * { reload_page: 'location.reload()', reload_link: 'location.href = output', reload_script: 'location.reload()'}
-     */
-    reload_scripts?: {
-        reload_page?: string;
-        reload_link?: string;
-        reload_script?: string;
-    };
 }

@@ -6,8 +6,8 @@ import { exit } from "node:process";
 import * as _ from '../../utils/misc'
 import { MemoryTree } from "../../memory-tree/interface";
 import type { BuildOptions } from 'esbuild'
-import { save } from './store'
-import { external_build } from "./external_build";
+import { build_option, origin_map, watch_option } from './store'
+import { build_external_file, default_config, generate_filename } from "./utils";
 
 const middleware_esbuild: MiddlewareCreater = {
     name: 'esbuild',
@@ -19,11 +19,11 @@ const middleware_esbuild: MiddlewareCreater = {
             return
         }
         const {
-            esbuildrc = '.esbuildrc.js',
-            build_external = true,
-            inject_global_name = '__f2e_esbuild_inject__',
-            external_lib_name = 'external_lib{{index}}.js',
-            reg_inject = /index\.html?$/, reg_replacer, cache_root = '.f2e_cache',
+            esbuildrc = default_config.esbuildrc,
+            external_lib_name = default_config.external_lib_name,
+            reg_inject = default_config.reg_inject,
+            reg_replacer = default_config.reg_replacer,
+            cache_root = default_config.cache_root,
         } = esbuildConfig
         const conf_path = path.join(root, esbuildrc )
     
@@ -46,120 +46,41 @@ const middleware_esbuild: MiddlewareCreater = {
             logger.error(`[esbuild] esbuild not found, esbuild middleware disabled`)
             exit(1)
         }
-        const _GLOBAL_NAME = (i = 0) => `window["${inject_global_name}${i ? `_${i}` : ''}"]`
-        const LIB_FILE_NAME = typeof external_lib_name === 'function' ? external_lib_name : (index: number) => external_lib_name.replace('{{index}}', index ? `_${index}` : '')
-        const builder: typeof import('esbuild') = require('esbuild')
-        const esbuildOptions: BuildOptions[] = [].concat(require(conf_path))
-        const commonOptions: BuildOptions = {
-            write: false,
-            metafile: true,
-            minify: mode === 'build',
-            sourcemap: true,
-        }
-        const origin_map = new Map<string, {
-            index: number;
-            with_libs: boolean;
-            rebuilds: Set<{(): Promise<void>}>;
-        }>()
-        const build_origin_map = function ({
-            index,
-            inputs,
-            rebuild,
-            store,
-            with_libs,
-        }: {
-            index: number;
-            inputs: {[path: string]: any};
-            rebuild?: {(): Promise<void>};
-            store: MemoryTree.Store;
-            with_libs: boolean;
-        }) {
-            if (!inputs) return
-            Object.keys(inputs || {}).forEach(_inputPath => {
-                const inputPath = _.pathname_fixer(_inputPath)
-                const found = origin_map.get(inputPath) || {
-                    index,
-                    with_libs,
-                    rebuilds: new Set(),
-                }
-                if (rebuild) {
-                    found.rebuilds.add(rebuild)
-                }
-                origin_map.set(inputPath, found)
-                store.ignores.add(inputPath)
-            })
-        }
-    
+        const esbuildOptions: (BuildOptions & { hot_modules?: string[] })[] = [].concat(require(conf_path))
         const build = async function (store: MemoryTree.Store) {
             for (let i = 0; i < esbuildOptions.length; i++) {
-                const { ..._option } = esbuildOptions[i];
-                const option = { ..._option, ...commonOptions }
-                const with_libs = build_external && option.format === 'iife' && (!!option.external && option.external?.length > 0)
-                if (with_libs) {
-                    const GLOBAL_NAME = _GLOBAL_NAME(i);
-                    option.banner = {
-                        ...(option.banner || {}),
-                        js: `${option.banner?.js || ''}\nrequire = ${GLOBAL_NAME} && ${GLOBAL_NAME}.require;`,
-                    }
-                    await external_build({conf, store, option, index: i})
-                }
-                const result = await builder.build(option)
-                if (result?.metafile?.inputs) {
-                    build_origin_map({
-                        index: i,
-                        inputs: result?.metafile?.inputs,
-                        store,
-                        with_libs,
-                    })
-                }
-                await save({ store, result, conf })
+                const option = esbuildOptions[i]
+                delete option.hot_modules
+                await build_option({
+                    store, conf, index: i, _option: option,
+                })
             }
         }
     
         const watch = async function (store: MemoryTree.Store) {
             for (let i = 0; i < esbuildOptions.length; i++) {
-                const { ..._option } = esbuildOptions[i];
-                const option = { ..._option, ...commonOptions }
-                const with_libs = build_external && option.format === 'iife' && (!!option.external && option.external?.length > 0)
-                if (with_libs) {
-                    const GLOBAL_NAME = _GLOBAL_NAME(i);
-                    option.banner = {
-                        ...(option.banner || {}),
-                        js: `${option.banner?.js || ''}\nrequire = ${GLOBAL_NAME} && ${GLOBAL_NAME}.require;`,
-                    }
-                    await external_build({conf, store, option, index: i})
-                }
-                const ctx = await builder.context(option)
-                const rebuild = (function (index) {
-                    return async function () {
-                        const result = await ctx.rebuild()
-                        if (result?.metafile?.inputs) {
-                            build_origin_map({
-                                index,
-                                inputs: result?.metafile?.inputs,
-                                rebuild,
-                                store,
-                                with_libs,
-                            })
-                        }
-                        logger.debug(
-                            `[esbuild] ${JSON.stringify(option.entryPoints)} rebuild`,
-                            // [...origin_map.keys()].filter(k => !k.includes('node_modules'))
-                        )
-                        await save({ store, result, conf })
-                    }
-                })(i)
-                const result = await ctx.rebuild()
-                if (result?.metafile?.inputs) {
-                    build_origin_map({
+                const option = esbuildOptions[i]
+                const hot_modules = option.hot_modules || []
+                delete option.hot_modules
+                for (let j = 0; j < hot_modules.length; j++) {
+                    const moduleId = hot_modules[j];
+                    const filename = generate_filename(external_lib_name, moduleId.replace(/[\\\/]/g, '_'));
+                    build_external_file({
+                        filename,
+                        conf: esbuildConfig,
+                        modules: [moduleId],
                         index: i,
-                        inputs: result?.metafile?.inputs,
-                        rebuild,
-                        store,
-                        with_libs,
+                    })
+                    await watch_option({
+                        store, hot_modules: [], conf, index: i, _option: {
+                            ...option,
+                            entryPoints: [ cache_root + '/' + filename],
+                        },
                     })
                 }
-                await save({ store, result, conf })
+                await watch_option({
+                    store, hot_modules, conf, index: i, _option: option,
+                })
             }
         }
     
@@ -179,13 +100,18 @@ const middleware_esbuild: MiddlewareCreater = {
                     .replace(reg_replacer || /<script\s.*?src="(.*?)".*?>\s*<\/script\>/g, function (___, src) {
                         const key = _.pathname_fixer('/' === src.charAt(0) ? src : path.join(path.dirname(pathname), src))
                         const item = origin_map.get(key)
-                        if (item && item.with_libs) {
-                            const sourcefile = LIB_FILE_NAME(item.index)
-                            const originPath = `${cache_root}/${sourcefile}`
-                            return `<script src="/${originPath}"></script>\n${___}`
-                        } else {
-                            return ___
+                        let scripts: string[] = []
+                        if (item) {
+                            if (item.with_libs) {
+                                const sourcefile = generate_filename(external_lib_name, item.index)
+                                scripts.push(`<script src="/${cache_root}/${sourcefile}"></script>\n`)
+                            }
+                            item.hot_modules?.forEach(moduleId => {
+                                const sourcefile = generate_filename(external_lib_name, moduleId.replace(/[\\\/]/g, '_'));
+                                scripts.push(`<script data-module="${moduleId}" src="/${cache_root}/${sourcefile}"></script>\n`)
+                            })
                         }
+                        return scripts.join('') + ___
                     })
                 }
                 return result

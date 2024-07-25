@@ -19,7 +19,6 @@ const middleware_livereload: MiddlewareCreater = {
             prefix = 'server-sent-bit',
             heartBeatTimeout = 30000,
             reg_inject = /\.html$/,
-            reload_scripts = {},
         } = livereload
         const route = new Route(conf)
     
@@ -83,10 +82,6 @@ const middleware_livereload: MiddlewareCreater = {
     
         const inject_script = _.template(SERVER_SENT_SCRIPT, {
             prefix,
-            reload_page: 'location.reload()',
-            reload_link: 'el.href = output',
-            reload_script: 'location.reload()',
-            ...reload_scripts,
         }, false)
         return {
             onRoute: route.execute,

@@ -9,10 +9,13 @@
         "esModuleInterop": true,
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true,
-        "outDir": "./lib",
+        "baseUrl": "./",
+        "paths": {
+            "@/*": ["./test/app/*"],
+        },
         "declaration": true,
         "declarationMap": false
     },
-    "include": ["src/**/*"],
+    "include": ["src/**/*", "test/app/**/*"],
     "exclude": ["node_modules", "lib", "package.json"]
 }

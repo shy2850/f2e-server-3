@@ -1,6 +1,6 @@
 {
   "name": "f2e-server3",
-  "version": "1.5.1-alpha",
+  "version": "1.6.0-alpha",
   "description": "f2e-server 3.0",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
@@ -14,12 +14,12 @@
     "f2e3": "lib/f2e.js"
   },
   "scripts": {
-    "tsc": "tsc",
-    "test": "tsc && node ./test/start.mjs --debug dev",
+    "tsc": "tsc -p tsconfig.lib.json",
+    "test": "npm run tsc && node ./test/start.mjs --debug dev",
     "test:bun": "bun ./test/start.mjs --debug dev",
-    "build": "tsc && node ./test/start.mjs --debug build",
+    "build": "npm run tsc && node ./test/start.mjs --debug build",
     "build:bun": "node ./test/start.mjs --debug build",
-    "prepublishOnly": "tsc"
+    "prepublishOnly": "npm run tsc"
   },
   "repository": {
     "type": "git",

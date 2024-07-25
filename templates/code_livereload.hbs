@@ -12,7 +12,7 @@
                     const info = JSON.parse(e.data);
                     expire = info.expire;
                     if (info.update) {
-                        {{reload_page}};
+                        window.location.reload();
                     }
                     if (info.updateDeps) {
                         info.updateDeps.forEach(function ({ origin, output, hash }) {
@@ -21,10 +21,20 @@
                                 const _hash = el.getAttribute('data-hash');
                                 if (hash === _hash) { return; }
                                 el.setAttribute('data-hash', hash);
-                                if ('href' in el) {
-                                    {{reload_link}};
+                                const moduleId = el.hasAttribute('data-module');
+                                if (moduleId) {
+                                    const newEl = document.createElement('script')
+                                    newEl.setAttribute('data-module', moduleId);
+                                    newEl.setAttribute('data-origin', origin);
+                                    newEl.setAttribute('data-hash', hash);
+                                    newEl.async = true;
+                                    newEl.src = output;
+                                    el.parentNode.insertBefore(newEl, el);
+                                    el.parentNode.removeChild(el);
+                                } else if ('href' in el) {
+                                    el.href = output;
                                 } else {
-                                    {{reload_script}};
+                                    window.location.reload();
                                 }
                             }
                         });
