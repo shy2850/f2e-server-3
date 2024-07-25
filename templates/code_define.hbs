@@ -3,9 +3,6 @@
     var modules = {};
     return {
         define: function (moduleId, moduleResult) {
-            if (modules[moduleId]) {
-                throw new Error("module already defined: " + moduleId);
-            }
             if ('default' in moduleResult) {
                 moduleResult = Object.assign(moduleResult.default, moduleResult);
             }

@@ -27,10 +27,11 @@ export const external_build = async function ({
     const {
         cache_root = '.f2e_cache',
         inject_global_name = '__f2e_esbuild_inject__',
-        external_lib_name = 'external_lib_{{index}}.js',
+        external_lib_name = 'external_lib{{index}}.js',
     } = conf.esbuild
-    const GLOBAL_NAME = `window["${inject_global_name}"]`
-    const LIB_FILE_NAME = typeof external_lib_name === 'function' ? external_lib_name : (index: number) => external_lib_name.replace('{{index}}', index + '')
+    const _GLOBAL_NAME = (i = 0) => `window["${inject_global_name}${i ? `_${i}` : ''}"]`
+    const GLOBAL_NAME = _GLOBAL_NAME(index);
+    const LIB_FILE_NAME = typeof external_lib_name === 'function' ? external_lib_name : (index: number) => external_lib_name.replace('{{index}}', index ? `_${index}` : '')
     const cache_path = path.join(conf.root, cache_root)
     if (!fs.existsSync(cache_path)) {
         fs.mkdirSync(cache_path, { recursive: true })

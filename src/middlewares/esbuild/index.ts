@@ -41,10 +41,10 @@ const middleware_esbuild: MiddlewareCreater = {
         }
         const {
             inject_global_name = '__f2e_esbuild_inject__',
-            external_lib_name = 'external_lib_{{index}}.js',
+            external_lib_name = 'external_lib{{index}}.js',
         } = esbuildConfig
-        const GLOBAL_NAME = `window["${inject_global_name}"]`
-        const LIB_FILE_NAME = typeof external_lib_name === 'function' ? external_lib_name : (index: number) => external_lib_name.replace('{{index}}', index + '')
+        const _GLOBAL_NAME = (i = 0) => `window["${inject_global_name}${i ? `_${i}` : ''}"]`
+        const LIB_FILE_NAME = typeof external_lib_name === 'function' ? external_lib_name : (index: number) => external_lib_name.replace('{{index}}', index ? `_${index}` : '')
         const builder: typeof import('esbuild') = require('esbuild')
         const esbuildOptions: BuildOptions[] = [].concat(require(conf_path))
         const commonOptions: BuildOptions = {
@@ -91,6 +91,7 @@ const middleware_esbuild: MiddlewareCreater = {
             for (let i = 0; i < esbuildOptions.length; i++) {
                 const _option = esbuildOptions[i];
                 const banner = _option.banner || {}
+                const GLOBAL_NAME = _GLOBAL_NAME(i);
                 const option = { ..._option, ...commonOptions, 
                     banner: {
                         ...banner,
@@ -115,6 +116,7 @@ const middleware_esbuild: MiddlewareCreater = {
             for (let i = 0; i < esbuildOptions.length; i++) {
                 const _option = esbuildOptions[i];
                 const banner = _option.banner || {}
+                const GLOBAL_NAME = _GLOBAL_NAME(i);
                 const option = { ..._option, ...commonOptions, 
                     banner: {
                         ...banner,
