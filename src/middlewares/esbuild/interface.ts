@@ -3,16 +3,19 @@
  */
 export interface EsbuildConfig {
     /** esbuild配置文件地址
+     * @default '.esbuildrc.js'
      */
-    esbuildrc: string;
+    esbuildrc?: string;
     /**
      * 是否构建外部依赖
+     * @default true
      */
-    build_external: boolean;
+    build_external?: boolean;
     /**
      * 是否生成metafile
+     * @default false
      */
-    with_metafile: boolean;
+    with_metafile?: boolean;
     /**
      * 匹配html文件, 注入脚本
      * @default /index\.html$/

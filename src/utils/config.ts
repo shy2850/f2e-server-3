@@ -56,11 +56,12 @@ export const getConfigResult = function (conf: F2EConfig = {}) {
         try_files: conf.try_files || false,
         livereload: conf.livereload || (mode === 'dev' && {}) || false,
         proxies: conf.proxies || [],
-        esbuild: conf.esbuild || (mode != 'prod' && {
+        esbuild: mode != 'prod' ? {
             esbuildrc: '.esbuildrc.js',
             build_external: true,
-            with_metafile: mode === 'dev',
-        }) || false,
+            with_metafile: false,
+            ...(conf.esbuild || {})
+        } : false,
         less: conf.less || false,
         auth: conf.auth || false,
         alias: conf.alias || false,

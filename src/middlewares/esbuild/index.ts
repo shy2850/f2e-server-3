@@ -18,7 +18,14 @@ const middleware_esbuild: MiddlewareCreater = {
         if (!esbuildConfig) {
             return
         }
-        const conf_path = path.join(root, esbuildConfig.esbuildrc)
+        const {
+            esbuildrc = '.esbuildrc.js',
+            build_external = true,
+            inject_global_name = '__f2e_esbuild_inject__',
+            external_lib_name = 'external_lib{{index}}.js',
+            reg_inject = /index\.html?$/, reg_replacer, cache_root = '.f2e_cache',
+        } = esbuildConfig
+        const conf_path = path.join(root, esbuildrc )
     
         // 使用默认配置，检查配置文件是否存在，不存在时，中间件失效
         if (!fs.existsSync(conf_path)) {
@@ -39,10 +46,6 @@ const middleware_esbuild: MiddlewareCreater = {
             logger.error(`[esbuild] esbuild not found, esbuild middleware disabled`)
             exit(1)
         }
-        const {
-            inject_global_name = '__f2e_esbuild_inject__',
-            external_lib_name = 'external_lib{{index}}.js',
-        } = esbuildConfig
         const _GLOBAL_NAME = (i = 0) => `window["${inject_global_name}${i ? `_${i}` : ''}"]`
         const LIB_FILE_NAME = typeof external_lib_name === 'function' ? external_lib_name : (index: number) => external_lib_name.replace('{{index}}', index ? `_${index}` : '')
         const builder: typeof import('esbuild') = require('esbuild')
@@ -91,7 +94,7 @@ const middleware_esbuild: MiddlewareCreater = {
             for (let i = 0; i < esbuildOptions.length; i++) {
                 const { ..._option } = esbuildOptions[i];
                 const option = { ..._option, ...commonOptions }
-                const with_libs = esbuildConfig.build_external && option.format === 'iife' && (!!option.external && option.external?.length > 0)
+                const with_libs = build_external && option.format === 'iife' && (!!option.external && option.external?.length > 0)
                 if (with_libs) {
                     const GLOBAL_NAME = _GLOBAL_NAME(i);
                     option.banner = {
@@ -106,7 +109,7 @@ const middleware_esbuild: MiddlewareCreater = {
                         index: i,
                         inputs: result?.metafile?.inputs,
                         store,
-                        with_libs: esbuildConfig.build_external && option.format === 'iife' && (!!option.external && option.external?.length > 0),
+                        with_libs,
                     })
                 }
                 await save({ store, result, conf })
@@ -117,7 +120,7 @@ const middleware_esbuild: MiddlewareCreater = {
             for (let i = 0; i < esbuildOptions.length; i++) {
                 const { ..._option } = esbuildOptions[i];
                 const option = { ..._option, ...commonOptions }
-                const with_libs = esbuildConfig.build_external && option.format === 'iife' && (!!option.external && option.external?.length > 0)
+                const with_libs = build_external && option.format === 'iife' && (!!option.external && option.external?.length > 0)
                 if (with_libs) {
                     const GLOBAL_NAME = _GLOBAL_NAME(i);
                     option.banner = {
@@ -165,7 +168,6 @@ const middleware_esbuild: MiddlewareCreater = {
                 return mode === 'dev' ? await watch(store) : await build(store)
             },
             async onSet(pathname, data, store) {
-                const { reg_inject = /index\.html?$/, reg_replacer, cache_root = '.f2e_cache' } = esbuildConfig
                 const result = {
                     originPath: pathname,
                     outputPath: pathname,
