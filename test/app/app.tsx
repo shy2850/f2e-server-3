@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Button, DatePicker, Space, version, ConfigProvider } from "antd";
 import dayjs from 'dayjs'
 import zh from 'dayjs/locale/zh-cn'
@@ -10,7 +10,20 @@ import styles from './style.less'
 const App = () => {
     const [date, setDate] = useState(Date.now())
     const [serverDate, setServerDate] = useState(Date.now())
-    const Hello = require('@/Hello').default
+    const [Hello, setHello] = useState(() => require('@/Hello').default)
+    useEffect(function () {
+        const module_update = function (e: any) {
+            const { moduleId, hash } = e.detail
+            if (moduleId === '@/Hello') {
+                setHello(() => require('@/Hello').default)
+            }
+        }
+        addEventListener('module_update', module_update)
+        return function () {
+            removeEventListener('module_update', module_update)
+        }
+    }, [])
+
     useEffect(function () {
         const interval = setInterval(function () {
             setDate(Date.now())

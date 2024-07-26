@@ -21,13 +21,18 @@
                                 const _hash = el.getAttribute('data-hash');
                                 if (hash === _hash) { return; }
                                 el.setAttribute('data-hash', hash);
-                                const moduleId = el.hasAttribute('data-module');
+                                const moduleId = el.getAttribute('data-module');
                                 if (moduleId) {
                                     const newEl = document.createElement('script')
                                     newEl.setAttribute('data-module', moduleId);
                                     newEl.setAttribute('data-origin', origin);
                                     newEl.setAttribute('data-hash', hash);
                                     newEl.async = true;
+                                    newEl.onload = function () {
+                                        window.dispatchEvent(
+                                            new CustomEvent('module_update', { detail: { moduleId, hash } })
+                                        );
+                                    };
                                     newEl.src = output;
                                     el.parentNode.insertBefore(newEl, el);
                                     el.parentNode.removeChild(el);
