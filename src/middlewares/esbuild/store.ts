@@ -148,7 +148,13 @@ export const build_option = async ({
     if (with_libs) {
         await external_build({conf, store, option, index})
     }
-    const result = await builder.build(option)
+    const result = await builder.build({
+        ...option,
+        banner: {
+            ...(option.banner || {}),
+            js: `${option.banner?.js || ''}${generate_banner_code(inject_global_name, index)}`
+        },
+    })
     if (result?.metafile?.inputs) {
         build_origin_map({
             index,
