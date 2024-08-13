@@ -95,7 +95,7 @@ export class Command<Args extends object = {}> {
                     if (!next.startsWith('-')) {
                         const value = type === 'string' ? next : JSON.parse(next)
                         if (op.values && op.values.indexOf(value) === -1) {
-                            console.log(`Invalid value ${value} for option ${op.name}`)
+                            console.error(`Invalid value "${value}" for option "${op.name}", expected one of "${op.values}"`)
                             exit(1)
                         }
                         result[op.argument] = value;
@@ -103,17 +103,17 @@ export class Command<Args extends object = {}> {
                     } else if (type === 'boolean') {
                         result[op.argument] = true;
                     } else {
-                        console.log(`Missing value for option ${op.name}`)
+                        console.error(`Missing value for option "${op.name}"`)
                         exit(1)
                     }
                 } else {
-                    console.log(`Unknown option ${item}`)
+                    console.log(`Unknown option "${item}"`)
                     exit(1)
                 }
             } else {
                 const cmd = commands.get(item)
                 if (!cmd) {
-                    console.log(`Unknown command ${item}`)
+                    console.error(`Unknown command "${item}"`)
                     exit(1)
                 } else {
                     command = cmd

@@ -8,7 +8,7 @@ import path from 'node:path'
 import fs from 'node:fs'
 import { Command } from './utils/commander'
 
-const program = new Command('f2e')
+const program = new Command('f2e3')
 program.version(require('../package.json').version);
 
 program
@@ -58,18 +58,18 @@ program.command('start')
     .description('启动开发服务器')
     .option('-c, --config <cfg_path>', '修改配置文件地址', F2E_CONFIG)
     .option('-r, --root <root>', '设置工作目录', process.cwd())
-    .option('-p, --port <port>', '设置端口', '2850')
-    .option('-m, --mode <mode>', '设置模式, 支持 dev/prod', 'dev')
-    .option('-l, --level <level>', '设置日志打印级别, 支持 DEBUG/INFO/WARN/ERROR,', 'DEBUG')
+    .option('-p, --port <port>', '设置端口', 2850)
+    .option('-m, --mode <mode>', '设置模式, 支持 dev/build/prod', 'dev', [ 'dev', 'build', 'prod' ])
+    .option('-l, --level <level>', '设置日志打印级别, 支持 DEBUG/INFO/WARN/ERROR,', 'INFO', ['DEBUG', 'INFO', 'LOG', 'WARN', 'ERROR'])
     .action(async (options) => {
-        const { cfg_path, root, port, mode = 'dev', level = 'DEBUG' } = options
+        const { cfg_path, root, port, mode, level } = options
         if (cfg_path) {
             setConfigPath(cfg_path)
         }
         if(level) {
             logger.setLevel(level as any)
         }
-        createServer({ root, port: Number(port), mode: mode as ConfigMode })
+        createServer({ root, port, mode: mode as ConfigMode })
     })
 
 // 开始解析用户输入的命令
