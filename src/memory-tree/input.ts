@@ -78,11 +78,11 @@ export const beginWatch = (options: MemoryTree.Options, store: MemoryTree.Store,
             chokidar.watch(root, {
                 ignoreInitial: true,
                 ignored: [(filename: string) => {
-                    const p = _.pathname_fixer(filename.replace(root, ''))
+                    const p = _.pathname_fixer(path.relative(root, filename))
                     return !!p && !watchFilter(p)
                 }]
             }).on('all', async (eventType, filename) => {
-                const p = _.pathname_fixer(filename.replace(root, ''))
+                const p = _.pathname_fixer(path.relative(root, filename))
                 if (p && watchFilter(p)) {
                     watcher_map.set(p, {
                         ready: false,
