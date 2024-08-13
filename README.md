@@ -30,13 +30,14 @@ npm install f2e-server-3 --save-dev
 start.mjs
 ```js
 import { createServer, UserStore } from 'f2e-server3'
-createServer({})
+createServer({ mode: 'dev' })
 ```
 执行 `node start.mjs` 或者 `bun start.mjs`
 ```sh
 $ node start.mjs
 server start on http://127.0.0.1:2850
 ```
+还可参考 [test/start.mjs](test/start.mjs)
 
 ## 功能以及参数配置
 ### 基础环境配置  [server config](src/interface.ts#L28)

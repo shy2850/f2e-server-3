@@ -1,18 +1,19 @@
 import { exit } from "node:process";
 
-interface Option<R extends string> {
+interface Option<R extends string, V> {
     name: string;
     short: string;
     argument: R;
     description?: string;
-    defaultValue?: string;
+    defaultValue?: V;
+    values?: V[];
 }
 
 type PickArgs<T extends string> = T extends `-${string}, --${string} <${infer R}>` ? R : never;
-type PickCmd<T extends string> = T extends `${string} <${infer F}>` ? Command<F> : Command;
+type PickCmd<T extends string, V> = T extends `${string} <${infer F}>` ? Command<{[k in F]: V}> : Command;
 
-export class Command<Args extends string = never> {
-    options: Option<Args>[] = [];
+export class Command<Args extends object = {}> {
+    options: Option<string, any>[] = [];
     commands = new Map<string, Command>();
     name: string;
     subname: string | undefined;
@@ -40,35 +41,38 @@ export class Command<Args extends string = never> {
             }
         }
         this.commands.set(name1, c)
-        return c as PickCmd<T>
+        return c as PickCmd<T, any>
     }
     description (description: string) {
         this._description = description
         return this
     }
-    option <T extends `-${string}, --${string} <${string}>`> (name_all: T, description?: string, defaultValue?: string): Command<Args | PickArgs<T>> {
+    option <T extends `-${string}, --${string} <${string}>`, F = string> (
+        name_all: T, description?: string, defaultValue?: F, values?: F[]
+    ): Command<Args & {[k in PickArgs<T>]: F}> {
         type R = PickArgs<T>
         const [short, name, arg ] = name_all.split(/[\s\t,]+/)
-        const o: Option<R> = {
+        const o: Option<R, F> = {
             name,
             short,
             argument: arg.slice(1, arg.length - 1) as R,
             description,
-            defaultValue
+            defaultValue,
+            values,
         }
-        const t = this as Command<Args | R>
+        const t = this as Command<Args & {[k in PickArgs<T>]: F}>
         t.options.push(o)
         return t
     }
 
-    actions: {(options: {[k in Args]: string}): void | Promise<void>}[] = []
-    action (ac: {(options: {[k in Args]: string}): void | Promise<void>}) {
+    actions: {(options: Args): void | Promise<void>}[] = []
+    action (ac: {(options: Args): void | Promise<void>}) {
         this.actions.push(ac)
         return this
     }
     async parse (argv: string[]) {
         const { commands } = this
-        const result: Partial<Record<any, string>> = {}
+        const result: Record<any, any> = {}
         let command = this as unknown as Command
         for (let i = 2; i < argv.length; i++) {
             const item = argv[i];
@@ -87,11 +91,20 @@ export class Command<Args extends string = never> {
             if (item.startsWith('-')) {
                 const op = command.options.find(o => o.short === item || o.name === item)
                 if (op) {
+                    const type = typeof op.defaultValue || 'string'
                     if (!next.startsWith('-')) {
-                        result[op.argument] = next;
+                        const value = type === 'string' ? next : JSON.parse(next)
+                        if (op.values && op.values.indexOf(value) === -1) {
+                            console.log(`Invalid value ${value} for option ${op.name}`)
+                            exit(1)
+                        }
+                        result[op.argument] = value;
                         i++
+                    } else if (type === 'boolean') {
+                        result[op.argument] = true;
                     } else {
-                        result[op.argument] = '';
+                        console.log(`Missing value for option ${op.name}`)
+                        exit(1)
                     }
                 } else {
                     console.log(`Unknown option ${item}`)
@@ -111,7 +124,12 @@ export class Command<Args extends string = never> {
                 }
             }
         }
-        
+        for (let i = 0; i < command.options.length; i++) {
+            const op = command.options[i]
+            if (op.defaultValue && !(op.argument in result)) {
+                result[op.argument] = op.defaultValue
+            }
+        }
         for (let i = 0; i < command.actions.length; i++) {
             command.actions[i](result as any)
         }
