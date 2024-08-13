@@ -91,7 +91,7 @@ export class Command<Args extends object = {}> {
             if (item.startsWith('-')) {
                 const op = command.options.find(o => o.short === item || o.name === item)
                 if (op) {
-                    const type = typeof op.defaultValue || 'string'
+                    const type = typeof (op.defaultValue || '')
                     if (!next.startsWith('-')) {
                         const value = type === 'string' ? next : JSON.parse(next)
                         if (op.values && op.values.indexOf(value) === -1) {
