@@ -1,70 +1,241 @@
 <style>
-    body {
-        margin: 0;
-        padding: 0;
-        overflow: hidden;
-        background-color: #f5f5f5;
-    }
-    .login-container {
-        width: 420px;
-        max-width: 90vw;
-        background-color: #fff;
-        margin: 100px auto;
-        padding: 10px 60px 20px;
-        border-radius: 4px;
-        box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
-    }
-    .login-container div {
-        line-height: 48px;
-        margin-bottom: 16px;
-    }
-    .login-container label {
-        float: left;
-        width: 80px;
-    }
-    .login-container input {
-        width: 300px;
-        height: 24px;
-        line-height: 24px;
-        padding: 4px 8px;
-        border: 1px solid #d2d2d2;
-        outline: none;
-    }
-    .login-container button {
-        width: 100px;
-        height: 40px;
-        text-align: center;
-        background-color: #1677ff;
-        cursor: pointer;
-        border: 0;
-        color: #fff;
-    }
-    .login-container button:hover {
-        background-color: #4096ff;
-    }
-    .login-container .error {
-        color: #c00;
-    }
+*,
+::before,
+::after {
+  box-sizing: border-box; /* 1 */
+  border-width: 0; /* 2 */
+  border-style: solid; /* 2 */
+  border-color: #e5e7eb; /* 2 */
+  padding: 0;
+  margin: 0;
+}
+
+::before,
+::after {
+  --tw-content: '';
+}
+button,
+input,
+optgroup,
+select,
+textarea {
+  font-family: inherit; /* 1 */
+  font-feature-settings: inherit; /* 1 */
+  font-variation-settings: inherit; /* 1 */
+  font-size: 100%; /* 1 */
+  font-weight: inherit; /* 1 */
+  line-height: inherit; /* 1 */
+  letter-spacing: inherit; /* 1 */
+  color: inherit; /* 1 */
+  margin: 0; /* 2 */
+  padding: 0; /* 3 */
+}
+button,
+input:where([type='button']),
+input:where([type='reset']),
+input:where([type='submit']) {
+  -webkit-appearance: button; /* 1 */
+  background-color: transparent; /* 2 */
+  background-image: none; /* 2 */
+}
+
+.relative {
+  position: relative;
+}
+.-mt-px {
+  margin-top: -1px;
+}
+.mt-6 {
+  margin-top: 1.5rem;
+}
+.mt-8 {
+  margin-top: 2rem;
+}
+.block {
+  display: block;
+}
+.flex {
+  display: flex;
+}
+.hidden {
+  display: none;
+}
+.min-h-screen {
+  min-height: 100vh;
+}
+.w-full {
+  width: 100%;
+}
+.max-w-md {
+  max-width: 28rem;
+}
+.appearance-none {
+  appearance: none;
+}
+.items-center {
+  align-items: center;
+}
+.justify-center {
+  justify-content: center;
+}
+.space-y-8 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-y-reverse: 0;
+  margin-top: calc(2rem * calc(1 - var(--tw-space-y-reverse)));
+  margin-bottom: calc(2rem * var(--tw-space-y-reverse));
+}
+.rounded-md {
+  border-radius: 0.375rem;
+}
+.rounded-none {
+  border-radius: 0px;
+}
+.rounded-b-md {
+  border-bottom-right-radius: 0.375rem;
+  border-bottom-left-radius: 0.375rem;
+}
+.rounded-t-md {
+  border-top-left-radius: 0.375rem;
+  border-top-right-radius: 0.375rem;
+}
+.border {
+  border-width: 1px;
+}
+.border-gray-300 {
+  --tw-border-opacity: 1;
+  border-color: rgb(209 213 219 / var(--tw-border-opacity));
+}
+.bg-gray-50 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(249 250 251 / var(--tw-bg-opacity));
+}
+.bg-indigo-600 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(79 70 229 / var(--tw-bg-opacity));
+}
+.px-3 {
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+}
+.px-4 {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+.py-12 {
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+}
+.py-2 {
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+.text-center {
+  text-align: center;
+}
+.text-3xl {
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+}
+.font-extrabold {
+  font-weight: 800;
+}
+.leading-6 {
+  line-height: 1.5rem;
+}
+.leading-9 {
+  line-height: 2.25rem;
+}
+.text-gray-700 {
+  --tw-text-opacity: 1;
+  color: rgb(55 65 81 / var(--tw-text-opacity));
+}
+.text-gray-900 {
+  --tw-text-opacity: 1;
+  color: rgb(17 24 39 / var(--tw-text-opacity));
+}
+.text-white {
+  --tw-text-opacity: 1;
+  color: rgb(255 255 255 / var(--tw-text-opacity));
+}
+.placeholder-gray-500::placeholder {
+  --tw-placeholder-opacity: 1;
+  color: rgb(107 114 128 / var(--tw-placeholder-opacity));
+}
+.shadow-sm {
+  --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+}
+.transition {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+.duration-150 {
+  transition-duration: 150ms;
+}
+.ease-in-out {
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hover\:bg-indigo-500:hover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(99 102 241 / var(--tw-bg-opacity));
+}
+.focus\:border-blue-300:focus {
+  --tw-border-opacity: 1;
+  border-color: rgb(147 197 253 / var(--tw-border-opacity));
+}
+.focus\:border-indigo-700:focus {
+  --tw-border-opacity: 1;
+  border-color: rgb(67 56 202 / var(--tw-border-opacity));
+}
+.focus\:outline-none:focus {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+.active\:bg-indigo-700:active {
+  --tw-bg-opacity: 1;
+  background-color: rgb(67 56 202 / var(--tw-bg-opacity));
+}
+@media (min-width: 640px) {
+  .sm\:px-6 {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+@media (min-width: 1024px) {
+  .lg\:px-8 {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+/*# sourceMappingURL=test\main.css.map */
 </style>
-<div class="login-container">
-    <h3>登录</h3>
-    <form action="" method="post">
-        <input type="hidden" name="crsf_token" value="{{crsf_token}}">
-        <div>
-            <label>用户名: </label>
-            <input type="text" name="username" value="" autocomplete="off" placeholder="用户名" />
+    <div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-md w-full space-y-8">
+            <div>
+                <h2 class="text-center text-3xl leading-9 font-extrabold text-gray-700">
+                    登录
+                </h2>
+            </div>
+            <form class="mt-8" action="" method="POST">
+                <input type="hidden" name="crsf_token" value="{{crsf_token}}">
+                <div class="rounded-md shadow-sm">
+                    <div>
+                        <input aria-label="用户名" name="username" type="text" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:shadow-outline-blue focus:border-blue-300" placeholder="用户名">
+                    </div>
+                    <div class="-mt-px">
+                        <input aria-label="密码" name="password" type="password" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:shadow-outline-blue focus:border-blue-300" placeholder="密码">
+                    </div>
+                </div>
+                <div class="mt-6">
+                    <button type="submit" class="w-full py-2 leading-6 rounded-md text-white bg-indigo-600 hover:bg-indigo-500 focus:outline-none focus:border-indigo-700 focus:shadow-outline-indigo active:bg-indigo-700 transition duration-150 ease-in-out">
+                        登录
+                    </button>
+                </div>
+            </form>
         </div>
-        <div>
-            <label>密码: </label>
-            <input type="password" name="password" value="" autocomplete="off" placeholder="密码" />
-        </div>
-        <div>
-            <label>&nbsp;</label>
-            <button type="submit">登录</button>
-            <span class="error"></span>
-        </div>
-    </form>
-</div>
+    </div>
 <script>
 (function () {
     var _0x5537 = ['c3BsaXQ=', 'bWFw', 'bGVuZ3Ro', 'aGFz', 'Zmxvb3I=', 'cmFuZG9t', 'dG9TdHJpbmc=', 'c3Vic3RyaW5n']; (function (_0x7f77f0, _0x22c48b) { var _0x5a8baf = function (_0x41bf08) { while (--_0x41bf08) { _0x7f77f0['push'](_0x7f77f0['shift']()); } }; _0x5a8baf(++_0x22c48b); }(_0x5537, 0xbf)); var _0x39f2 = function (_0x24432e, _0x3f2642) { _0x24432e = _0x24432e - 0x0; var _0x175ec8 = _0x5537[_0x24432e]; if (_0x39f2['wLgwpd'] === undefined) { (function () { var _0x4319c7 = function () { var _0x56a64c; try { _0x56a64c = Function('return\x20(function()\x20' + '{}.constructor(\x22return\x20this\x22)(\x20)' + ');')(); } catch (_0x540c91) { _0x56a64c = window; } return _0x56a64c; }; var _0x39df57 = _0x4319c7(); var _0x71c38c = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/='; _0x39df57['atob'] || (_0x39df57['atob'] = function (_0x41f8c0) { var _0x4bdff9 = String(_0x41f8c0)['replace'](/=+$/, ''); for (var _0xe778dd = 0x0, _0x3d3b1c, _0x34e95e, _0x2bbe6 = 0x0, _0x3a95f2 = ''; _0x34e95e = _0x4bdff9['charAt'](_0x2bbe6++); ~_0x34e95e && (_0x3d3b1c = _0xe778dd % 0x4 ? _0x3d3b1c * 0x40 + _0x34e95e : _0x34e95e, _0xe778dd++ % 0x4) ? _0x3a95f2 += String['fromCharCode'](0xff & _0x3d3b1c >> (-0x2 * _0xe778dd & 0x6)) : 0x0) { _0x34e95e = _0x71c38c['indexOf'](_0x34e95e); } return _0x3a95f2; }); }()); _0x39f2['ldEUox'] = function (_0x4ffbb5) { var _0xdd9a03 = atob(_0x4ffbb5); var _0x17f85b = []; for (var _0x197b9c = 0x0, _0x1f0490 = _0xdd9a03['length']; _0x197b9c < _0x1f0490; _0x197b9c++) { _0x17f85b += '%' + ('00' + _0xdd9a03['charCodeAt'](_0x197b9c)['toString'](0x10))['slice'](-0x2); } return decodeURIComponent(_0x17f85b); }; _0x39f2['jLKWhY'] = {}; _0x39f2['wLgwpd'] = !![]; } var _0x5a6400 = _0x39f2['jLKWhY'][_0x24432e]; if (_0x5a6400 === undefined) { _0x175ec8 = _0x39f2['ldEUox'](_0x175ec8); _0x39f2['jLKWhY'][_0x24432e] = _0x175ec8; } else { _0x175ec8 = _0x5a6400; } return _0x175ec8; }; var incrypt_account = function (_0x3eb7ab, _0x23fcd6) { var _0x2ba3cb = new Set(_0x3eb7ab[_0x39f2('0x0')](0x4, 0xc)[_0x39f2('0x1')]('')[_0x39f2('0x2')](function (_0x3ed537) { return parseInt(_0x3ed537, 0x10); })); var _0x18770b = ''; for (var _0x4e4e09 = 0x0; _0x4e4e09 < _0x23fcd6[_0x39f2('0x3')]; _0x4e4e09++) { var _0xe2a639 = _0x23fcd6[_0x4e4e09]; while (_0x2ba3cb[_0x39f2('0x4')](_0x18770b[_0x39f2('0x3')])) { _0x18770b += Math[_0x39f2('0x5')](Math[_0x39f2('0x6')]() * 0x24)[_0x39f2('0x7')](0x24); } _0x18770b += _0xe2a639; } return _0x18770b; };
