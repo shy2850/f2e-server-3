@@ -9,6 +9,7 @@ import middleware_tryfiles from './try_files';
 import middleware_proxy from './proxy';
 import middleware_esbuild from './esbuild';
 import middleware_less from './less';
+import middleware_postcss from './postcss';
 import middleware_auth from './auth';
 import middleware_alias from './alias';
 
@@ -27,6 +28,7 @@ export const combineMiddleware = (conf: F2EConfigResult, middlewares: (Middlewar
     /** 开始内置中间件加载 */
     middlewares.push(middleware_alias)
     middlewares.push(middleware_less)
+    middlewares.push(middleware_postcss)
     middlewares.push(middleware_esbuild)
     middlewares.push(middleware_proxy)
     middlewares.push(middleware_livereload)

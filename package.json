@@ -1,6 +1,6 @@
 {
   "name": "f2e-server3",
-  "version": "1.6.8-alpha",
+  "version": "1.6.10-alpha",
   "description": "f2e-server 3.0",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
@@ -44,8 +44,10 @@
     "less": "^4.2.0",
     "marked": "^12.0.1",
     "mime": "^4.0.3",
+    "postcss": "^8.4.41",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "tailwindcss": "^3.4.10",
     "typescript": "^5.4.5",
     "uWebSockets.js": "github:uNetworking/uWebSockets.js#v20.43.0"
   }

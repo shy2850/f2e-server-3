@@ -9,6 +9,7 @@ import { LessConfig } from './middlewares/less/interface';
 import { HttpHeaders } from './utils/resp';
 import { AuthConfig } from './middlewares/auth/interface';
 import type { RequestOptions } from 'node:https'
+import { PostCssConfig } from './middlewares/postcss/interface';
 
 export type ConfigMode = "dev" | "build" | "prod";
 export interface APIContext {
@@ -129,6 +130,8 @@ export interface ServerConfig {
      * 只在资源构建之前加载一次, 配置不当，可能被其他构建结果覆盖
     */
     alias?: false | {[out: string]: string | { url: string; options?: RequestOptions }}
+    /** 支持postcss 以及 tailwindcss 配置 */
+    postcss?: false | PostCssConfig;
 }
 export interface F2EConfig extends ServerConfig, Partial<MemoryTree.Options>, Partial<MiddlewareEvents> {
     /** 

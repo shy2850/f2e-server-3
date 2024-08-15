@@ -65,6 +65,7 @@ export const getConfigResult = function (conf: F2EConfig = {}) {
         less: conf.less || false,
         auth: conf.auth || false,
         alias: conf.alias || false,
+        postcss: conf.postcss || false,
     }
     return config;
 }

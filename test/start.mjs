@@ -66,6 +66,12 @@ const command = new Command('server')
                     nickname: '管理员',
                 }),
             },
+            postcss: {
+                entryPoints: './test/main.css',
+                tailwindConfig: {
+                    content: ['./test/**/*.{html,ts,tsx}'],
+                },
+            },
             middlewares: [
                 server,
             ],
