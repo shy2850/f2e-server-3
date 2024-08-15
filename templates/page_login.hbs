@@ -176,7 +176,13 @@ input:where([type='submit']) {
 .ease-in-out {
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
-
+.pt-2 {
+  padding-top: 0.5rem;
+}
+.text-red-700 {
+  --tw-text-opacity: 1;
+  color: rgb(185 28 28 / var(--tw-text-opacity));
+}
 .hover\:bg-indigo-500:hover {
   --tw-bg-opacity: 1;
   background-color: rgb(99 102 241 / var(--tw-bg-opacity));
@@ -227,6 +233,8 @@ input:where([type='submit']) {
                     <div class="-mt-px">
                         <input aria-label="密码" name="password" type="password" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:shadow-outline-blue focus:border-blue-300" placeholder="密码">
                     </div>
+                </div>
+                <div class="error text-center pt-2 text-red-700">
                 </div>
                 <div class="mt-6">
                     <button type="submit" class="w-full py-2 leading-6 rounded-md text-white bg-indigo-600 hover:bg-indigo-500 focus:outline-none focus:border-indigo-700 focus:shadow-outline-indigo active:bg-indigo-700 transition duration-150 ease-in-out">
