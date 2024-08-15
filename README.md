@@ -78,9 +78,20 @@ mode = `build` 时，try_files配置无效
 | try_files | [TryFilesConfig](src/interface.ts#L94) | `"index.html"` | 配置try_files规则 |
 
 ### less配置
+mode = `prod` 时，less配置无效
 | 参数 | 类型 | 默认值 | 说明 |
 | --- | --- | --- | --- |
 | less | [LessConfig](src/middlewares/less/interface.ts) | `false` | less配置 |
+
+### postcss配置
+mode = `prod` 时，postcss配置无效。支持快速配置tailwindcss
+| 参数 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| postcss | [PostCssConfig](src/middlewares/postcss/interface.ts) | `false` | less配置 |
+| postcss.entryPoints | string |  | 需要编译的postcss入口文件路径,如: `"./src/index.css"` |
+| postcss.plugins | postcss.AcceptedPlugin[] | [] | postcss插件配置 |
+| postcss.processOptions | postcss.ProcessOptions | {} | postcss.processer 编译配置选项 |
+| postcss.tailwindConfig | string 或者 tailwindcss.Config | 'tailwind.config.js' | 配置为字符串是否使用tailwindcss配置文件，配置为对象则作为tailwindcss配置。 `注: content仅支持glob 字符串数组配置` |
 
 ### http代理配置
 mode = `build` 时，http代理配置无效
