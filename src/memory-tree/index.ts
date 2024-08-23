@@ -36,7 +36,9 @@ export const createStore = function (options: Pick<MemoryTree.Options, 'onGet'|'
                     for (let i = 0; i < searchValues.length; i++) {
                         const searchValue = searchValues[i]
                         const replacer = (mat: string, src: string) => {
-                            const key = _.pathname_fixer('/' === src.charAt(0) ? src : path.join(path.dirname(pathname), src))
+                            const key = /^https?:\/\//.test(src) ? src : (
+                                _.pathname_fixer('/' === src.charAt(0) ? src : path.join(path.dirname(pathname), src))
+                            )
                             const out = origin_map.get(key)
                             if (!out) return mat
                             const targetSrc = (namehash.publicPath || '/') + out.outputPath.replace(/^\/+/, '')
@@ -63,7 +65,9 @@ export const createStore = function (options: Pick<MemoryTree.Options, 'onGet'|'
                         for (let i = 0; i < searchValues.length; i++) {
                             const searchValue = searchValues[i]
                             context.replace(searchValue, (mat: string, src: string) => {
-                                const key = _.pathname_fixer('/' === src.charAt(0) ? src : path.join(path.dirname(result.originPath), src))
+                                const key = /^https?:\/\//.test(src) ? src : (
+                                    _.pathname_fixer('/' === src.charAt(0) ? src : path.join(path.dirname(result.originPath), src))
+                                )
                                 deps.push(key)
                                 return mat
                             })
