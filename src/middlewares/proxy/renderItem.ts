@@ -27,11 +27,13 @@ export const renderItem = (item: ProxyItem): ProxyItemRendered => {
         getOrigin = item.origin
     }
 
-    let match = item.location instanceof RegExp ? function (url: string) {
-        return (item.location as RegExp).test(url)
-    } : function (url: string = '/') {
-        return url.startsWith(item.location as string | '/')
-    }
+    let match = item.match || (
+        item.location instanceof RegExp ? function (url: string) {
+            return (item.location as RegExp).test(url)
+        } : function (url: string = '/') {
+            return url.startsWith(item.location as string | '/')
+        }
+    )
     return {
         ...item,
         match,

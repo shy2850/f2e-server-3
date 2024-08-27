@@ -25,7 +25,7 @@ const middleware_proxy: MiddlewareCreater = {
                 const url = req.getUrl()
                 const search = req.getQuery()
                 const item = items.find(item => {
-                    return item.match(url, search)
+                    return item.match(url, ctx)
                 })
                 if (!item) {
                     return

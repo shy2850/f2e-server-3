@@ -1,12 +1,13 @@
 import { IncomingMessage } from "node:http";
 import { HttpHeaders } from "../../utils/resp";
-import { HttpRequest } from "uWebSockets.js";
 import { APIContext } from "../../interface";
 import { RequestOptions } from "node:https";
 
 export interface ProxyItem {
     /** 需要代理的路径 */
     location: string | RegExp;
+    /** 优先匹配规则，忽略location匹配，但是仍然通过location和pathname进行路径修改，可以用于相同路径不同的query、headers等分别处理 */
+    match?: (url: string, ctx: APIContext) => boolean;
     /** 代理服务的origin，形如: http://127.0.0.1:3000 */
     origin: string | [string, ...string[]] | {(url: string, req: APIContext): string};
     /** 代理服务的pathname，形如: /api，用于原始请求pathname的replacer */
@@ -41,7 +42,8 @@ export interface ProxyItem {
 }
 
 export interface ProxyItemRendered extends ProxyItem {
+    /** 处理后的 match */
+    match: (url: string, ctx: APIContext) => boolean;
     /** url 均以 / 开头 */
-    match: (url: string, search?: string) => boolean;
     getOrigin: (url: string, ctx: APIContext) => string;
 }
