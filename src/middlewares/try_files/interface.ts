@@ -8,6 +8,8 @@ import { APIContext } from "../../interface";
  */
 export type TryFilesItem = {
     test: RegExp,
+    /** 如果配置了match, 优先判断 match, 否则使用test进行匹配 */
+    match?: (pathname: string, ctx: APIContext) => boolean,
     replacer?: string | { (m: string, ...args: any[]): string },
 } & (
     { index: string | { (pathname: string, ctx: APIContext): string } }

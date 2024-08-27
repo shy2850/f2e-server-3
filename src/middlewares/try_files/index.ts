@@ -43,7 +43,11 @@ const middleware_tryfiles: MiddlewareCreater = {
                 }
                 for (let i = 0; i < tries.length; i++) {
                     const item = tries[i]
-                    if (item.test.test(pathname)) {
+                    const isNotMatch = item.match && !item.match(pathname, ctx)
+                    const isMatch = item.match && item.match(pathname, ctx) || item.test.test(pathname)
+                    if (isNotMatch) {
+                        continue
+                    } else if (isMatch) {
                         let p = pathname
                         // 为了通过ts检查，这里分开写
                         if (typeof item.replacer === 'string') {
