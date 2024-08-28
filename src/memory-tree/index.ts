@@ -19,9 +19,11 @@ export const createStore = function (options: Pick<MemoryTree.Options, 'onGet'|'
     const { onGet, namehash, watch } = options
     let o = {}
     const origin_map = new Map<string, MemoryTree.SetResult>()
+    const output_map = new Map<string, string>()
     const store: MemoryTree.Store = {
         ignores: new Set(),
         origin_map,
+        output_map,
         _get(pathname) {
             const arr = _.pathname_arr(pathname)
             return arr.length ? _.get(o, arr) : o
@@ -78,6 +80,7 @@ export const createStore = function (options: Pick<MemoryTree.Options, 'onGet'|'
             }
             result.updateTime = + new Date()
             origin_map.set(result.originPath, result)
+            output_map.set(_.pathname_fixer(result.outputPath), result.originPath)
             _.set(o, _.pathname_fixer(result.outputPath), result.data )
             if(!_.isPlainObject(result.data)) {
                 logger.debug(`save ${result.originPath} -> ${result.outputPath}`)

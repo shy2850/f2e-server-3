@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
-import { ConfigMode, createBuilder, createServer } from './index'
+import { createBuilder, createServer, ModeOptions } from './index'
 import { F2E_CONFIG, setConfigPath } from './utils/config'
-import logger from './utils/logger'
+import logger, { LogLevelOptions } from './utils/logger'
 import * as _ from './utils/misc'
 import path from 'node:path'
 import fs from 'node:fs'
@@ -38,14 +38,14 @@ program.command('build')
     .option('-c, --config <cfg_path>', '修改配置文件地址', F2E_CONFIG)
     .option('-r, --root <root>', '设置工作目录', process.cwd())
     .option('-o, --output <dest>', '设置输出目录', path.join(process.cwd(), 'output'))
-    .option('-l, --level <level>', '设置日志打印级别, 支持 DEBUG/INFO/WARN/ERROR,', 'INFO')
+    .option('-l, --level <level>', '设置日志打印级别, 支持 DEBUG/INFO/WARN/ERROR,', 'INFO', LogLevelOptions)
     .action(async (options) => {
         const { cfg_path, root, dest, level } = options
         if (cfg_path) {
             setConfigPath(cfg_path)
         }
         if (level) {
-            logger.setLevel(level as any)
+            logger.setLevel(level)
         }
         const beginTime = Date.now()
         createBuilder({ root, dest, mode: 'build' }).then(async () => {
@@ -59,17 +59,17 @@ program.command('start')
     .option('-c, --config <cfg_path>', '修改配置文件地址', F2E_CONFIG)
     .option('-r, --root <root>', '设置工作目录', process.cwd())
     .option('-p, --port <port>', '设置端口', 2850)
-    .option('-m, --mode <mode>', '设置模式, 支持 dev/build/prod', 'dev', [ 'dev', 'build', 'prod' ])
-    .option('-l, --level <level>', '设置日志打印级别, 支持 DEBUG/INFO/WARN/ERROR,', 'INFO', ['DEBUG', 'INFO', 'LOG', 'WARN', 'ERROR'])
+    .option('-m, --mode <mode>', '设置模式, 支持 dev/build/prod', 'prod', ModeOptions)
+    .option('-l, --level <level>', '设置日志打印级别, 支持 DEBUG/INFO/WARN/ERROR,', 'INFO', LogLevelOptions)
     .action(async (options) => {
         const { cfg_path, root, port, mode, level } = options
         if (cfg_path) {
             setConfigPath(cfg_path)
         }
         if(level) {
-            logger.setLevel(level as any)
+            logger.setLevel(level)
         }
-        createServer({ root, port, mode: mode as ConfigMode })
+        createServer({ root, port, mode: mode })
     })
 
 // 开始解析用户输入的命令

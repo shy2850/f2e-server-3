@@ -17,6 +17,8 @@ const LogTypeShow = {
     error: 'ERROR',
 }
 
+export const LogLevelOptions = ['DEBUG', 'INFO', 'LOG', 'WARN', 'ERROR', 'OFF'] as const
+
 const time_show_map: Record<number, string> = {}
 export class Logger {
     private _level: LogLevel

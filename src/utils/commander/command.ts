@@ -48,7 +48,7 @@ export class Command<Args extends object = {}> {
         return this
     }
     option <T extends `-${string}, --${string} <${string}>`, F = string> (
-        name_all: T, description?: string, defaultValue?: F, values?: F[]
+        name_all: T, description?: string, defaultValue?: F, values?: readonly F[]
     ): Command<Args & {[k in PickArgs<T>]: F}> {
         type R = PickArgs<T>
         const [short, name, arg ] = name_all.split(/[\s\t,]+/)
@@ -58,7 +58,7 @@ export class Command<Args extends object = {}> {
             argument: arg.slice(1, arg.length - 1) as R,
             description,
             defaultValue,
-            values,
+            values: values && Array.from(values) as F[],
         }
         const t = this as Command<Args & {[k in PickArgs<T>]: F}>
         t.options.push(o)

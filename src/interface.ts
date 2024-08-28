@@ -10,8 +10,10 @@ import { HttpHeaders } from './utils/resp';
 import { AuthConfig } from './middlewares/auth/interface';
 import type { RequestOptions } from 'node:https'
 import { PostCssConfig } from './middlewares/postcss/interface';
+import { AliasConfig } from './middlewares/alias/interface';
 
 export type ConfigMode = "dev" | "build" | "prod";
+export const ModeOptions = ["dev", "build", "prod"] as const;
 export interface APIContext {
     req: HttpRequest,
     resp: HttpResponse,
@@ -129,7 +131,7 @@ export interface ServerConfig {
      * 原始路径支持绝对路径和相对路径，以及http(s)协议URL
      * 只在资源构建之前加载一次, 配置不当，可能被其他构建结果覆盖
     */
-    alias?: false | {[out: string]: string | { url: string; options?: RequestOptions }}
+    alias?: false | AliasConfig;
     /** 支持postcss 以及 tailwindcss 配置 */
     postcss?: false | PostCssConfig;
 }

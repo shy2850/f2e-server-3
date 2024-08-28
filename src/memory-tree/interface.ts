@@ -14,6 +14,8 @@ export namespace MemoryTree {
         ignores: Set<string>
         /** 原始资源映射 */
         origin_map: Map<string, SetResult>
+        /** 结果资源路径映射原始资源路径 */
+        output_map: Map<string, string>
         /** 保存资源，同时处理路径变更 */
         save: {
             (result: SetResult): void

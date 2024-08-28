@@ -85,10 +85,11 @@ const middleware_livereload: MiddlewareCreater = {
         }, false)
         return {
             onRoute: route.execute,
-            onGet: async (pathname, html) => {
+            onGet: async (pathname, html, store) => {
                 /** 脚本注入 */
                 if (reg_inject.test(pathname) && html) {
-                    return html.toString() + inject_script.replaceAll('{{referer}}', pathname)
+                    const referer = store?.output_map.get(pathname) || pathname
+                    return html.toString() + inject_script.replaceAll('{{referer}}', referer)
                 }
             },
         }

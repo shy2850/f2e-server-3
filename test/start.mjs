@@ -1,23 +1,25 @@
 // @ts-check
-import { createServer, UserStore, createResponseHelper, logger, Command } from "../lib/index.js"
+import { createServer, UserStore, createResponseHelper, logger, Command, ModeOptions, LogLevelOptions } from "../lib/index.js"
 import { exit } from "node:process";
 import { server } from "./apis.mjs";
 import path from "node:path";
 import { marked } from "marked";
 
 const command = new Command('server')
-    .option('-m, --mode <mode>', 'server mode: dev, build or prod', 'prod', ['dev', 'build', 'prod'])
+    .option('-m, --mode <mode>', 'server mode: dev, build or prod', 'prod', ModeOptions)
     .option('-g, --gzip <gzip>', 'enable gzip', true)
-    .option('-l, --level <level>', 'log level: DEBUG, INFO, LOG, WARN, ERROR', 'ERROR', ['DEBUG', 'INFO', 'LOG', 'WARN', 'ERROR'])
+    .option('-l, --level <level>', 'log level: DEBUG, INFO, LOG, WARN, ERROR', 'ERROR', LogLevelOptions)
     .action(async (options) => {
         const { mode, gzip, level } = options
-        // @ts-ignore
         logger.setLevel(level)
         logger.debug('options:', options)
         let i = 0;
         const context = await createServer({
-            mode: mode === 'dev' || mode === 'build' ? mode : 'prod',
+            mode,
             gzip,
+            livereload: {
+                reg_inject: /\.(html|md)$/,
+            },
             ssl: {
                 passphrase: 'x509',
                 key_file_name: path.join(import.meta.dirname, './private.pem'),
