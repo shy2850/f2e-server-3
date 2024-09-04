@@ -53,7 +53,7 @@ export const createServer = async (options: F2EConfig) => {
     const memoryTree = createMemoryTree(mode === 'dev' ? {
         root, watch, namehash, dest,
         buildFilter, watchFilter, outputFilter, onGet, onSet, buildWatcher
-    } : { root }); // prod模式下，不加载任何中间件
+    } : { root, buildFilter }); // prod模式下，仅加载 buildFilter
     await onMemoryInit(memoryTree.store)
     await memoryTree.input("")
     await onMemoryLoad(memoryTree.store)

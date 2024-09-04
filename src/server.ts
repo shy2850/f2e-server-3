@@ -33,7 +33,7 @@ export const server_all = (conf: F2EConfigResult, events: Required<MiddlewareEve
     }
 
     return async (resp: HttpResponse, req: HttpRequest) => {
-        const location = new URL(req.getUrl() + '?' + (req.getQuery() || ''), `http://${req.getHeader('host')}`)
+        const location = new URL(req.getUrl() + '?' + (req.getQuery() || ''), `http://${req.getHeader('host') || `localhost:${conf.port}`}`)
         if (conf.host != '0.0.0.0') {
             if (location.hostname != conf.host) {
                 handleError(resp, 'Wrong Host!')
