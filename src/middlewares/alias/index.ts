@@ -21,7 +21,7 @@ const http_get = (url: string, options?: https.RequestOptions) => {
 
 const middleware_alias: MiddlewareCreater = {
     name: 'alias',
-    mode: ['dev', 'build', 'prod'],
+    mode: ['dev', 'build'],
     execute: (conf) => {
         const { alias } = conf;
         if (!alias) {

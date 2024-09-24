@@ -34,8 +34,9 @@ createServer({ mode: 'dev' })
 ```
 
 ## http 服务器
-f2e-server 基础功能为WEB服务器，支持使用 [uWebSockets.js](https://github.com/uNetworking/uWebSockets.js) 作为http服务器，如果未安装，则会自动降级为nodejs运行环境。
-作为WEB服务器，f2e-server 支持http服务器常用配置如下表：[ServerConfig](src/interface.ts#L32)
+f2e-server 基础功能为WEB服务器，支持使用 [uWebSockets.js](https://github.com/uNetworking/uWebSockets.js) 作为http服务器，如果未安装，则会自动降级为nodejs运行环境。  
+作为WEB服务器，f2e-server 支持http服务器常用配置如下表：[ServerConfig](src/interface.ts#L32)  
+
 | 参数 | 类型 | 默认值 | 说明 |
 | --- | --- | --- | --- |
 | root | string | 执行目录 | 服务器资源根目录 |
@@ -200,8 +201,9 @@ f2e-server 通过代理http(s)可以协助实现站点下载，参考配置 [Pro
         },
     ],
 }
-```
-## pipeline 构建流程
+```  
+
+## pipeline 构建流程  
 f2e-server 核心来自于[MiddlewareEvents](src/middlewares/interface.ts#L5)所有环节事件的定义、组织和执行，所有编译构建http请求处理工作均通过事件处理构建完成。**整体流程**包括：
 1. 开启服务器
 2. 开启编译流程
@@ -322,7 +324,9 @@ import { UserStore } from "f2e-server3";
 
 
 ## alias 路径别名
-alias 路径别名配置，参考：[alias](src/middlewares/alias/interface.ts)
+alias 路径别名配置，参考：[alias](src/middlewares/alias/interface.ts)  
+开启条件： mode = `dev` or `prod`  
+
 ```js
 {
     alias: {
@@ -340,8 +344,7 @@ alias 路径别名配置，参考：[alias](src/middlewares/alias/interface.ts)
     }
 }
 ```
-> 注1：alias配置的资源，在构建时，会直接输出，不会经过中间件处理。  
-> 注2：alias配置在 dev/build/prod 环境下均生效，需要自行处理判断，防止重复引入。 
+> 注1：alias配置的资源，在构建时，会直接输出，不会经过中间件处理。
 
 
 ## demos 示例
