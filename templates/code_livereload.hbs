@@ -1,5 +1,8 @@
 <script>
     (function () {
+        const error_show = document.createElement('div');
+        error_show.style.cssText = 'display:none;white-space:pre;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.8);color:#fff;z-index:999999;line-height:1.5;padding:100px;overflow:auto;';
+        document.body.appendChild(error_show);
         if(window.EventSource) {
             var expire
             /** @type {EventSource} */
@@ -11,11 +14,17 @@
                     /** @type {{ update: boolean; updateDeps: {origin:string; output:string; hash:string;}[] }} */
                     const info = JSON.parse(e.data);
                     expire = info.expire;
-                    if (info.update) {
-                        window.location.reload();
-                    }
+
+                    error_show.innerText = '';
+                    error_show.style.display = 'none';       
                     if (info.updateDeps) {
-                        info.updateDeps.forEach(function ({ origin, output, hash }) {
+                        for (let i = 0; i < info.updateDeps.length; i++) {
+                            const { origin, output, hash, error } = info.updateDeps[i];
+                            if (error) {
+                                error_show.innerText = error;
+                                error_show.style.display = 'block';
+                                return;
+                            }
                             const el = document.querySelector('[data-origin="' + origin + '"]');
                             if (el) {
                                 const _hash = el.getAttribute('data-hash');
@@ -42,7 +51,10 @@
                                     window.location.reload();
                                 }
                             }
-                        });
+                        }
+                    }
+                    if (info.update) {
+                        window.location.reload();
                     }
                 });
             }

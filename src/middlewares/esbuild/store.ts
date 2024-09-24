@@ -3,7 +3,7 @@ import { MemoryTree } from "../../memory-tree/interface"
 import { F2EConfigResult } from "../../interface"
 import * as path from 'node:path'
 import * as _ from '../../utils/misc'
-import { build_external_file, default_config, generate_banner_code, generate_externals_code, generate_filename, generate_inject_code } from "./utils"
+import { build_external_file, default_config, generate_banner_code, generate_externals_code, generate_filename, generate_inject_code, getEntryPaths } from "./utils"
 import { logger } from "../../utils"
 
 export interface SaveParams {
@@ -82,6 +82,7 @@ export interface OriginInfo {
     index: number;
     with_libs: boolean;
     hot_modules: string[];
+    error?: any;
     rebuilds: Set<{(): Promise<void>}>;
 }
 export const origin_map = new Map<string, OriginInfo>()
@@ -202,22 +203,33 @@ export const watch_option = async ({
         }
     })
     const rebuild = async function rebuild () {
-        const result = await ctx.rebuild()
-        if (result?.metafile?.inputs) {
-            build_origin_map({
-                index,
-                inputs: result?.metafile?.inputs,
-                rebuild,
-                store,
-                with_libs,
-                hot_modules,
+        try {
+            const result = await ctx.rebuild()
+            if (result?.metafile?.inputs) {
+                build_origin_map({
+                    index,
+                    inputs: result?.metafile?.inputs,
+                    rebuild,
+                    store,
+                    with_libs,
+                    hot_modules,
+                })
+            }
+            logger.debug(
+                `[esbuild] ${JSON.stringify(option.entryPoints)} rebuild`,
+                // [...origin_map.keys()].filter(k => !k.includes('node_modules'))
+            )
+            await save({ store, result, conf })
+        } catch (error) {
+            getEntryPaths(option.entryPoints).forEach(originPath => {
+                store.save({
+                    error,
+                    originPath,
+                    data: undefined,
+                    outputPath: ''
+                })
             })
         }
-        logger.debug(
-            `[esbuild] ${JSON.stringify(option.entryPoints)} rebuild`,
-            // [...origin_map.keys()].filter(k => !k.includes('node_modules'))
-        )
-        await save({ store, result, conf })
     }
     const result = await ctx.rebuild()
     if (result?.metafile?.inputs) {

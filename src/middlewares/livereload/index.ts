@@ -55,6 +55,7 @@ const middleware_livereload: MiddlewareCreater = {
                     origin: string;
                     output: string;
                     hash?: string;
+                    error?: any;
                 }[] = []
 
                 let expire = updateTime
@@ -66,6 +67,7 @@ const middleware_livereload: MiddlewareCreater = {
                             origin: item.originPath,
                             output: item.outputPath,
                             hash: item.hash,
+                            error: item.error?.toString?.(),
                         })
                     }
                 }

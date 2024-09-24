@@ -4,6 +4,7 @@ import * as _ from '../../utils/misc'
 import { code_define, code_externals } from "../../utils/templates";
 import { VERSION } from "../../utils/engine";
 import { EsbuildConfig } from './interface';
+import { BuildOptions } from 'esbuild';
 
 export const default_config: Required<EsbuildConfig> = {
     esbuildrc: '.esbuildrc.js',
@@ -54,4 +55,22 @@ export const build_external_file = ({ filename, conf, modules, index }: BuildExt
     } = conf
     const js_code = generate_externals_code(inject_global_name, modules, index)
     write_cache_file(cache_root, filename, js_code)
+}
+
+export const getEntryPaths = (entryPoints: BuildOptions['entryPoints']) => {
+    const paths: string[] = []
+    if (Array.isArray(entryPoints)) {
+        for (const entry of entryPoints) {
+            if (typeof entry === 'string') {
+                paths.push(entry)
+            } else {
+                paths.push(entry.in)
+            }
+        }
+    } else if (entryPoints) {
+        Object.values(entryPoints).forEach(item => {
+            paths.push(item)
+        })
+    }
+    return paths
 }

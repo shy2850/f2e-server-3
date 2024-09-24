@@ -72,6 +72,8 @@ export namespace MemoryTree {
         updateTime?: number;
         /** 依赖的编译资源路径列表 */
         deps?: string[];
+        /** 构建错误 */
+        error?: any;
     }
     /** 构建配置 */
     export interface Options extends Events {

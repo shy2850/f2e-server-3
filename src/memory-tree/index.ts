@@ -79,9 +79,16 @@ export const createStore = function (options: Pick<MemoryTree.Options, 'onGet'|'
                 }
             }
             result.updateTime = + new Date()
+            if (result.error) {
+                logger.error(`${result.originPath} -> ${result.outputPath}`, result.error)
+                origin_map.set(result.originPath, result)
+                return
+            }
             origin_map.set(result.originPath, result)
-            output_map.set(_.pathname_fixer(result.outputPath), result.originPath)
-            _.set(o, _.pathname_fixer(result.outputPath), result.data )
+            if (result.originPath) {
+                output_map.set(_.pathname_fixer(result.outputPath), result.originPath)
+                _.set(o, _.pathname_fixer(result.outputPath), result.data )
+            }
             if(!_.isPlainObject(result.data)) {
                 logger.debug(`save ${result.originPath} -> ${result.outputPath}`)
             }
