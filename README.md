@@ -7,7 +7,7 @@
 ## 快速开始
 快速启动一个静态服务器
 ```bash
-npm install f2e-server-3 --save-dev
+npm install f2e-server3 --save-dev
 ```
 创建启动文件 start.mjs
 ```js
