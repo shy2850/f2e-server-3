@@ -1,4 +1,4 @@
-# f2e-server-3
+# f2e-server3
 
 ## 介绍
 前端服务器[f2e-server](https://gitee.com/f2e-server/f2e-server-3)是基于node.js(bunjs 或 uWebSockets.js) 开发的HTTP服务器。
@@ -7,7 +7,7 @@
 ## 快速开始
 快速启动一个静态服务器
 ```bash
-npm install f2e-server-3 --save-dev
+npm install f2e-server3 --save-dev
 ```
 创建启动文件 start.mjs
 ```js
