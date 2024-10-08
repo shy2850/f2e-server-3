@@ -1,5 +1,5 @@
 export namespace MemoryTree {
-    export type DataBuffer = Buffer | string | object | undefined
+    export type DataBuffer = NodeJS.ArrayBufferView | string | object | undefined
     export interface Build {
         (pathname: string): Promise<void>
     }

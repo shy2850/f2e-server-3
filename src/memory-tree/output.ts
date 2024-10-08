@@ -4,6 +4,7 @@ import fs from "node:fs"
 import * as _ from "../utils/misc";
 import logger from "../utils/logger";
 import { writeFile } from "node:fs/promises";
+import { isArrayBufferView } from "node:util/types";
 
 
 export const outputProvider: MemoryTree.BuildProvider = (options, store) => {
@@ -19,7 +20,7 @@ export const outputProvider: MemoryTree.BuildProvider = (options, store) => {
                     return
                 }
                 const absolutePathname = path.join(dest, pathname)
-                if (typeof data === "string" || Buffer.isBuffer(data)) {
+                if (typeof data === "string" || isArrayBufferView(data)) {
                     try {
                         await writeFile(absolutePathname, data)
                     } catch (e) {

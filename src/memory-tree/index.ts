@@ -4,9 +4,9 @@ import { defaultOptions } from './defaults'
 import { inputProvider, beginWatch } from "./input"
 import { outputProvider } from "./output"
 import path from 'node:path'
-import url from 'node:url'
 import { createHash } from "node:crypto"
 import logger from "../utils/logger"
+import { isArrayBufferView } from "node:util/types"
 
 export * from "./interface"
 export * from "./defaults"
@@ -54,7 +54,7 @@ export const createStore = function (options: Pick<MemoryTree.Options, 'onGet'|'
         },
         save(result) {
             // outputPath 需要携带根路径 /
-            if (namehash && (Buffer.isBuffer(result.data) || typeof result.data === 'string')) {
+            if (namehash && (isArrayBufferView(result.data) || typeof result.data === 'string')) {
                 const hash = createHash('md5').update(result.data).digest('hex').slice(0, 8)
                 result.hash = hash
                 if (namehash.replacer) {

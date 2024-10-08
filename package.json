@@ -1,6 +1,6 @@
 {
   "name": "f2e-server3",
-  "version": "1.6.19-alpha",
+  "version": "1.6.20-alpha",
   "description": "f2e-server 3.0",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
@@ -33,7 +33,7 @@
   "devDependencies": {
     "@types/bun": "^1.1.0",
     "@types/less": "^3.0.6",
-    "@types/node": "^20.12.7",
+    "@types/node": "^22.7.5",
     "@types/react": "^18.2.79",
     "@types/react-dom": "^18.2.25",
     "antd": "^5.16.4",

@@ -1,3 +1,4 @@
+import { isArrayBufferView } from "node:util/types";
 import logger from "../utils/logger";
 import { MemoryTree } from "./interface";
 
@@ -12,7 +13,13 @@ const DefaultBuildFilter = (path: string, size = 0) => {
     return DefaultWatchFilter(path);
 };
 const DefaultOutputFilter = (path: string, data: MemoryTree.DataBuffer) => {
-    return DefaultBuildFilter(path, Buffer.isBuffer(data) ? data.length : 0);
+    if (typeof data === 'string') {
+        return DefaultBuildFilter(path, data.length);
+    }
+    if (!data) {
+        return false
+    }
+    return DefaultBuildFilter(path, isArrayBufferView(data) ? data.byteLength : 0);
 };
 /** 默认监听文件变化打印日志 */
 const DefaultWatcher = (path: string, event: string) => {
