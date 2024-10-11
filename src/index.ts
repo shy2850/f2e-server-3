@@ -21,7 +21,7 @@ export const createBuilder = async (options: F2EConfig) => {
     const beginTime = Date.now()
     const conf = getConfigResult(options)
     const { root, watch, namehash, dest } = conf
-    const events = getConfigEvents(options)
+    const events = await getConfigEvents(options)
     const { onMemoryInit, onMemoryLoad, buildFilter, watchFilter, outputFilter, onGet, onSet, buildWatcher } = events
     const memoryTree = createMemoryTree({
         root, dest: dest, watch, namehash,
@@ -48,7 +48,7 @@ export const createServer = async (options: F2EConfig) => {
         return createBuilder(options)
     }
 
-    const events = getConfigEvents(options)
+    const events = await getConfigEvents(options)
     const { onMemoryLoad, onMemoryInit, buildFilter, watchFilter, outputFilter, onGet, onSet, buildWatcher } = events
     const memoryTree = createMemoryTree(mode === 'dev' ? {
         root, watch, namehash, dest,

@@ -3,6 +3,7 @@ import path from "node:path"
 import fs from "node:fs/promises"
 import * as _ from "../utils/misc";
 import logger from "../utils/logger";
+import { dynamicImport, ENGINE_TYPE } from "../utils";
 import { exit } from "node:process";
 
 export const inputProvider: MemoryTree.BuildProvider = (options, store) => {
@@ -42,18 +43,22 @@ export const inputProvider: MemoryTree.BuildProvider = (options, store) => {
     }
 }
 
-export const beginWatch = (options: MemoryTree.Options, store: MemoryTree.Store, build: MemoryTree.Build) => () => {
+export const beginWatch = (options: MemoryTree.Options, store: MemoryTree.Store, build: MemoryTree.Build) => async () => {
     const { buildWatcher, watch, watch_timeout = 100, watchFilter, root } = options
     if (watch && watchFilter) {
         let chokidar: typeof import('chokidar') | undefined = undefined
-        try {
-            chokidar = require('chokidar')
-        } catch (e) {
-            if (process.platform === 'win32') {
-                logger.debug('chokidar 未安装, 使用 fs.watch 监听文件变化')
-            } else {
-                logger.error('chokidar 未安装, 请安装: `npm i chokidar -D`')
-                exit(1)
+        if (ENGINE_TYPE === 'deno') {
+            logger.debug(`Deno 环境下 chokidar 不可用, 使用 Deno.watchFs 监听文件变化`)
+        } else {
+            try {
+                chokidar = await dynamicImport('chokidar')
+            } catch (e) {
+                if (process.platform === 'win32') {
+                    logger.debug('chokidar 未安装, 使用 fs.watch 监听文件变化')
+                } else {
+                    logger.error('chokidar 未安装, 请安装: `npm i chokidar -D`')
+                    exit(1)
+                }
             }
         }
 
@@ -94,38 +99,56 @@ export const beginWatch = (options: MemoryTree.Options, store: MemoryTree.Store,
                 }
             })
         } else {
-            ;(async () => {
-                const ac = new AbortController();
-                try {
-                    const watcher = fs.watch(root, {
-                        signal: ac.signal,
-                        recursive: true,
-                        persistent: true,
-                    });
-                    for await (const info of watcher) {
-                        switch (info.eventType) {
-                            case 'rename':
-                                break;
-                            case 'change':
-                                if (info.filename) {
-                                    const pathname = _.pathname_fixer(info.filename)
-                                    if (watchFilter(pathname)) {
-                                        watcher_map.set(pathname, {
-                                            ready: false,
-                                            excute: async () => {
-                                                await build(pathname)
-                                                buildWatcher && buildWatcher(pathname, info.eventType, build, store)
-                                            }
-                                        })
-                                    }
-                                }
-                                break;
-                        }
+            const doWatcher = async (filename: string, eventType: string) => {
+                if (filename) {
+                    const pathname = _.pathname_fixer(filename)
+                    if (watchFilter(pathname)) {
+                        watcher_map.set(pathname, {
+                            ready: false,
+                            excute: async () => {
+                                await build(pathname)
+                                buildWatcher && buildWatcher(pathname, eventType, build, store)
+                            }
+                        })
                     }
-                } catch (err) {
-                    logger.error(err)
                 }
-            })();
+            }
+            switch (ENGINE_TYPE) {
+                case 'deno':
+                    (async () => {
+                        try {
+                            const watcher = Deno.watchFs(root, { recursive: true });
+                            for await (const info of watcher) {
+                                if (info.kind === 'modify') {
+                                    info.paths.forEach(p => doWatcher(path.relative(root, p), info.kind))
+                                }
+                            }
+                        } catch (err) {
+                            logger.error(err)
+                        }
+                    })();
+                    break;
+                default:
+                    (async () => {
+                        try {
+                            const watcher = fs.watch(root, {
+                                recursive: true,
+                                persistent: true,
+                            });
+                            for await (const info of watcher) {
+                                switch (info.eventType) {
+                                    case 'rename':
+                                        break;
+                                    case 'change':
+                                        info.filename && doWatcher(info.filename, info.eventType)
+                                        break;
+                                }
+                            }
+                        } catch (err) {
+                            logger.error(err)
+                        }
+                    })();
+            }
         }
     } else {
         logger.error('watch 需要同时配置 watchFilter')

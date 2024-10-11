@@ -5,16 +5,16 @@ import { exit } from "node:process";
 import * as path from 'node:path'
 import * as fs from 'node:fs'
 import logger from "../../utils/logger";
+import { dynamicImport } from "../../utils";
 
 const middleware_less: MiddlewareCreater = {
     name: 'less',
     mode: ['dev', 'build'],
-    execute: (conf) => {
+    execute: async (conf) => {
         if (!conf.less) {
             return
         }
         const { entryPoints = [], buildOptions = {} } = conf.less
-        const less: typeof import('less') = require('less')
         const entry_map = new Map<string, string>(entryPoints.map(p => {
             if (typeof p === 'string') {
                 return [_.pathname_fixer(p), _.pathname_fixer(p.replace(/\.less$/, '.css'))]
@@ -23,7 +23,7 @@ const middleware_less: MiddlewareCreater = {
         }))
     
         const deps_map = new Map<string, string>()
-    
+        const less: typeof import('less') = await dynamicImport('less')
         const build = async function (origin: string, store: MemoryTree.Store) {
             const output = entry_map.get(origin)
             if (!output) {

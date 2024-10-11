@@ -4,7 +4,7 @@ import { F2EConfigResult } from "../../interface"
 import * as path from 'node:path'
 import * as _ from '../../utils/misc'
 import { build_external_file, default_config, generate_banner_code, generate_externals_code, generate_filename, generate_inject_code, getEntryPaths } from "./utils"
-import { logger } from "../../utils"
+import { dynamicImport, logger } from "../../utils"
 
 export interface SaveParams {
     store: MemoryTree.Store
@@ -68,7 +68,7 @@ export const external_build = async function ({
         modules: external,
         index,
     })
-    const builder: typeof import('esbuild') = require('esbuild')
+    const builder: typeof import('esbuild') = await dynamicImport('esbuild')
     const result = await builder.build({
         ..._option,
         entryPoints: [cache_root + '/' + filename],
@@ -143,7 +143,7 @@ export const build_option = async ({
         ..._option,
         minify: mode === 'build',
     }
-    const builder: typeof import('esbuild') = require('esbuild')
+    const builder: typeof import('esbuild') = await dynamicImport('esbuild')
     const with_libs = build_external && option.format === 'iife' && (!!option.external && option.external?.length > 0)
 
     if (with_libs) {
@@ -189,7 +189,7 @@ export const watch_option = async ({
         ..._option,
         minify: mode === 'build',
     }
-    const builder: typeof import('esbuild') = require('esbuild')
+    const builder: typeof import('esbuild') = await dynamicImport('esbuild')
     const with_libs = build_external && option.format === 'iife' && (!!option.external && option.external?.length > 0)
     if (with_libs) {
         await external_build({conf, store, option, index})

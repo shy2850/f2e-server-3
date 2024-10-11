@@ -36,7 +36,8 @@ export interface MiddlewareCreater {
     /**
      * 执行器，返回需要各环节操作的事件
      */
-    execute: {(conf: F2EConfigResult): MiddlewareEvents | undefined};
+    execute: {(conf: F2EConfigResult): MiddlewareEvents | undefined | Promise<MiddlewareEvents | undefined>};
+
 }
 
 export interface MiddlewareReference {

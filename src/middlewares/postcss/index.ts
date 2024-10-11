@@ -3,28 +3,28 @@ import path from 'node:path'
 import { MiddlewareCreater } from "../interface";
 import { MemoryTree } from "../../memory-tree";
 import * as _ from '../../utils/misc'
-import { logger } from '../../utils';
+import { dynamicImport, logger } from '../../utils';
 import { exit } from 'node:process';
 
 const middleware_postcss: MiddlewareCreater = {
     mode: ["dev", "build"],
     name: "postcss",
-    execute: (conf) => {
+    execute: async (conf) => {
         if (!conf.postcss) {
             return
         }
-        const postcss: typeof import('postcss') = require('postcss')
+        const postcss: typeof import('postcss') = await dynamicImport('postcss')
         const processer = postcss()
         const { entryPoints, plugins = [], tailwindConfig = 'tailwind.config.js', processOptions = {} } = conf.postcss;
         let match_content: string[] = [];
         if (typeof tailwindConfig === 'object' ) {
-            const tailwind: typeof import('tailwindcss') = require('tailwindcss');
+            const tailwind: typeof import('tailwindcss') = await dynamicImport('tailwindcss');
             plugins.push( tailwind(tailwindConfig) )
             match_content = tailwindConfig.content
         } else {
             const tailwindPath = path.join(process.cwd(), tailwindConfig)
             if (fs.existsSync(tailwindPath)) {
-                const tailwind: typeof import('tailwindcss') = require('tailwindcss');
+                const tailwind: typeof import('tailwindcss') = await dynamicImport('tailwindcss');
                 plugins.push( tailwind(tailwindConfig) )
                 match_content = require(tailwindPath).content
             }

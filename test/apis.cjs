@@ -1,5 +1,5 @@
 // @ts-check
-import { queryparams, Route, createAuthHelper } from "../lib/index.js";
+const { queryparams, Route, createAuthHelper } = require("../lib/index.js");
 
 /**
  * @type {import("../lib/index.js").ServerAPI}
@@ -16,7 +16,7 @@ const server_time = async (body, ctx) => {
 /**
  * @type {import("../lib/index.js").MiddlewareCreater}
  */
-export const server = {
+exports.server = {
     name: 'base_app',
     mode: ['dev', 'prod'],
     execute: (conf) => {

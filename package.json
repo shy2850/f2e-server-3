@@ -1,6 +1,6 @@
 {
   "name": "f2e-server3",
-  "version": "1.6.20-alpha",
+  "version": "1.7.0-alpha",
   "description": "f2e-server 3.0",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
@@ -15,10 +15,11 @@
   },
   "scripts": {
     "tsc": "tsc -p tsconfig.lib.json",
-    "test": "npm run tsc && node ./test/start.mjs -m dev -l DEBUG",
-    "test:bun": "bun ./test/start.mjs -m dev -l DEBUG",
-    "build": "npm run tsc && node ./test/start.mjs -m build -l DEBUG",
-    "build:bun": "node ./test/start.mjs -m build -l DEBUG",
+    "test": "npm run tsc && node ./test/start.cjs",
+    "test:bun": "npm run tsc && bun ./test/start.cjs",
+    "test:deno": "npm run tsc && deno run --allow-env --allow-read --allow-write --allow-net --allow-run --allow-sys ./test/start.cjs",
+    "build": "npm run tsc && node ./test/start.cjs -m build",
+    "build:bun": "npm run tsc && node ./test/start.cjs",
     "prepublishOnly": "npm run tsc"
   },
   "repository": {
@@ -32,6 +33,7 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "@types/bun": "^1.1.0",
+    "@types/deno": "^2.0.0",
     "@types/less": "^3.0.6",
     "@types/node": "^22.7.5",
     "@types/react": "^18.2.79",

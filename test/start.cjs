@@ -1,14 +1,14 @@
 // @ts-check
-import { createServer, UserStore, createResponseHelper, logger, Command, ModeOptions, LogLevelOptions } from "../lib/index.js"
-import { exit } from "node:process";
-import { server } from "./apis.mjs";
-import path from "node:path";
-import { marked } from "marked";
+const { createServer, UserStore, createResponseHelper, logger, Command, ModeOptions, LogLevelOptions } = require("../lib/index.js");
+const { exit } = require("node:process");
+const { server } = require("./apis.cjs");
+const path = require("node:path")
+const { marked } = require("marked");
 
 const command = new Command('server')
-    .option('-m, --mode <mode>', 'server mode: dev, build or prod', 'prod', ModeOptions)
+    .option('-m, --mode <mode>', 'server mode: dev, build or prod', 'dev', ModeOptions)
     .option('-g, --gzip <gzip>', 'enable gzip', true)
-    .option('-l, --level <level>', 'log level: DEBUG, INFO, LOG, WARN, ERROR', 'ERROR', LogLevelOptions)
+    .option('-l, --level <level>', 'log level: DEBUG, INFO, LOG, WARN, ERROR', 'DEBUG', LogLevelOptions)
     .action(async (options) => {
         const { mode, gzip, level } = options
         logger.setLevel(level)
@@ -20,11 +20,11 @@ const command = new Command('server')
             livereload: {
                 reg_inject: /\.(html|md)$/,
             },
-            ssl: {
-                passphrase: 'x509',
-                key_file_name: path.join(import.meta.dirname, './private.pem'),
-                cert_file_name: path.join(import.meta.dirname, './csr.crt'),
-            },
+            // ssl: {
+            //     passphrase: 'x509',
+            //     key_file_name: path.join(import.meta.dirname, './private.pem'),
+            //     cert_file_name: path.join(import.meta.dirname, './csr.crt'),
+            // },
             less: {
                 entryPoints: ['test/app/app.less'],
             },

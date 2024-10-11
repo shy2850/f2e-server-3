@@ -13,7 +13,7 @@ import middleware_postcss from './postcss';
 import middleware_auth from './auth';
 import middleware_alias from './alias';
 
-export const combineMiddleware = (conf: F2EConfigResult, middlewares: (MiddlewareCreater | MiddlewareReference)[]): Required<MiddlewareEvents> => {
+export const combineMiddleware = async (conf: F2EConfigResult, middlewares: (MiddlewareCreater | MiddlewareReference)[]): Promise<Required<MiddlewareEvents>>  => {
     const onMemoryLoads: Required<MiddlewareEvents>["onMemoryLoad"][] = []
     const onMemoryInits: Required<MiddlewareEvents>["onMemoryInit"][] = []
     const beforeRoutes: Required<MiddlewareEvents>["beforeRoute"][] = []
@@ -57,7 +57,7 @@ export const combineMiddleware = (conf: F2EConfigResult, middlewares: (Middlewar
         if (!middle) continue;
         const { mode = ['dev', 'build', 'prod'], name = 'system', execute } = middle
         if (mode.includes(conf.mode)) {
-            const result = execute(conf)
+            const result = await execute(conf)
             if (!result) continue;
             const { onMemoryInit, onMemoryLoad, beforeRoute, onRoute, buildWatcher, onSet, onGet, buildFilter, watchFilter, outputFilter } = result
             onMemoryInit && onMemoryInits.push(onMemoryInit)

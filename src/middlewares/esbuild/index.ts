@@ -8,6 +8,7 @@ import { MemoryTree } from "../../memory-tree/interface";
 import type { BuildOptions } from 'esbuild'
 import { build_option, origin_map, watch_option } from './store'
 import { build_external_file, default_config, generate_filename } from "./utils";
+import { dynamicImport } from "../../utils";
 
 const middleware_esbuild: MiddlewareCreater = {
     name: 'esbuild',
@@ -39,13 +40,12 @@ const middleware_esbuild: MiddlewareCreater = {
             exit(1)
         }
     
-        try {
-            // 检查esbuild依赖
-            require('esbuild')
-        } catch (e) {
+        // 检查esbuild依赖
+        dynamicImport('esbuild').catch(e => {
             logger.error(`[esbuild] esbuild not found, esbuild middleware disabled`)
             exit(1)
-        }
+        })
+
         const esbuildOptions: (BuildOptions & { hot_modules?: string[] })[] = [].concat(require(conf_path))
         const build = async function (store: MemoryTree.Store) {
             for (let i = 0; i < esbuildOptions.length; i++) {
