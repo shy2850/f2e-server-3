@@ -3,7 +3,6 @@ import { queryparams, pathname_fixer } from '../utils/misc'
 import { APIContext, F2EConfigResult } from '../interface'
 import { createResponseHelper } from '../utils/resp'
 import { logger } from '../utils'
-export * from './interface'
 
 export class Route implements IRoute {
     routes: RouteItem[] = []

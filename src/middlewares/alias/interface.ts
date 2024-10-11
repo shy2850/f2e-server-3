@@ -1,4 +1,4 @@
-import { RequestOptions } from "http";
+import { RequestOptions } from "node:http";
 
 /**
  * 索引资源配置

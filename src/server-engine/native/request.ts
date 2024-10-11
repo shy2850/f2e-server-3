@@ -1,4 +1,4 @@
-import { IncomingMessage } from 'http'
+import { IncomingMessage } from 'node:http'
 import { HttpRequest, RecognizedString } from 'uWebSockets.js'
 
 export class NativeRequest implements HttpRequest {

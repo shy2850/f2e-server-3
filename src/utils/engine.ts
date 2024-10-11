@@ -1,9 +1,7 @@
 import * as UWS from 'uWebSockets.js'
 import logger from './logger'
-import meta from '../../package.json'
-import { exit } from 'node:process'
-import path from 'node:path'
-import fs from 'node:fs'
+
+const meta = require('../../package.json')
 
 /** 是否bunjs环境？ */
 const isBun = 'bun' in process.versions

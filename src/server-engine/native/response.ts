@@ -1,4 +1,4 @@
-import { IncomingMessage, ServerResponse } from 'http'
+import { IncomingMessage, ServerResponse } from 'node:http'
 import { HttpResponse, RecognizedString, us_socket_context_t } from 'uWebSockets.js'
 
 export class NativeResponse implements HttpResponse {
