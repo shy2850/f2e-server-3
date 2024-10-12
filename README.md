@@ -16,7 +16,8 @@ import { createServer, logger } from 'f2e-server3'
 logger.setLevel('DEBUG')
 createServer({})
 ```
-执行 `node start.mjs` 或者 `bun start.mjs`
+执行 `node start.mjs` 或者 `bun start.mjs`  
+或者 `deno --allow-env --allow-read --allow-write --allow-net --allow-run --allow-sys start.mjs`
 ```sh
 $ node start.mjs
 Server start on http://localhost:2850
