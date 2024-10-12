@@ -42,27 +42,34 @@ const middleware_postcss: MiddlewareCreater = {
 
         const build = async function (store: MemoryTree.Store) {
             const data = fs.readFileSync(realPath, 'utf-8')
-            const result = await processer.process(data, {
-                from: origin, map: { inline: false },
-                ...processOptions,
-            })
-            
-            if (result.css) {
-                store.save({
-                    originPath: origin,
-                    outputPath: output,
-                    data: result.css + '',
+            try {
+                const result = await processer.process(data, {
+                    from: origin, map: { inline: false },
+                    ...processOptions,
                 })
-            }
-
-            if (result.map) {
-                const map = result.map.toString()
-                const mapPath = output.replace(/\.css$/, '.css.map')
-                store.save({
-                    originPath: mapPath,
-                    outputPath: mapPath,
-                    data: map + '',
-                })
+                
+                if (result.css) {
+                    store.save({
+                        originPath: origin,
+                        outputPath: output,
+                        data: result.css + '',
+                    })
+                }
+    
+                if (result.map) {
+                    const map = result.map.toString()
+                    const mapPath = output.replace(/\.css$/, '.css.map')
+                    store.save({
+                        originPath: mapPath,
+                        outputPath: mapPath,
+                        data: map + '',
+                    })
+                }
+            } catch (e) {
+                logger.error(e)
+                if (conf.mode === 'build') {
+                    exit(1)
+                }
             }
         }
 
