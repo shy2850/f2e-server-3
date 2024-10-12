@@ -1,7 +1,7 @@
 # f2e-server3
 
 ## 介绍
-前端服务器[f2e-server](https://gitee.com/f2e-server/f2e-server-3)是基于node.js(bunjs 或 uWebSockets.js) 开发的HTTP服务器。
+前端服务器[f2e-server](https://gitee.com/f2e-server/f2e-server-3)是基于node.js(Bun、Deno 或 uWebSockets.js) 开发的HTTP服务器。
 集成了livereload 热更新、less编译、postcss编译、http(s)代理等常用前端开发工具, 同时还提供了简单的服务端开发框架工具，如：路由、鉴权、权限管理等。
 
 ## 快速开始
@@ -22,6 +22,7 @@ $ node start.mjs
 Server start on http://localhost:2850
 ```
 > 如果使用[uWebsockets.js](https://github.com/uNetworking/uWebSockets.js), 请从[github](https://github.com/uNetworking/uWebSockets.js/)安装，安装好后，重启即可。
+> 如果使用[Deno](https://deno.com) 或者 [Bun](https://bun.sh/), 请先安装
 
 ## mode 配置
 f2e-server 提供了三种运行模式，分别为：`prod`，`build` 和 `dev`。
@@ -55,7 +56,12 @@ f2e-server 基础功能为WEB服务器，支持使用 [uWebSockets.js](https://g
 
 
 ## livereload 热更新
-热更新在浏览器端通过 [EventSource](https://developer.mozilla.org/zh-CN/docs/Web/API/EventSource) 进行监听，在配置中添加`mode`为`"dev"`，即可开启热更新
+热更新在浏览器端通过 [EventSource](https://developer.mozilla.org/zh-CN/docs/Web/API/EventSource) 进行监听，开启条件：
+1. 在配置中添加`mode`为`"dev"`，或者 配置 `livereload: true` 开启。
+2. 在Deno环境下，使用Deno内置API进行文件更新的监听。
+3. 在windows环境下，默认使用 node内置api进行文件更新监听，如果安装了 `chokidar` 则使用 `chokidar` 进行文件更新监听。
+4. 在非windows环境下，需要使用 `chokidar` 进行文件更新的监听，需要前置安装。
+
 ```js
 createServer({ mode: 'dev' })
 ```
