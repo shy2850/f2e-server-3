@@ -26,14 +26,18 @@ export const getIpAddress = (resp: HttpResponse) => {
     return ''
 }
 export const getHttpHeaders = (req: HttpRequest | IncomingMessage) => {
-    const headers: HttpHeaders = {}
+    let headers: HttpHeaders = {}
     if (req instanceof IncomingMessage) {
-        for (let i = 0; i < req.rawHeaders.length; i += 2) {
-            headers[req.rawHeaders[i].trim().toLowerCase()] = req.rawHeaders[i + 1]
+        if (req.headers) {
+            headers = req.headers
+        } else {
+            for (let i = 0; i < req.rawHeaders.length; i += 2) {
+                headers[req.rawHeaders[i].trim().toLowerCase()] = req.rawHeaders[i + 1]
+            }
         }
-    } else {
+    } else if (req.forEach) {
         req.forEach((key, value) => {
-            headers[key.trim().toLowerCase()] = value.trim()
+            headers[key.trim().toLowerCase()] = (value || '').toString().trim()
         })
     }
     return headers

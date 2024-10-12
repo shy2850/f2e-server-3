@@ -63,10 +63,13 @@ const command = new Command('server')
             ],
             auth: {
                 redirect: true,
-                store: new UserStore(path.join(process.cwd(), '.f2e_cache/auth.db'), {
-                    username: 'admin',
-                    nickname: '管理员',
-                }),
+                store: new UserStore(path.join(process.cwd(), '.f2e_cache/auth.db')
+                // , {
+                //     username: 'admin',
+                //     nickname: '管理员',
+                // }
+                ),
+                // store: new UserStore(path.join(process.cwd(), '.f2e_cache/auth.db')),
             },
             postcss: {
                 entryPoints: './test/main.css',

@@ -121,7 +121,8 @@ const middleware_proxy: MiddlewareCreater = {
                     switch (ENGINE_TYPE) {
                         case "node":
                         case "bun":
-                            (req as NativeRequest).req.pipe(creq)
+                        case "deno":
+                            (req as NativeRequest).request.pipe(creq)
                             break;
                         case "uws":
                             resp.onData(function (data, finished) {

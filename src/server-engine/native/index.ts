@@ -5,7 +5,7 @@ import { NativeTemplatedApp } from './app';
 export const App = (): TemplatedApp => new NativeTemplatedApp()
 export const SSLApp = (options?: AppOptions): TemplatedApp => new NativeTemplatedApp(options)
 export const parseBody = async (req: HttpRequest, resp: HttpResponse) => {
-    const request = (req as NativeRequest).req
+    const request = (req as NativeRequest).request
     return new Promise<Buffer>(function (resolve, reject) {
         request.on('error', reject)
         const buffers: Buffer[] = []

@@ -2,16 +2,16 @@ import { IncomingMessage } from 'node:http'
 import { HttpRequest, RecognizedString } from 'uWebSockets.js'
 
 export class NativeRequest implements HttpRequest {
-    req: IncomingMessage
+    request: IncomingMessage
     location: URL
     searchParams: URLSearchParams
     constructor (req: IncomingMessage) {
-        this.req = req
+        this.request = req
         this.location = new URL(req.url || '/', 'http://localhost')
         this.searchParams = new URLSearchParams(this.location.search?.replace(/^[?]+/, ''))
     }
     getHeader(lowerCaseKey: RecognizedString): string {
-        return this.req.headers[lowerCaseKey.toString()]?.toString() || ''
+        return this.request.headers[lowerCaseKey.toString()]?.toString() || ''
     }
     getParameter(index: number): string {
         return [...this.searchParams][index]?.join('=')
@@ -23,7 +23,7 @@ export class NativeRequest implements HttpRequest {
         return this.getCaseSensitiveMethod().toLowerCase();
     }
     getCaseSensitiveMethod(): string {
-        return this.req.method || 'GET';
+        return this.request.method || 'GET';
     }
     getQuery(): string;
     getQuery(key: string): string | undefined;
@@ -35,7 +35,7 @@ export class NativeRequest implements HttpRequest {
         }
     }
     forEach(cb: (key: string, value: string) => void): void {
-        const headers = this.req.rawHeaders
+        const headers = this.request.rawHeaders
         for (let i = 0; i < headers.length; i += 2) {
             cb?.(headers[i], headers[i + 1])
         }
