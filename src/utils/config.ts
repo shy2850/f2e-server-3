@@ -48,6 +48,7 @@ export const getConfigResult = function (conf: F2EConfig = {}) {
         mimeTypes: conf.mimeTypes || {},
         dest: conf.dest || path.join(process.cwd(), './output'),
         range_size: conf.range_size || 1024 * 1024 * 10,
+        headers: conf.headers || {},
         page_404: conf.page_404 || page_404,
         page_50x: conf.page_50x || page_500,
         page_dir: conf.page_dir || page_dir,

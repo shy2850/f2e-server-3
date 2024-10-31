@@ -25,6 +25,10 @@ const command = new Command('server')
             //     key_file_name: path.join(import.meta.dirname, './private.pem'),
             //     cert_file_name: path.join(import.meta.dirname, './csr.crt'),
             // },
+            headers: {
+                'access-control-allow-origin': '*',
+                'access-control-allow-methods': 'GET, POST',
+            },
             less: {
                 entryPoints: ['test/app/app.less'],
             },

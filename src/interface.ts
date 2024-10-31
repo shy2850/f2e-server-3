@@ -8,7 +8,6 @@ import { EsbuildConfig } from './middlewares/esbuild/interface';
 import { LessConfig } from './middlewares/less/interface';
 import { HttpHeaders } from './utils/resp';
 import { AuthConfig } from './middlewares/auth/interface';
-import type { RequestOptions } from 'node:https'
 import { PostCssConfig } from './middlewares/postcss/interface';
 import { AliasConfig } from './middlewares/alias/interface';
 
@@ -78,6 +77,7 @@ export interface ServerConfig {
      * @default 1024 * 1024 * 10
      */
     range_size?: number;
+    headers?: HttpHeaders;
 
     /** 默认404页面 */
     page_404?: string;

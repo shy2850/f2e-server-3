@@ -50,6 +50,7 @@ f2e-server 基础功能为WEB服务器，支持使用 [uWebSockets.js](https://g
 | cache_filter | `(string, number) => boolean` | `(pathname) => !/\.html?$/.test(pathname)` | 过滤哪些资源响应缓存cache-control |
 | mimeTypes | `{ [key: string]: string }` | `{}` | 映射文件后缀名到指定MIME, 如:`{'less': 'text/css'}` |
 | range_size | number | `1024 * 1024 * 10` | 流数据分片大小，用于大文件下载，如：视频文件播放 |
+| headers | [HttpHeaders](src/utils/resp.ts#L13) | `{}` | 统一渲染的服务器响应头 |
 | page_404 | string | [page_404.hbs](templates/page_404.hbs) | 404页面模板 |
 | page_50x | string | [page_500.hbs](templates/page_500.hbs) | 500页面模板 |
 | page_dir | string | [page_dir.hbs](templates/page_dir.hbs) | 展示目录页面模板 |

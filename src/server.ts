@@ -46,6 +46,7 @@ export const server_all = (conf: F2EConfigResult, events: Required<MiddlewareEve
             req, resp, location, pathname,
             store: memory.store, method: req.getMethod() || 'get',
             headers,
+            responseHeaders: conf.headers || {},
         }
         let pathnameTemp = await beforeRoute(pathname, ctx)
         if (pathnameTemp === false) {

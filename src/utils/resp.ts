@@ -63,7 +63,10 @@ const gzipStore = new Map<string, {
     data: Buffer | Uint8Array;
 }>()
 
-export const commonWriteHeaders = (resp: HttpResponse, headers?: OutgoingHttpHeaders) => {
+export const commonWriteHeaders = (resp: HttpResponse, headers: OutgoingHttpHeaders = {}) => {
+    Object.assign(headers, {
+        'X-Powered-By': VERSION,
+    })
     for (const key in headers) {
         if (Object.prototype.hasOwnProperty.call(headers, key)) {
             const value = headers[key]
@@ -72,7 +75,6 @@ export const commonWriteHeaders = (resp: HttpResponse, headers?: OutgoingHttpHea
             }
         }
     }
-    resp.writeHeader('X-Powered-By', VERSION)
 }
 
 
