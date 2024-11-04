@@ -12,6 +12,7 @@ import middleware_less from './less';
 import middleware_postcss from './postcss';
 import middleware_auth from './auth';
 import middleware_alias from './alias';
+import middleware_include from './include';
 
 export const combineMiddleware = async (conf: F2EConfigResult, middlewares: (MiddlewareCreater | MiddlewareReference)[]): Promise<Required<MiddlewareEvents>>  => {
     const onMemoryLoads: Required<MiddlewareEvents>["onMemoryLoad"][] = []
@@ -26,6 +27,7 @@ export const combineMiddleware = async (conf: F2EConfigResult, middlewares: (Mid
     const outputFilters: Required<MiddlewareEvents>["outputFilter"][] = []
 
     /** 开始内置中间件加载 */
+    middlewares.push(middleware_include)
     middlewares.push(middleware_alias)
     middlewares.push(middleware_less)
     middlewares.push(middleware_postcss)

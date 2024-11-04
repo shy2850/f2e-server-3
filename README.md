@@ -354,6 +354,22 @@ alias 路径别名配置，参考：[alias](src/middlewares/alias/interface.ts)
 ```
 > 注1：alias配置的资源，在构建时，会直接输出，不会经过中间件处理。
 
+## include 文本包含
+include 文本包含配置，开启条件：
+- mode = `dev` or `build`
+- html 页面中 `<f2e:include src="./header.htm" />`
+
+```js
+{
+    include: {
+        // 配置入口文件路径
+        entryPoints: ['index.html'],
+        // 是否递归编译子包含的文件
+        recursive: true,
+    },
+}
+```
+> 注： 支持自定义include函数参考：[src/middlewares/include/index.ts](src/middlewares/include/index.ts#L10)
 
 ## demos 示例
 其他参考

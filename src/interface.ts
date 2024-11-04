@@ -10,6 +10,7 @@ import { HttpHeaders } from './utils/resp';
 import { AuthConfig } from './middlewares/auth/interface';
 import { PostCssConfig } from './middlewares/postcss/interface';
 import { AliasConfig } from './middlewares/alias/interface';
+import { IncludeConfig } from './middlewares/include/interface';
 
 export type ConfigMode = "dev" | "build" | "prod";
 export const ModeOptions = ["dev", "build", "prod"] as const;
@@ -134,6 +135,14 @@ export interface ServerConfig {
     alias?: false | AliasConfig;
     /** 支持postcss 以及 tailwindcss 配置 */
     postcss?: false | PostCssConfig;
+    /**
+     * 资源包含配置
+     * 需要指定 资源包含的入口文件
+     * 支持在HTML中的资源包含的类型：`<f2e:include file="header.htm"/>`
+     * 同时支持自定义在其他资源中包含
+     * @default false
+     */
+    include?: false | IncludeConfig;
 }
 export interface F2EConfig extends ServerConfig, Partial<MemoryTree.Options>, Partial<MiddlewareEvents> {
     /** 

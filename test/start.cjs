@@ -37,6 +37,10 @@ const command = new Command('server')
                 // 'highlight/highlight.css': 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css',
                 'highlight/monokai-sublime.css': 'node_modules/highlight.js/styles/monokai-sublime.css',
             },
+            include: {
+                entryPoints: ['test/app/pages/include.html'],
+                recursive: true,
+            },
             mimeTypes: {
                 'ts': 'text/plain',
                 'hbs': 'text/plain',

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试include页面</title>
+    <link rel="stylesheet" href="../../main.css">
+</head>
+<body>
+    <f2e:include src="./header.htm" />
+    <div class="container">
+        <f2e:include src="./sub.html" />
+    </div>
+    <h4>include page_dir</h4>
+    <textarea class="w-80 h-40">
+<f2e:include src="../../../templates/page_dir.hbs" />
+    </textarea>
+</body>
+</html>
