@@ -71,7 +71,7 @@ export class Route implements IRoute {
                 logger.error('onRoute Error:', pathname, e)
             }
         }
-        const item = this.match(pathname, body ? 'post' : 'get')
+        const item = this.match(pathname, ctx.method)
         if (item) {
             try {
                 switch (item.type || 'json') {

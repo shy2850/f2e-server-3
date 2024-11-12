@@ -260,6 +260,8 @@ f2e-server 根据以上 pipeline 构建流程提供中间件开发接口规范�
 ```
 
 ## route 服务端开发
+> ### 从 1.8.0 开始，支持内置默认的 Routes， 可以参考 [app.ts](./test/app.ts) 
+
 f2e-server 通过中间件开发方式，可以提供简单的服务端接口开发，只需要中间件定义支持的模式和返回 `onRoute` 函数，简单参考样例 [apis.mjs](./test/apis.mjs)
 ```js
 // @ts-check

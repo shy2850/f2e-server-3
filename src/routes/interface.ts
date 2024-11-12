@@ -6,9 +6,9 @@ type Execute = Required<MiddlewareEvents>['onRoute'] | Required<MiddlewareEvents
 export interface ServerAPI<T extends object = object, F = any, R extends object = object> {
     (body: null | T, ctx: APIContext & R ): F | Promise<F>
 }
-export interface RouteItem<T extends object = any, F = any> {
+export interface RouteItem<T extends object = any, F = any, R extends object = object> {
     path: string | RegExp
-    handler: ServerAPI<T, F>
+    handler: ServerAPI<T, F, R>
     method?: '*' | string
     /**
      * 响应类型

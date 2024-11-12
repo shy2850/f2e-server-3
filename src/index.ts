@@ -13,7 +13,8 @@ export * from "./utils"
 export * from './routes'
 export * from './memory-tree/interface'
 export * from './middlewares/interface'
-export * from './middlewares/auth/index'
+export * from './middlewares/auth'
+export * from './middlewares/routes'
 
 const { App, SSLApp } = engine
 

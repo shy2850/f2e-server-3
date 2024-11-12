@@ -13,6 +13,7 @@ import middleware_postcss from './postcss';
 import middleware_auth from './auth';
 import middleware_alias from './alias';
 import middleware_include from './include';
+import middleware_routes from './routes';
 
 export const combineMiddleware = async (conf: F2EConfigResult, middlewares: (MiddlewareCreater | MiddlewareReference)[]): Promise<Required<MiddlewareEvents>>  => {
     const onMemoryLoads: Required<MiddlewareEvents>["onMemoryLoad"][] = []
@@ -27,6 +28,8 @@ export const combineMiddleware = async (conf: F2EConfigResult, middlewares: (Mid
     const outputFilters: Required<MiddlewareEvents>["outputFilter"][] = []
 
     /** 开始内置中间件加载 */
+    middlewares.push(middleware_auth)
+    middlewares.push(middleware_routes)
     middlewares.push(middleware_include)
     middlewares.push(middleware_alias)
     middlewares.push(middleware_less)
@@ -37,7 +40,6 @@ export const combineMiddleware = async (conf: F2EConfigResult, middlewares: (Mid
     /** tryfiles 顺序需要在最后 */
     middlewares.push(middleware_tryfiles)
 
-    middlewares.unshift(middleware_auth)
     for (let i = 0; i < middlewares.length; i++) {
         const m = middlewares[i]
         const middle = 'execute' in m ? m : (function (m) {
