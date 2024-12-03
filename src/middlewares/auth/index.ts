@@ -51,7 +51,7 @@ const defaultConfig: Required<Omit<AuthConfig, 'store'>> = {
     login_page: page_layout.replace('{{body}}', page_login),
     white_list: [],
     record_ignores: ["[.](js|css|svg|ico|png|gif|jpe?g)$", "^(api|login|logout|server-sent-bit)"],
-    cookie: { name: 'f2e_auth', options: { maxAge: 60 * 60 * 24 * 7, httpOnly: true, secure: false, sameSite: 'strict' } },
+    cookie: { name: 'f2e_auth', options: { maxAge: 60 * 60 * 24 * 7, httpOnly: true, secure: false, sameSite: 'strict', path: '/' } },
     messages: {
         crsf_token_invalid: 'token不合法',
         crsf_token_not_found: 'token失效',
