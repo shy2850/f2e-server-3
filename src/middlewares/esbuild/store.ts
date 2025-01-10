@@ -187,7 +187,7 @@ export const watch_option = async ({
         metafile: true,
         sourcemap: true,
         ..._option,
-        minify: mode === 'build',
+        minify: _option.minify || mode === 'build',
     }
     const builder: typeof import('esbuild') = await dynamicImport('esbuild')
     const with_libs = build_external && option.format === 'iife' && (!!option.external && option.external?.length > 0)
