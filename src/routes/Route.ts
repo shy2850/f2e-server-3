@@ -3,6 +3,7 @@ import { queryparams, pathname_fixer } from '../utils/misc'
 import { APIContext, F2EConfigResult } from '../interface'
 import { createResponseHelper } from '../utils/resp'
 import { logger } from '../utils'
+import { Transform } from 'node:stream'
 
 export class Route implements IRoute {
     routes: RouteItem[] = []
@@ -75,6 +76,9 @@ export class Route implements IRoute {
         if (item) {
             try {
                 switch (item.type || 'json') {
+                    case 'none':
+                        await item.handler(data, ctx)
+                        break;
                     case 'json':
                         handleSuccess(ctx, '.json', JSON.stringify(await item.handler(data, ctx)))
                         break

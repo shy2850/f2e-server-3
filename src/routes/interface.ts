@@ -14,8 +14,9 @@ export interface RouteItem<T extends object = any, F = any, R extends object = o
      * 响应类型
      * @default 'json'
      * 除去默认类型外，还可以是自定义的响应类型，接口根据后缀返回对应的MIME类型字符串
+     * type === 'none' 将不会处理响应，需要自己处理
      */
-    type?: 'json' | 'jsonp' | 'sse' | 'raw'
+    type?: 'json' | 'jsonp' | 'sse' | 'raw' | 'none'
     /** 响应类型为raw时 表示资源后缀，根据后缀自动填充mime
      * @default 'json'
      */
