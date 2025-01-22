@@ -189,7 +189,7 @@ const middleware_auth: MiddlewareCreater = {
         }
         const route = new Route(conf, filter)
         route.on(login_path, async (body, ctx) => {
-            const { headers = {} } = ctx
+            const { headers = {}, responseHeaders = {} } = ctx
             const crsf_token = getCookie(cookie.name, headers.cookie as string)
             if (!crsf_token) {
                 return {
@@ -224,6 +224,11 @@ const middleware_auth: MiddlewareCreater = {
                 }
             }
             loginInfo.user = user
+            token_map.delete(crsf_token)
+            loginInfo.token = _.createSessionId()
+            token_map.set(loginInfo.token, loginInfo)
+            responseHeaders['Set-Cookie'] = createCookie({ ...cookie, value: loginInfo.token, })
+
             const login_clients = login_user_map.get(user.username) || []
             login_clients.push(loginInfo)
             login_user_map.set(user.username, login_clients)
