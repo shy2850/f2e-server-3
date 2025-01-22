@@ -155,13 +155,15 @@ const middleware_auth: MiddlewareCreater = {
             /** 登录页面直接跳过 */
             if (pathname === login_path && method.toUpperCase() === 'GET') {
                 responseHeaders['Set-Cookie'] = createCookie({ ...cookie, value: crsf_token, })
-                ctx.responseHeaders = responseHeaders
                 handleSuccess(ctx, '.html', _.template(login_page, {
                     title: '登录',
                     redirect: redirect === true ? (loginInfo.last_url || '/') : redirect,
                     crsf_token,
                 }))
                 return false
+            } else {
+                // 实际运行模式下,多请求公用判断，会影响其他响应的设置，需要清除 */
+                delete responseHeaders['Set-Cookie']
             }
             /** 白名单页面直接跳过 */
             if (white_list.length > 0 && white_list.some(p => new RegExp(p).test(pathname))) {
