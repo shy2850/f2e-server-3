@@ -5,7 +5,16 @@
 集成了livereload 热更新、less编译、postcss编译、http(s)代理等常用前端开发工具, 同时还提供了简单的服务端开发框架工具，如：路由、鉴权、权限管理等。
 
 ## 快速开始
-快速启动一个静态服务器
+从 `v1.9.0-alpha` 开始可以使用 `f2e3` 命令快速创建项目，使用 `npm` 或 `yarn` 安装。
+```bash
+npm install f2e-server3 -g
+f2e3 create my-app
+cd my-app
+npm install
+npm run dev
+```
+
+## 多环境支持
 ```bash
 npm install f2e-server3 --save-dev
 ```
