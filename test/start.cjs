@@ -4,6 +4,7 @@ const { exit } = require("node:process");
 const { server } = require("./apis.cjs");
 const path = require("node:path")
 const { marked } = require("marked");
+const pluginTailwindcss = require('@tailwindcss/postcss');
 
 const command = new Command('server')
     .option('-m, --mode <mode>', 'server mode: dev, build or prod', 'dev', ModeOptions)
@@ -48,6 +49,9 @@ const command = new Command('server')
             buildFilter: (pathname) => {
                 return /^(index|test($|\/index\.html|\/start)|README|package|$)/.test(pathname)
             },
+            watchFilter: (pathname) => {
+                return /^(index|test|README|package|$)/.test(pathname)
+            },
             onRoute: (pathname, {resp}) => {
                 if (/^src$/i.test(pathname)) {
                     resp.writeStatus('200 OK')
@@ -81,9 +85,11 @@ const command = new Command('server')
             },
             postcss: {
                 entryPoints: './test/main.css',
-                tailwindConfig: {
-                    content: ['./test/**/*.{html,ts,tsx}'],
-                },
+                plugins: [
+                    pluginTailwindcss({
+                        optimize: mode === 'build',
+                    }),
+                ],
             },
             middlewares: [
                 server,
