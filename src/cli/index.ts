@@ -1,36 +1,35 @@
 #!/usr/bin/env node
 
-import { createBuilder, createServer, ModeOptions } from './index'
-import { F2E_CONFIG, setConfigPath } from './utils/config'
-import logger, { LogLevelOptions } from './utils/logger'
-import * as _ from './utils/misc'
+import { createBuilder, createServer, ModeOptions } from '../index'
+import { F2E_CONFIG, setConfigPath } from '../utils/config'
+import logger, { LogLevelOptions } from '../utils/logger'
+import * as _ from '../utils/misc'
 import path from 'node:path'
-import fs from 'node:fs'
-import { Command } from './utils/commander'
+import { Command } from '../utils/commander'
+import { exec } from 'node:child_process'
+import { readFileSync, unlink, writeFileSync } from 'node:fs'
 
 const program = new Command('f2e3')
-program.version(require('../package.json').version);
+program.version(require('../../package.json').version);
 
 program
-    .command('conf')
-    .description(`生成 ${F2E_CONFIG} 配置文件模板`)
-    .action(() => {
-        const filepath = path.resolve(process.cwd(), F2E_CONFIG)
-        if (fs.existsSync(filepath)) {
-            console.log(`${F2E_CONFIG} 文件已存在`)
-        } else {
-            fs.writeFileSync(filepath, `// @ts-check
-/**
- * @type {import('f2e-server3').F2EConfig}
- */
-const conf = {
-    try_files: 'index.html',
-    buildFilter: (pathname) => /^(src|css|favicon|index)/.test(pathname),
-}
-module.exports = conf
-`)
-            console.log(`${F2E_CONFIG} 文件已生成`)
-        }
+    .command('create <appname>')
+    .description(`下载项目模版`)
+    .action((options) => {
+        const { appname } = options
+        exec(`git clone https://gitee.com/f2e-server/f2e-create-template.git ${appname}`, function (err) {
+            if (err) {
+                logger.error(`[f2e-create] create template error: ${err}`)
+                process.exit(1)
+            } else {
+                unlink(path.join(process.cwd(), appname, '.git'), () => {})
+                ;['README.md', 'index.html', 'package.json'].forEach(file => {
+                    const filepath = path.join(process.cwd(), appname, file)
+                    const content = readFileSync(filepath, 'utf-8')
+                    writeFileSync(filepath, content.replaceAll('f2e-create-template', appname))
+                })
+            }
+        })
     })
 
 program.command('build')

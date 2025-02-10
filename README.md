@@ -148,37 +148,38 @@ f2e-server 提供了[postcss](https://postcss.org/)构建支持，开启条件�
 ```js
 {
     postcss: {
-        entryPoints: 'css/main.css',
+        /** 入口文件，支持配置方式 */
+        // entryPoints: 'css/main.css',
+        entryPoints: {
+            in: 'css/main.css',
+            out: 'static/main.css',
+        },
         plugins: [require('autoprefixer')],
     },
 }
 ```
 
-### tailwindcss 支持
+### tailwindcss@4 支持
 f2e-server 通过集成postcss编译 [tailwindcss](https://tailwindcss.com/)，开启条件：
 1. PostCSS 构建配置完成
-2. 需要安装 `npm install tailwindcss@3`
+2. 需要安装 `npm install postcss tailwindcss @tailwindcss/postcss`
 3. 修改入口文件为 `css/main.css`，添加tailwind配置
 ```css
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 ```
 4. 修改启动配置参数
 ```js
 {
     postcss: {
         /** tailwindcss 主文件 */
-        entryPoints: 'css/main.css',
-        tailwindConfig: {
-            // 配置所有 HTML 模板、JS 组件和任何其他包含 Tailwind 类名称的文件的路径的地方
-            content: ['./src/**/*.{html,ts,tsx}'],
+        // entryPoints: 'css/main.css',
+        entryPoints: {
+            in: 'css/main.css',
+            out: 'static/main.css',
         },
     },
 }
 ```
->  或者 启动目录下创建 [tailwind.config.js](https://tailwind.nodejs.cn/docs/configuration)  
-> 另外：tailwindcss@4配置差异较大，不作内置，请按照官方文档进行postcss配置plugins，注意 不要使用tailwindConfig或者配置文件
 ## proxy 代理http(s)
 f2e-server 提供了代理http(s)支持，开启条件：
 1. mode = `dev` or `prod` 

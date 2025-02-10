@@ -15,20 +15,7 @@ const middleware_postcss: MiddlewareCreater = {
         }
         const postcss: typeof import('postcss') = await dynamicImport('postcss')
         const processer = postcss()
-        const { entryPoints, plugins = [], tailwindConfig = 'tailwind.config.js', processOptions = {} } = conf.postcss;
-        let match_content: string[] = [];
-        if (typeof tailwindConfig === 'object' ) {
-            const tailwind: typeof import('tailwindcss') = await dynamicImport('tailwindcss');
-            plugins.push( tailwind(tailwindConfig) )
-            match_content = tailwindConfig.content
-        } else {
-            const tailwindPath = path.join(process.cwd(), tailwindConfig)
-            if (fs.existsSync(tailwindPath)) {
-                const tailwind: typeof import('tailwindcss') = await dynamicImport('tailwindcss');
-                plugins.push( tailwind(tailwindConfig) )
-                match_content = require(tailwindPath).content
-            }
-        }
+        const { entryPoints, plugins = [], processOptions = {}, watchFilter } = conf.postcss;
         plugins.forEach(plugin => {
             processer.use(plugin)
         })
@@ -78,7 +65,7 @@ const middleware_postcss: MiddlewareCreater = {
                 await build(store)
             },
             buildWatcher: (pathname, eventType, __build, store) => {
-                if (pathname === origin || require('micromatch').isMatch(pathname, match_content)) {
+                if (pathname === origin || !watchFilter || watchFilter(pathname)) {
                     build(store)
                 }
             }
