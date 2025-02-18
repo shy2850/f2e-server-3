@@ -142,9 +142,9 @@ export const combineMiddleware = async (conf: F2EConfigResult, middlewares: (Mid
             }
             return true
         },
-        buildFilter: (pathname) => {
+        buildFilter: (pathname, size) => {
             for (let i = 0; i < buildFilters.length; i++) {
-                let allow = buildFilters[i](pathname)
+                let allow = buildFilters[i](pathname, size)
                 if (allow === false) {
                     return false
                 }

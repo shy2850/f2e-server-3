@@ -33,7 +33,7 @@ export namespace MemoryTree {
     export interface Events {
         /** 过滤需要构建的文件或目录, 默认不编译超过100M的文件 */
         buildFilter?: {
-            (pathname: string, size?: number): boolean
+            (pathname: string, size: number): boolean
         }
         /** 过滤需要监听的文件或目录 */
         watchFilter?: {

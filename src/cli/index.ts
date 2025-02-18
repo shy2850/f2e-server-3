@@ -7,7 +7,7 @@ import * as _ from '../utils/misc'
 import path from 'node:path'
 import { Command } from '../utils/commander'
 import { exec } from 'node:child_process'
-import { readFileSync, unlink, writeFileSync } from 'node:fs'
+import { readFileSync, rm, writeFileSync } from 'node:fs'
 
 const program = new Command('f2e3')
 program.version(require('../../package.json').version);
@@ -22,7 +22,7 @@ program
                 logger.error(`[f2e-create] create template error: ${err}`)
                 process.exit(1)
             } else {
-                unlink(path.join(process.cwd(), appname, '.git'), () => {})
+                rm(path.join(process.cwd(), appname, '.git'), () => {})
                 ;['README.md', 'index.html', 'package.json'].forEach(file => {
                     const filepath = path.join(process.cwd(), appname, file)
                     const content = readFileSync(filepath, 'utf-8')

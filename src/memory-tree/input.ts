@@ -10,7 +10,7 @@ export const inputProvider: MemoryTree.BuildProvider = (options, store) => {
     const { buildFilter, onSet, root } = options
     return async function build (pathname: string) {
         // 路径被过滤，直接返回
-        if (pathname && (store.ignores.has(pathname) || !buildFilter || !buildFilter(pathname))) {
+        if (pathname && (store.ignores.has(pathname) || !buildFilter || !buildFilter(pathname, 0))) {
             return
         }
 
