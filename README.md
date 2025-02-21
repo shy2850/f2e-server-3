@@ -178,7 +178,8 @@ f2e-server 通过集成postcss编译 [tailwindcss](https://tailwindcss.com/)，�
 ```
 4. 修改启动配置参数
 ```js
-{
+import TailwindPlugin from "@tailwindcss/postcss"
+config = {
     postcss: {
         /** tailwindcss 主文件 */
         // entryPoints: 'css/main.css',
@@ -186,6 +187,11 @@ f2e-server 通过集成postcss编译 [tailwindcss](https://tailwindcss.com/)，�
             in: 'css/main.css',
             out: 'static/main.css',
         },
+        plugins: [
+            TailwindPlugin({
+                optimize: mode === 'build',
+            }),
+        ],
     },
 }
 ```
